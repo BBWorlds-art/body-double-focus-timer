@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#f3e9dd" />
+<title>Body Double Focus Session</title>
+<style>
+  :root {
+    --bg-1: #f7efe4;
+    --bg-2: #efe2d2;
+    --bg-3: #e9dac6;
+    --card: rgba(255, 251, 245, 0.72);
+    --card-border: rgba(193, 154, 122, 0.28);
+    --text: #4a3f38;
+    --text-soft: #8a7a6c;
+    --accent: #b08573;
+    --accent-soft: #c9a99a;
+    --accent-deep: #9a6d5b;
+    --break: #8fa394;
+    --break-deep: #6f8676;
+    --shadow: 0 18px 50px rgba(120, 90, 65, 0.16);
+    --radius: 26px;
+    --radius-sm: 16px;
+  }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  html, body { height: 100%; margin: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: var(--text);
+    background: linear-gradient(155deg, var(--bg-1) 0%, var(--bg-2) 55%, var(--bg-3) 100%);
+    background-attachment: fixed;
+    min-height: 100%;
+    padding: clamp(14px, 3vw, 32px);
+    padding-bottom: max(env(safe-area-inset-bottom), 24px);
+    display: flex;
+    justify-content: center;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .app {
+    width: 100%;
+    max-width: 880px;
+    display: flex;
+    flex-direction: column;
+    gap: clamp(14px, 2.5vw, 22px);
+  }
+
+  /* ---------- Header ---------- */
+  header { text-align: center; padding: 4px 0; }
+
+  .title-field {
+    font-size: clamp(1.5rem, 4.5vw, 2.3rem);
+    font-weight: 700;
+    letter-spacing: 0.2px;
+    color: var(--text);
+    text-align: center;
+    width: 100%;
+    border: none;
+    background: transparent;
+    outline: none;
+    padding: 6px 10px;
+    border-radius: var(--radius-sm);
+    transition: background 0.2s;
+  }
+  .message-field {
+    font-size: clamp(0.95rem, 2.6vw, 1.1rem);
+    color: var(--text-soft);
+    text-align: center;
+    width: 100%;
+    border: none;
+    background: transparent;
+    outline: none;
+    padding: 6px 10px;
+    margin-top: 4px;
+    border-radius: var(--radius-sm);
+    resize: none;
+    overflow: hidden;
+    line-height: 1.5;
+    font-family: inherit;
+    transition: background 0.2s;
+  }
+  .title-field:focus, .message-field:focus { background: rgba(255, 251, 245, 0.6); }
+  .title-field:hover, .message-field:hover { background: rgba(255, 251, 245, 0.35); }
+
+  /* ---------- Cards ---------- */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    padding: clamp(20px, 4vw, 36px);
+  }
+
+  /* ---------- Timer card ---------- */
+  .timer-card { text-align: center; }
+
+  .mode-badge {
+    display: inline-block;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--accent-deep);
+    background: rgba(176, 133, 115, 0.14);
+    padding: 7px 18px;
+    border-radius: 999px;
+  }
+  .timer-card.is-break .mode-badge { color: var(--break-deep); background: rgba(143, 163, 148, 0.18); }
+
+  .time {
+    font-size: clamp(4.6rem, 21vw, 9.5rem);
+    font-weight: 700;
+    line-height: 1;
+    margin: clamp(12px, 3vw, 22px) 0;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: 1px;
+    color: var(--text);
+  }
+
+  .task-row {
+    display: flex;
+    justify-content: center;
+    gap: clamp(18px, 6vw, 60px);
+    flex-wrap: wrap;
+    color: var(--text-soft);
+  }
+  .task-label { font-size: 0.74rem; letter-spacing: 1.5px; text-transform: uppercase; opacity: 0.8; }
+  .task-value { font-size: clamp(1rem, 3vw, 1.25rem); font-weight: 600; color: var(--text); margin-top: 3px; }
+
+  .progress-track {
+    height: 8px;
+    background: rgba(176, 133, 115, 0.16);
+    border-radius: 999px;
+    overflow: hidden;
+    margin: clamp(18px, 4vw, 26px) 0 14px;
+  }
+  .progress-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--accent-soft), var(--accent));
+    border-radius: 999px;
+    transition: width 0.3s linear;
+  }
+  .timer-card.is-break .progress-fill { background: linear-gradient(90deg, #a9bdac, var(--break)); }
+
+  .stats {
+    display: flex;
+    justify-content: center;
+    gap: clamp(16px, 5vw, 48px);
+    flex-wrap: wrap;
+    color: var(--text-soft);
+    font-size: 0.95rem;
+    margin-top: 4px;
+  }
+  .stats strong { color: var(--text); font-weight: 700; }
+
+  .long-break-note {
+    margin-top: 16px;
+    color: var(--accent-deep);
+    background: rgba(176, 133, 115, 0.12);
+    border-radius: var(--radius-sm);
+    padding: 12px 16px;
+    font-weight: 600;
+    font-size: 0.98rem;
+    display: none;
+  }
+  .long-break-note.show { display: block; }
+
+  /* ---------- Buttons ---------- */
+  .btn-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+  }
+
+  button {
+    font-family: inherit;
+    cursor: pointer;
+    border: 1px solid var(--card-border);
+    background: rgba(255, 251, 245, 0.85);
+    color: var(--text);
+    font-size: 1rem;
+    font-weight: 600;
+    padding: 14px 20px;
+    border-radius: var(--radius-sm);
+    min-height: 52px;
+    transition: transform 0.08s ease, background 0.2s, box-shadow 0.2s, color 0.2s;
+    flex: 1 1 auto;
+  }
+  button:hover { background: rgba(255, 251, 245, 1); }
+  button:active { transform: scale(0.97); }
+  button:focus-visible { outline: 3px solid var(--accent-soft); outline-offset: 2px; }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--accent), var(--accent-deep));
+    color: #fff8f2;
+    border-color: transparent;
+    box-shadow: 0 8px 20px rgba(154, 109, 91, 0.28);
+  }
+  .btn-primary:hover { background: linear-gradient(135deg, var(--accent-deep), var(--accent-deep)); }
+
+  .mode-btns button.active {
+    background: linear-gradient(135deg, var(--accent), var(--accent-deep));
+    color: #fff8f2;
+    border-color: transparent;
+    box-shadow: 0 8px 20px rgba(154, 109, 91, 0.26);
+  }
+
+  .section-label {
+    font-size: 0.78rem;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--text-soft);
+    margin: 0 0 14px;
+    font-weight: 700;
+  }
+
+  /* ---------- Tasks ---------- */
+  .task-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
+  .task-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255, 251, 245, 0.6);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-sm);
+    padding: 8px 10px 8px 14px;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .task-item.active {
+    border-color: var(--accent-soft);
+    background: rgba(176, 133, 115, 0.12);
+  }
+  .task-dot {
+    width: 14px; height: 14px; border-radius: 50%;
+    border: 2px solid var(--accent-soft);
+    flex: 0 0 auto;
+    cursor: pointer;
+    background: transparent;
+    padding: 0;
+    min-height: 0;
+  }
+  .task-item.active .task-dot { background: var(--accent); border-color: var(--accent); }
+  .task-name {
+    flex: 1 1 auto;
+    border: none;
+    background: transparent;
+    outline: none;
+    font-size: 1.02rem;
+    color: var(--text);
+    font-weight: 600;
+    font-family: inherit;
+    padding: 6px 4px;
+    min-width: 0;
+  }
+  .task-del {
+    flex: 0 0 auto;
+    background: transparent;
+    border: none;
+    color: var(--text-soft);
+    font-size: 1.3rem;
+    line-height: 1;
+    padding: 6px 12px;
+    min-height: 0;
+    border-radius: 10px;
+  }
+  .task-del:hover { color: var(--accent-deep); background: rgba(176, 133, 115, 0.12); }
+  .add-task-btn { background: rgba(176, 133, 115, 0.12); border-style: dashed; }
+
+  .footer-note { text-align: center; color: var(--text-soft); font-size: 0.82rem; opacity: 0.75; }
+
+  @media (max-width: 480px) {
+    button { flex: 1 1 calc(50% - 10px); }
+    .btn-grid.controls button { flex: 1 1 calc(50% - 10px); }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header>
+    <input id="titleField" class="title-field" type="text" aria-label="Session title" maxlength="80" />
+    <textarea id="messageField" class="message-field" rows="1" aria-label="Session message or goal" maxlength="240"></textarea>
+  </header>
+
+  <!-- Timer -->
+  <section class="card timer-card" id="timerCard" aria-live="polite">
+    <span class="mode-badge" id="modeBadge">Focus</span>
+    <div class="time" id="timeDisplay">25:00</div>
+
+    <div class="task-row">
+      <div>
+        <div class="task-label">Current task</div>
+        <div class="task-value" id="currentTask">—</div>
+      </div>
+      <div>
+        <div class="task-label">Next task</div>
+        <div class="task-value" id="nextTask">—</div>
+      </div>
+    </div>
+
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+
+    <div class="stats">
+      <span>Round <strong id="roundNum">1</strong> of 4</span>
+      <span>Focus blocks today: <strong id="completedCount">0</strong></span>
+    </div>
+
+    <div class="long-break-note" id="longBreakNote">🌿 Long break suggested: 15 minutes</div>
+  </section>
+
+  <!-- Modes -->
+  <section class="card">
+    <p class="section-label">Timer mode</p>
+    <div class="btn-grid mode-btns" id="modeBtns" role="group" aria-label="Timer mode">
+      <button data-focus="25" data-break="5">25 / 5</button>
+      <button data-focus="20" data-break="5">20 / 5</button>
+      <button data-focus="15" data-break="3">15 / 3</button>
+    </div>
+  </section>
+
+  <!-- Controls -->
+  <section class="card">
+    <p class="section-label">Controls</p>
+    <div class="btn-grid controls">
+      <button class="btn-primary" id="startPauseBtn">Start</button>
+      <button id="resetTimerBtn">Reset Timer</button>
+      <button id="skipBreakBtn">Skip to Break</button>
+      <button id="skipFocusBtn">Skip to Focus</button>
+      <button id="muteBtn">🔊 Sound On</button>
+      <button id="fullscreenBtn">⛶ Full Screen</button>
+      <button id="resetSessionBtn">Reset Full Session</button>
+    </div>
+  </section>
+
+  <!-- Tasks -->
+  <section class="card">
+    <p class="section-label">Tasks</p>
+    <div class="task-list" id="taskList"></div>
+    <button class="add-task-btn" id="addTaskBtn">+ Add task</button>
+  </section>
+
+  <p class="footer-note">Everything saves on this device. Work gently, switch tasks, come back softly.</p>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  // ---------- Constants & storage keys ----------
+  var STORE = {
+    title: "bdf_title",
+    message: "bdf_message",
+    tasks: "bdf_tasks",
+    activeTask: "bdf_activeTask",
+    mode: "bdf_mode",
+    completed: "bdf_completed",
+    muted: "bdf_muted"
+  };
+
+  var MODES = {
+    "25": { focus: 25 * 60, brk: 5 * 60, label: "25 / 5" },
+    "20": { focus: 20 * 60, brk: 5 * 60, label: "20 / 5" },
+    "15": { focus: 15 * 60, brk: 3 * 60, label: "15 / 3" }
+  };
+  var LONG_BREAK_AFTER = 4;
+
+  // ---------- Helpers ----------
+  function $(id) { return document.getElementById(id); }
+  function load(key, fallback) {
+    try {
+      var v = localStorage.getItem(key);
+      return v === null ? fallback : JSON.parse(v);
+    } catch (e) { return fallback; }
+  }
+  function save(key, value) {
+    try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) {}
+  }
+
+  // ---------- State ----------
+  var state = {
+    modeKey: load(STORE.mode, "25"),
+    isBreak: false,
+    running: false,
+    endTime: 0,          // ms timestamp when current period ends (while running)
+    remaining: 0,        // seconds left (authoritative when paused)
+    round: 1,            // current focus block within a set of 4
+    completed: load(STORE.completed, 0),
+    tasks: load(STORE.tasks, ["Gift wrapping", "Template work", "Extra task"]),
+    activeTask: load(STORE.activeTask, 0),
+    muted: load(STORE.muted, false)
+  };
+  if (!Array.isArray(state.tasks) || state.tasks.length === 0) {
+    state.tasks = ["Gift wrapping", "Template work", "Extra task"];
+  }
+  if (state.activeTask >= state.tasks.length) state.activeTask = 0;
+
+  function curMode() { return MODES[state.modeKey] || MODES["25"]; }
+  function periodTotal() { return state.isBreak ? curMode().brk : curMode().focus; }
+
+  // ---------- Audio (gentle chime, created lazily on first Start) ----------
+  var audioCtx = null;
+  function ensureAudio() {
+    if (!audioCtx) {
+      try {
+        var AC = window.AudioContext || window.webkitAudioContext;
+        if (AC) audioCtx = new AC();
+      } catch (e) { audioCtx = null; }
+    }
+    if (audioCtx && audioCtx.state === "suspended") audioCtx.resume();
+  }
+  function chime() {
+    if (state.muted || !audioCtx) return;
+    var now = audioCtx.currentTime;
+    // soft two-note chime
+    [523.25, 783.99].forEach(function (freq, i) {
+      var osc = audioCtx.createOscillator();
+      var gain = audioCtx.createGain();
+      osc.type = "sine";
+      osc.frequency.value = freq;
+      var t = now + i * 0.18;
+      gain.gain.setValueAtTime(0.0001, t);
+      gain.gain.exponentialRampToValueAtTime(0.22, t + 0.04);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 1.3);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start(t);
+      osc.stop(t + 1.4);
+    });
+  }
+
+  // ---------- Rendering ----------
+  function fmt(sec) {
+    sec = Math.max(0, Math.round(sec));
+    var m = Math.floor(sec / 60);
+    var s = sec % 60;
+    return (m < 10 ? "0" + m : m) + ":" + (s < 10 ? "0" + s : s);
+  }
+
+  function currentTaskName() {
+    return state.tasks[state.activeTask] || "—";
+  }
+  function nextTaskName() {
+    if (state.tasks.length === 0) return "—";
+    return state.tasks[(state.activeTask + 1) % state.tasks.length] || "—";
+  }
+
+  function renderTimer() {
+    var sec = state.running ? (state.endTime - Date.now()) / 1000 : state.remaining;
+    $("timeDisplay").textContent = fmt(sec);
+
+    var total = periodTotal();
+    var pct = total > 0 ? (1 - Math.max(0, sec) / total) * 100 : 0;
+    $("progressFill").style.width = Math.min(100, Math.max(0, pct)) + "%";
+
+    $("modeBadge").textContent = state.isBreak ? "Break" : "Focus";
+    $("timerCard").classList.toggle("is-break", state.isBreak);
+    $("currentTask").textContent = currentTaskName();
+    $("nextTask").textContent = nextTaskName();
+    $("roundNum").textContent = state.round;
+    $("completedCount").textContent = state.completed;
+
+    document.title = fmt(sec) + " · " + (state.isBreak ? "Break" : "Focus");
+  }
+
+  // ---------- Timer loop (Date.now based for accuracy through screen sleep) ----------
+  var ticker = null;
+  function startTicker() {
+    stopTicker();
+    ticker = setInterval(tick, 250);
+  }
+  function stopTicker() {
+    if (ticker) { clearInterval(ticker); ticker = null; }
+  }
+  function tick() {
+    if (!state.running) return;
+    var left = (state.endTime - Date.now()) / 1000;
+    if (left <= 0) {
+      periodComplete();
+    } else {
+      renderTimer();
+    }
+  }
+
+  function periodComplete() {
+    chime();
+    if (state.isBreak) {
+      // Break finished -> advance to next focus on next task
+      advanceTaskForward();
+      state.round = state.round >= LONG_BREAK_AFTER ? 1 : state.round + 1;
+      switchTo(false, true);
+    } else {
+      // Focus finished -> count it, go to break
+      state.completed += 1;
+      save(STORE.completed, state.completed);
+      var showLong = (state.completed % LONG_BREAK_AFTER === 0);
+      $("longBreakNote").classList.toggle("show", showLong);
+      switchTo(true, true);
+    }
+  }
+
+  function advanceTaskForward() {
+    if (state.tasks.length > 0) {
+      state.activeTask = (state.activeTask + 1) % state.tasks.length;
+      save(STORE.activeTask, state.activeTask);
+      renderTasks();
+    }
+  }
+
+  // Move to a period. autostart keeps the timer running across transitions.
+  function switchTo(isBreak, autostart) {
+    state.isBreak = isBreak;
+    state.remaining = periodTotal();
+    if (!isBreak) $("longBreakNote").classList.remove("show");
+    if (autostart) {
+      state.running = true;
+      state.endTime = Date.now() + state.remaining * 1000;
+    } else {
+      state.running = false;
+    }
+    updateStartBtn();
+    renderTimer();
+  }
+
+  function updateStartBtn() {
+    $("startPauseBtn").textContent = state.running ? "Pause" : "Start";
+  }
+
+  // ---------- Controls ----------
+  function startTimer() {
+    ensureAudio();
+    if (state.running) return;
+    if (state.remaining <= 0) state.remaining = periodTotal();
+    state.running = true;
+    state.endTime = Date.now() + state.remaining * 1000;
+    startTicker();
+    updateStartBtn();
+    renderTimer();
+  }
+  function pauseTimer() {
+    if (!state.running) return;
+    state.remaining = Math.max(0, (state.endTime - Date.now()) / 1000);
+    state.running = false;
+    updateStartBtn();
+    renderTimer();
+  }
+  function toggleStartPause() {
+    if (state.running) pauseTimer(); else startTimer();
+  }
+  function resetTimer() {
+    state.remaining = periodTotal();
+    if (state.running) {
+      state.endTime = Date.now() + state.remaining * 1000;
+    }
+    renderTimer();
+  }
+  function resetSession() {
+    state.isBreak = false;
+    state.running = false;
+    state.round = 1;
+    state.completed = 0;
+    state.activeTask = 0;
+    state.remaining = periodTotal();
+    save(STORE.completed, 0);
+    save(STORE.activeTask, 0);
+    $("longBreakNote").classList.remove("show");
+    updateStartBtn();
+    renderTasks();
+    renderTimer();
+  }
+  function skipToBreak() {
+    ensureAudio();
+    switchTo(true, state.running);
+  }
+  function skipToFocus() {
+    ensureAudio();
+    advanceTaskForward();
+    state.round = state.round >= LONG_BREAK_AFTER ? 1 : state.round + 1;
+    switchTo(false, state.running);
+  }
+
+  function setMode(key) {
+    state.modeKey = key;
+    save(STORE.mode, key);
+    Array.prototype.forEach.call($("modeBtns").children, function (b) {
+      b.classList.toggle("active", b.getAttribute("data-focus") === key);
+    });
+    // Apply new durations to the current (non-running-from-zero) period
+    state.remaining = periodTotal();
+    if (state.running) state.endTime = Date.now() + state.remaining * 1000;
+    renderTimer();
+  }
+
+  // ---------- Tasks UI ----------
+  function renderTasks() {
+    var list = $("taskList");
+    list.innerHTML = "";
+    state.tasks.forEach(function (name, idx) {
+      var item = document.createElement("div");
+      item.className = "task-item" + (idx === state.activeTask ? " active" : "");
+
+      var dot = document.createElement("button");
+      dot.className = "task-dot";
+      dot.setAttribute("aria-label", "Set as active task");
+      dot.addEventListener("click", function () {
+        state.activeTask = idx;
+        save(STORE.activeTask, idx);
+        renderTasks();
+        renderTimer();
+      });
+
+      var input = document.createElement("input");
+      input.className = "task-name";
+      input.type = "text";
+      input.value = name;
+      input.setAttribute("aria-label", "Task name");
+      input.addEventListener("input", function () {
+        state.tasks[idx] = input.value;
+        save(STORE.tasks, state.tasks);
+        renderTimer();
+      });
+
+      var del = document.createElement("button");
+      del.className = "task-del";
+      del.innerHTML = "&times;";
+      del.setAttribute("aria-label", "Delete task");
+      del.addEventListener("click", function () {
+        state.tasks.splice(idx, 1);
+        if (state.tasks.length === 0) state.tasks.push("New task");
+        if (state.activeTask >= state.tasks.length) state.activeTask = state.tasks.length - 1;
+        save(STORE.tasks, state.tasks);
+        save(STORE.activeTask, state.activeTask);
+        renderTasks();
+        renderTimer();
+      });
+
+      item.appendChild(dot);
+      item.appendChild(input);
+      item.appendChild(del);
+      list.appendChild(item);
+    });
+  }
+
+  function addTask() {
+    state.tasks.push("New task");
+    save(STORE.tasks, state.tasks);
+    renderTasks();
+    renderTimer();
+  }
+
+  // ---------- Header fields ----------
+  function autosize(el) {
+    el.style.height = "auto";
+    el.style.height = el.scrollHeight + "px";
+  }
+  function initHeader() {
+    var t = $("titleField"), m = $("messageField");
+    t.value = load(STORE.title, "Body Double Focus Session");
+    m.value = load(STORE.message, "Today we are focusing, switching tasks, and coming back gently.");
+    autosize(m);
+    t.addEventListener("input", function () { save(STORE.title, t.value); });
+    m.addEventListener("input", function () { save(STORE.message, m.value); autosize(m); });
+  }
+
+  // ---------- Sound toggle ----------
+  function updateMuteBtn() {
+    $("muteBtn").textContent = state.muted ? "🔇 Muted" : "🔊 Sound On";
+  }
+  function toggleMute() {
+    state.muted = !state.muted;
+    save(STORE.muted, state.muted);
+    updateMuteBtn();
+    if (!state.muted) { ensureAudio(); chime(); }
+  }
+
+  // ---------- Fullscreen ----------
+  function toggleFullscreen() {
+    var el = document.documentElement;
+    if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+      if (el.requestFullscreen) el.requestFullscreen();
+      else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+    } else {
+      if (document.exitFullscreen) document.exitFullscreen();
+      else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
+    }
+  }
+
+  // ---------- Wire up ----------
+  function init() {
+    initHeader();
+    setMode(state.modeKey);
+    state.remaining = periodTotal();
+    renderTasks();
+    updateMuteBtn();
+    updateStartBtn();
+    renderTimer();
+    startTicker();
+
+    $("startPauseBtn").addEventListener("click", toggleStartPause);
+    $("resetTimerBtn").addEventListener("click", resetTimer);
+    $("resetSessionBtn").addEventListener("click", resetSession);
+    $("skipBreakBtn").addEventListener("click", skipToBreak);
+    $("skipFocusBtn").addEventListener("click", skipToFocus);
+    $("muteBtn").addEventListener("click", toggleMute);
+    $("fullscreenBtn").addEventListener("click", toggleFullscreen);
+    $("addTaskBtn").addEventListener("click", addTask);
+
+    Array.prototype.forEach.call($("modeBtns").children, function (b) {
+      b.addEventListener("click", function () { setMode(b.getAttribute("data-focus")); });
+    });
+
+    // Re-render immediately when tab/screen wakes so Date.now stays accurate
+    document.addEventListener("visibilitychange", function () {
+      if (!document.hidden) tick();
+    });
+
+    // Spacebar = start/pause (ignore while typing in a field)
+    document.addEventListener("keydown", function (e) {
+      var tag = (e.target.tagName || "").toLowerCase();
+      if (e.code === "Space" && tag !== "input" && tag !== "textarea") {
+        e.preventDefault();
+        toggleStartPause();
+      }
+    });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
+})();
+</script>
+</body>
+</html>
