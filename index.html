@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 <meta name="theme-color" content="#f3e9dd" />
-<title>Body Double Focus Session</title>
+<title>Life CEO Focus Room</title>
 <style>
   :root {
     --bg-1: #f7efe4;
@@ -43,11 +43,36 @@
 
   .app {
     width: 100%;
-    max-width: 880px;
+    max-width: 1180px;
     display: flex;
     flex-direction: column;
     gap: clamp(14px, 2.5vw, 22px);
   }
+
+  /* ---------- Placeholder navigation (future Life CEO pages) ---------- */
+  .nav-placeholder {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .nav-item {
+    font-size: 0.78rem;
+    letter-spacing: 0.6px;
+    font-weight: 600;
+    padding: 7px 15px;
+    border-radius: 999px;
+    color: var(--text-soft);
+    background: rgba(255, 251, 245, 0.5);
+    border: 1px solid var(--card-border);
+    text-decoration: none;
+  }
+  .nav-item.active {
+    color: #fff8f2;
+    background: linear-gradient(135deg, var(--accent), var(--accent-deep));
+    border-color: transparent;
+  }
+  .nav-item.soon { opacity: 0.6; cursor: default; }
 
   /* ---------- Header ---------- */
   header { text-align: center; padding: 4px 0; }
@@ -86,6 +111,22 @@
   .title-field:focus, .message-field:focus { background: rgba(255, 251, 245, 0.6); }
   .title-field:hover, .message-field:hover { background: rgba(255, 251, 245, 0.35); }
 
+  /* ---------- Layout: main column + Live Board sidebar ---------- */
+  .layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: clamp(14px, 2.5vw, 22px);
+  }
+  @media (min-width: 920px) {
+    .layout { grid-template-columns: minmax(0, 1.7fr) minmax(300px, 1fr); align-items: start; }
+  }
+  .main-col, .side-col {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(14px, 2.5vw, 22px);
+    min-width: 0;
+  }
+
   /* ---------- Cards ---------- */
   .card {
     background: var(--card);
@@ -113,6 +154,15 @@
   }
   .timer-card.is-break .mode-badge { color: var(--break-deep); background: rgba(143, 163, 148, 0.18); }
 
+  .session-label {
+    font-size: clamp(1.05rem, 3.4vw, 1.5rem);
+    font-weight: 700;
+    color: var(--accent-deep);
+    margin-top: 12px;
+    display: none;
+  }
+  .timer-card.is-break .session-label { color: var(--break-deep); }
+
   .time {
     font-size: clamp(4.6rem, 21vw, 9.5rem);
     font-weight: 700;
@@ -121,6 +171,14 @@
     font-variant-numeric: tabular-nums;
     letter-spacing: 1px;
     color: var(--text);
+  }
+
+  .next-block {
+    color: var(--text-soft);
+    font-weight: 600;
+    font-size: clamp(0.95rem, 2.6vw, 1.15rem);
+    margin: -6px 0 4px;
+    display: none;
   }
 
   .task-row {
@@ -149,6 +207,32 @@
   }
   .timer-card.is-break .progress-fill { background: linear-gradient(90deg, #a9bdac, var(--break)); }
 
+  /* Whole 2-hour session progress (live mode only) */
+  .session-progress { display: none; }
+  .session-progress.show { display: block; }
+  .session-progress .session-cap {
+    font-size: 0.72rem;
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
+    color: var(--text-soft);
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .session-track {
+    height: 10px;
+    background: rgba(176, 133, 115, 0.16);
+    border-radius: 999px;
+    overflow: hidden;
+    margin-bottom: 14px;
+  }
+  .session-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--accent-soft), var(--accent-deep));
+    border-radius: 999px;
+    transition: width 0.3s linear;
+  }
+
   .stats {
     display: flex;
     justify-content: center;
@@ -171,6 +255,21 @@
     display: none;
   }
   .long-break-note.show { display: block; }
+
+  /* Break / community block message */
+  .block-msg {
+    margin-top: 18px;
+    text-align: left;
+    background: rgba(255, 251, 245, 0.55);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-sm);
+    padding: 16px 18px;
+    display: none;
+  }
+  .block-msg.show { display: block; }
+  .block-msg-title { font-weight: 700; font-size: 1.05rem; margin-bottom: 10px; color: var(--accent-deep); }
+  .timer-card.is-break .block-msg-title { color: var(--break-deep); }
+  .block-msg-list { margin: 0; padding-left: 20px; line-height: 1.8; color: var(--text); }
 
   /* ---------- Buttons ---------- */
   .btn-grid {
@@ -206,11 +305,23 @@
   }
   .btn-primary:hover { background: linear-gradient(135deg, var(--accent-deep), var(--accent-deep)); }
 
+  .btn-live {
+    font-size: 1.12rem;
+    padding: 18px 22px;
+    min-height: 62px;
+    letter-spacing: 0.4px;
+  }
+
   .mode-btns button.active {
     background: linear-gradient(135deg, var(--accent), var(--accent-deep));
     color: #fff8f2;
     border-color: transparent;
     box-shadow: 0 8px 20px rgba(154, 109, 91, 0.26);
+  }
+  .loop-btn.active {
+    background: linear-gradient(135deg, var(--accent), var(--accent-deep));
+    color: #fff8f2;
+    border-color: transparent;
   }
 
   .section-label {
@@ -221,6 +332,7 @@
     margin: 0 0 14px;
     font-weight: 700;
   }
+  .section-hint { font-size: 0.82rem; color: var(--text-soft); margin: 10px 0 0; line-height: 1.5; }
 
   /* ---------- Tasks ---------- */
   .task-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
@@ -274,78 +386,245 @@
   .task-del:hover { color: var(--accent-deep); background: rgba(176, 133, 115, 0.12); }
   .add-task-btn { background: rgba(176, 133, 115, 0.12); border-style: dashed; }
 
+  /* ---------- Live Board ---------- */
+  .lb-field { margin-bottom: 14px; }
+  .lb-field:last-child { margin-bottom: 0; }
+  .lb-label {
+    font-size: 0.72rem;
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
+    color: var(--text-soft);
+    font-weight: 700;
+    margin-bottom: 5px;
+  }
+  .lb-input {
+    width: 100%;
+    border: 1px solid var(--card-border);
+    background: rgba(255, 251, 245, 0.6);
+    border-radius: var(--radius-sm);
+    padding: 11px 13px;
+    font-family: inherit;
+    font-size: 1.02rem;
+    line-height: 1.45;
+    color: var(--text);
+    outline: none;
+    resize: vertical;
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .lb-input:focus { background: rgba(255, 251, 245, 0.95); border-color: var(--accent-soft); }
+
+  /* ---------- Media placeholder ---------- */
+  .media-area {
+    position: relative;
+    border-radius: var(--radius);
+    overflow: hidden;
+    border: 1px solid var(--card-border);
+    box-shadow: var(--shadow);
+    min-height: 180px;
+  }
+  .media-placeholder {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(155deg, #f1e5d6 0%, #e6d3bd 50%, #d9c2a6 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    color: var(--text-soft);
+    font-size: 0.85rem;
+    padding: 16px;
+  }
+  .media-img {
+    position: relative;
+    width: 100%;
+    display: none;
+    border-radius: var(--radius);
+  }
+
+  /* ---------- Music panel ---------- */
+  .music-current {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text);
+    margin: 2px 0 12px;
+  }
+  .music-current span { color: var(--accent-deep); }
+  .music-select {
+    width: 100%;
+    font-family: inherit;
+    font-size: 1rem;
+    color: var(--text);
+    background: rgba(255, 251, 245, 0.85);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-sm);
+    padding: 12px 13px;
+    min-height: 50px;
+    margin-bottom: 12px;
+  }
+  .music-row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .vol-row { display: flex; align-items: center; gap: 12px; margin-top: 14px; }
+  .vol-row label { font-size: 0.82rem; color: var(--text-soft); font-weight: 700; letter-spacing: 0.5px; }
+  input[type="range"] { flex: 1 1 auto; accent-color: var(--accent); height: 28px; }
+
   .footer-note { text-align: center; color: var(--text-soft); font-size: 0.82rem; opacity: 0.75; }
 
   @media (max-width: 480px) {
     button { flex: 1 1 calc(50% - 10px); }
     .btn-grid.controls button { flex: 1 1 calc(50% - 10px); }
+    .btn-live { flex: 1 1 100%; }
   }
 </style>
 </head>
 <body>
 <div class="app">
 
+  <!-- Placeholder navigation for future Life CEO pages (timer is the only built page) -->
+  <nav class="nav-placeholder" aria-label="Life CEO sections">
+    <a class="nav-item active" href="index.html">Focus Room</a>
+    <span class="nav-item soon" aria-disabled="true" title="Coming later">Home Hub</span>
+    <span class="nav-item soon" aria-disabled="true" title="Coming later">Daily Dashboard</span>
+    <span class="nav-item soon" aria-disabled="true" title="Coming later">Seven Spheres</span>
+    <span class="nav-item soon" aria-disabled="true" title="Coming later">Guide</span>
+  </nav>
+
   <header>
     <input id="titleField" class="title-field" type="text" aria-label="Session title" maxlength="80" />
     <textarea id="messageField" class="message-field" rows="1" aria-label="Session message or goal" maxlength="240"></textarea>
   </header>
 
-  <!-- Timer -->
-  <section class="card timer-card" id="timerCard" aria-live="polite">
-    <span class="mode-badge" id="modeBadge">Focus</span>
-    <div class="time" id="timeDisplay">25:00</div>
+  <div class="layout">
+    <!-- ===================== MAIN COLUMN ===================== -->
+    <main class="main-col">
 
-    <div class="task-row">
-      <div>
-        <div class="task-label">Current task</div>
-        <div class="task-value" id="currentTask">—</div>
+      <!-- Timer -->
+      <section class="card timer-card" id="timerCard" aria-live="polite">
+        <span class="mode-badge" id="modeBadge">Focus</span>
+        <div class="session-label" id="sessionLabel"></div>
+        <div class="time" id="timeDisplay">25:00</div>
+        <div class="next-block" id="nextBlock"></div>
+
+        <div class="task-row">
+          <div>
+            <div class="task-label">Current task</div>
+            <div class="task-value" id="currentTask">—</div>
+          </div>
+          <div>
+            <div class="task-label">Next task</div>
+            <div class="task-value" id="nextTask">—</div>
+          </div>
+        </div>
+
+        <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+
+        <div class="session-progress" id="sessionProgress">
+          <div class="session-cap">2-Hour live session progress</div>
+          <div class="session-track"><div class="session-fill" id="sessionFill"></div></div>
+        </div>
+
+        <div class="stats">
+          <span>Round <strong id="roundNum">1</strong> of 4</span>
+          <span>Focus blocks today: <strong id="completedCount">0</strong></span>
+        </div>
+
+        <div class="long-break-note" id="longBreakNote">🌿 Long break suggested: 15 minutes</div>
+        <div class="block-msg" id="blockMessage"></div>
+      </section>
+
+      <!-- 2-Hour Live Session -->
+      <section class="card">
+        <p class="section-label">TikTok Live Session</p>
+        <div class="btn-grid">
+          <button class="btn-primary btn-live" id="liveStartBtn">▶ Start 2-Hour Live Session</button>
+          <button id="skipBlockBtn">Skip Block</button>
+        </div>
+        <p class="section-hint">2 hours total: 25 · 5 · 25 · 5 · 20 · 5 · 20 · 5 · 10 (Community / Reset). Runs block to block automatically. Pause, Reset Timer, and Skip Block all work below.</p>
+      </section>
+
+      <!-- Modes -->
+      <section class="card">
+        <p class="section-label">Timer mode</p>
+        <div class="btn-grid mode-btns" id="modeBtns" role="group" aria-label="Timer mode">
+          <button data-focus="25" data-break="5">25 / 5</button>
+          <button data-focus="20" data-break="5">20 / 5</button>
+          <button data-focus="15" data-break="3">15 / 3</button>
+        </div>
+      </section>
+
+      <!-- Controls -->
+      <section class="card">
+        <p class="section-label">Controls</p>
+        <div class="btn-grid controls">
+          <button class="btn-primary" id="startPauseBtn">Start</button>
+          <button id="resetTimerBtn">Reset Timer</button>
+          <button id="skipBreakBtn">Skip to Break</button>
+          <button id="skipFocusBtn">Skip to Focus</button>
+          <button id="muteBtn">🔊 Sound On</button>
+          <button id="fullscreenBtn">⛶ Full Screen</button>
+          <button id="resetSessionBtn">Reset Full Session</button>
+        </div>
+      </section>
+
+      <!-- Tasks -->
+      <section class="card">
+        <p class="section-label">Tasks</p>
+        <div class="task-list" id="taskList"></div>
+        <button class="add-task-btn" id="addTaskBtn">+ Add task</button>
+      </section>
+
+    </main>
+
+    <!-- ===================== SIDE COLUMN ===================== -->
+    <aside class="side-col">
+
+      <!-- Live Board -->
+      <section class="card live-board">
+        <p class="section-label">Live Board</p>
+        <div class="lb-field">
+          <div class="lb-label">Today's Focus</div>
+          <textarea id="lbFocus" class="lb-input" rows="2" aria-label="Today's Focus"></textarea>
+        </div>
+        <div class="lb-field">
+          <div class="lb-label">Community Message</div>
+          <textarea id="lbCommunity" class="lb-input" rows="2" aria-label="Community Message"></textarea>
+        </div>
+        <div class="lb-field">
+          <div class="lb-label">Link Reminder</div>
+          <textarea id="lbLink" class="lb-input" rows="2" aria-label="Link Reminder"></textarea>
+        </div>
+        <div class="lb-field">
+          <div class="lb-label">Break Reminder</div>
+          <textarea id="lbBreak" class="lb-input" rows="2" aria-label="Break Reminder"></textarea>
+        </div>
+      </section>
+
+      <!-- Media placeholder (shown during break + community blocks) -->
+      <div class="media-area" id="mediaArea" aria-label="Calm media area">
+        <div class="media-placeholder" id="mediaPlaceholder">Calm media area · add assets/break-image.jpg to show an image during breaks</div>
+        <img class="media-img" id="mediaImg" alt="Break visual" />
       </div>
-      <div>
-        <div class="task-label">Next task</div>
-        <div class="task-value" id="nextTask">—</div>
-      </div>
-    </div>
 
-    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      <!-- Focus Music -->
+      <section class="card">
+        <p class="section-label">Focus Music</p>
+        <div class="music-current">Track: <span id="currentTrackLabel">—</span></div>
+        <select class="music-select" id="trackSelect" aria-label="Select focus track"></select>
+        <div class="music-row">
+          <button id="musicPlayBtn">▶ Play Music</button>
+          <button id="testSoundBtn">🎧 Test Sound</button>
+        </div>
+        <div class="music-row" style="margin-top:10px;">
+          <button id="musicMuteBtn">🔊 Music On</button>
+          <button class="loop-btn" id="loopBtn">🔁 Loop On</button>
+        </div>
+        <div class="vol-row">
+          <label for="volumeSlider">Volume</label>
+          <input type="range" id="volumeSlider" min="0" max="1" step="0.01" value="0.6" />
+        </div>
+        <p class="section-hint">Add your own audio to a <strong>/music</strong> folder in the repo. Music is separate from the timer chime and starts only after you tap a button (works on iPhone/Safari).</p>
+      </section>
 
-    <div class="stats">
-      <span>Round <strong id="roundNum">1</strong> of 4</span>
-      <span>Focus blocks today: <strong id="completedCount">0</strong></span>
-    </div>
-
-    <div class="long-break-note" id="longBreakNote">🌿 Long break suggested: 15 minutes</div>
-  </section>
-
-  <!-- Modes -->
-  <section class="card">
-    <p class="section-label">Timer mode</p>
-    <div class="btn-grid mode-btns" id="modeBtns" role="group" aria-label="Timer mode">
-      <button data-focus="25" data-break="5">25 / 5</button>
-      <button data-focus="20" data-break="5">20 / 5</button>
-      <button data-focus="15" data-break="3">15 / 3</button>
-    </div>
-  </section>
-
-  <!-- Controls -->
-  <section class="card">
-    <p class="section-label">Controls</p>
-    <div class="btn-grid controls">
-      <button class="btn-primary" id="startPauseBtn">Start</button>
-      <button id="resetTimerBtn">Reset Timer</button>
-      <button id="skipBreakBtn">Skip to Break</button>
-      <button id="skipFocusBtn">Skip to Focus</button>
-      <button id="muteBtn">🔊 Sound On</button>
-      <button id="fullscreenBtn">⛶ Full Screen</button>
-      <button id="resetSessionBtn">Reset Full Session</button>
-    </div>
-  </section>
-
-  <!-- Tasks -->
-  <section class="card">
-    <p class="section-label">Tasks</p>
-    <div class="task-list" id="taskList"></div>
-    <button class="add-task-btn" id="addTaskBtn">+ Add task</button>
-  </section>
+    </aside>
+  </div>
 
   <p class="footer-note">Everything saves on this device. Work gently, switch tasks, come back softly.</p>
 </div>
@@ -353,6 +632,44 @@
 <script>
 (function () {
   "use strict";
+
+  // ====================================================================
+  // Editable focus-music list. Add your own local files to a /music
+  // folder in the repo and edit the names/paths here.
+  // ====================================================================
+  var focusTracks = [
+    { name: "Brown Noise", file: "music/brown-noise.mp3" },
+    { name: "Rain Focus", file: "music/rain-focus.mp3" },
+    { name: "Ocean Focus", file: "music/ocean-focus.mp3" },
+    { name: "Cafe Focus", file: "music/cafe-focus.mp3" },
+    { name: "Deep Focus", file: "music/deep-focus.mp3" },
+    { name: "Break Reset", file: "music/break-reset.mp3" }
+  ];
+
+  // Optional break/community image. Add this file later to show it during
+  // break + community blocks; otherwise a soft gradient placeholder shows.
+  var BREAK_IMAGE = "assets/break-image.jpg";
+
+  // ====================================================================
+  // 2-Hour TikTok Live Session structure (total = 120 minutes).
+  // ====================================================================
+  var LIVE_SESSION = [
+    { type: "focus",     min: 25 },
+    { type: "break",     min: 5 },
+    { type: "focus",     min: 25 },
+    { type: "break",     min: 5 },
+    { type: "focus",     min: 20 },
+    { type: "break",     min: 5 },
+    { type: "focus",     min: 20 },
+    { type: "break",     min: 5 },
+    { type: "community", min: 10 }
+  ];
+  function liveTotalSeconds() {
+    var t = 0;
+    for (var i = 0; i < LIVE_SESSION.length; i++) t += LIVE_SESSION[i].min * 60;
+    return t;
+  }
+  function liveBlockAt(i) { return LIVE_SESSION[i] || null; }
 
   // ---------- Constants & storage keys ----------
   var STORE = {
@@ -362,7 +679,24 @@
     activeTask: "bdf_activeTask",
     mode: "bdf_mode",
     completed: "bdf_completed",
-    muted: "bdf_muted"
+    muted: "bdf_muted",
+    // Live Board
+    lbFocus: "bdf_lb_focus",
+    lbCommunity: "bdf_lb_community",
+    lbLink: "bdf_lb_link",
+    lbBreak: "bdf_lb_break",
+    // Music
+    track: "bdf_track",
+    volume: "bdf_volume",
+    musicMuted: "bdf_musicMuted",
+    musicLoop: "bdf_musicLoop"
+  };
+
+  var LB_DEFAULTS = {
+    focus: "Build one useful thing before scrolling.",
+    community: "Comment your task. Work with us for one block.",
+    link: "Free Focus Room link in bio.",
+    brk: "20-20-20 rule: look 6 metres away for 20 seconds."
   };
 
   var MODES = {
@@ -372,16 +706,69 @@
   };
   var LONG_BREAK_AFTER = 4;
 
+  function defaultTasks() { return ["Gift wrapping", "Template work", "Extra task"]; }
+
   // ---------- Helpers ----------
   function $(id) { return document.getElementById(id); }
+
+  // Pure parse used by load() and by the tests (corrupt JSON -> fallback).
+  function parseStored(raw, fallback) {
+    try {
+      return raw === null ? fallback : JSON.parse(raw);
+    } catch (e) { return fallback; }
+  }
   function load(key, fallback) {
     try {
-      var v = localStorage.getItem(key);
-      return v === null ? fallback : JSON.parse(v);
+      return parseStored(localStorage.getItem(key), fallback);
     } catch (e) { return fallback; }
   }
   function save(key, value) {
     try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) {}
+  }
+  function esc(s) {
+    return String(s).replace(/[&<>"]/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
+    });
+  }
+
+  // ---------- Pure timing helpers (wall-clock model, also tested) ----------
+  function remainingFrom(endTime, now) { return Math.max(0, (endTime - now) / 1000); }
+  function endTimeFor(now, remainingSec) { return now + remainingSec * 1000; }
+
+  // ---------- Pure cycle logic (focus<->break), also tested ----------
+  // Given the current {isBreak, completed, round} when a period completes,
+  // return the next values. Matches periodComplete()'s behavior.
+  function computeCycle(s) {
+    if (s.isBreak) {
+      return {
+        isBreak: false,
+        completed: s.completed,
+        round: s.round >= LONG_BREAK_AFTER ? 1 : s.round + 1,
+        showLong: false
+      };
+    }
+    var completed = s.completed + 1;
+    return {
+      isBreak: true,
+      completed: completed,
+      round: s.round,
+      showLong: (completed % LONG_BREAK_AFTER === 0)
+    };
+  }
+
+  // ---------- Pure task helpers (also tested) ----------
+  // Delete task at idx; never leave list empty; keep activeTask in range.
+  function deleteTask(tasks, activeTask, idx) {
+    var t = tasks.slice();
+    t.splice(idx, 1);
+    if (t.length === 0) t.push("New task");
+    var a = activeTask;
+    if (a >= t.length) a = t.length - 1;
+    return { tasks: t, activeTask: a };
+  }
+  // Clamp an active-task index to a valid value (load-time sanitize rule).
+  function clampActive(activeTask, len) {
+    return activeTask >= len ? 0 : activeTask;
   }
 
   // ---------- State ----------
@@ -393,17 +780,34 @@
     remaining: 0,        // seconds left (authoritative when paused)
     round: 1,            // current focus block within a set of 4
     completed: load(STORE.completed, 0),
-    tasks: load(STORE.tasks, ["Gift wrapping", "Template work", "Extra task"]),
+    tasks: load(STORE.tasks, defaultTasks()),
     activeTask: load(STORE.activeTask, 0),
-    muted: load(STORE.muted, false)
+    muted: load(STORE.muted, false),
+    live: null,          // when active: { index: <block index> }
+    // music
+    trackIndex: load(STORE.track, 0),
+    volume: load(STORE.volume, 0.6),
+    musicMuted: load(STORE.musicMuted, false),
+    musicLoop: load(STORE.musicLoop, true)
   };
   if (!Array.isArray(state.tasks) || state.tasks.length === 0) {
-    state.tasks = ["Gift wrapping", "Template work", "Extra task"];
+    state.tasks = defaultTasks();
   }
-  if (state.activeTask >= state.tasks.length) state.activeTask = 0;
+  state.activeTask = clampActive(state.activeTask, state.tasks.length);
+  if (typeof state.trackIndex !== "number" || state.trackIndex < 0 || state.trackIndex >= focusTracks.length) {
+    state.trackIndex = 0;
+  }
+  if (typeof state.volume !== "number" || isNaN(state.volume)) state.volume = 0.6;
 
   function curMode() { return MODES[state.modeKey] || MODES["25"]; }
-  function periodTotal() { return state.isBreak ? curMode().brk : curMode().focus; }
+  function periodTotal() {
+    if (state.live) return LIVE_SESSION[state.live.index].min * 60;
+    return state.isBreak ? curMode().brk : curMode().focus;
+  }
+  function currentBlockType() {
+    if (state.live) return LIVE_SESSION[state.live.index].type;
+    return state.isBreak ? "break" : "focus";
+  }
 
   // ---------- Audio (gentle chime, created lazily on first Start) ----------
   var audioCtx = null;
@@ -436,6 +840,70 @@
     });
   }
 
+  // ---------- Focus music (separate HTMLAudioElement, not the chime) ----------
+  var music = null;
+  function ensureMusic() {
+    if (!music) {
+      music = new Audio();
+      music.preload = "none";
+      music.loop = state.musicLoop;
+      music.volume = state.volume;
+      music.muted = state.musicMuted;
+      music.addEventListener("play", updateMusicBtn);
+      music.addEventListener("pause", updateMusicBtn);
+    }
+  }
+  function currentTrackName() {
+    return focusTracks[state.trackIndex] ? focusTracks[state.trackIndex].name : "—";
+  }
+  function selectTrack(idx) {
+    state.trackIndex = idx;
+    save(STORE.track, idx);
+    $("currentTrackLabel").textContent = currentTrackName();
+    ensureMusic();
+    var wasPlaying = !music.paused;
+    music.src = focusTracks[idx].file;
+    if (wasPlaying) { music.play()["catch"](function () {}); }
+    if (state.isBreak || state.live) renderTimer();
+  }
+  function toggleMusic() {
+    ensureMusic();
+    if (!music.src) music.src = focusTracks[state.trackIndex].file;
+    if (music.paused) { music.play()["catch"](function () {}); }
+    else { music.pause(); }
+    updateMusicBtn();
+  }
+  function testSound() {
+    ensureMusic();
+    if (!music.src) music.src = focusTracks[state.trackIndex].file;
+    try { music.currentTime = 0; } catch (e) {}
+    music.play()["catch"](function () {});
+    updateMusicBtn();
+  }
+  function toggleMusicMute() {
+    ensureMusic();
+    state.musicMuted = !state.musicMuted;
+    music.muted = state.musicMuted;
+    save(STORE.musicMuted, state.musicMuted);
+    updateMusicMuteBtn();
+  }
+  function toggleLoop() {
+    state.musicLoop = !state.musicLoop;
+    if (music) music.loop = state.musicLoop;
+    save(STORE.musicLoop, state.musicLoop);
+    updateLoopBtn();
+  }
+  function updateMusicBtn() {
+    $("musicPlayBtn").textContent = (music && !music.paused) ? "⏸ Pause Music" : "▶ Play Music";
+  }
+  function updateMusicMuteBtn() {
+    $("musicMuteBtn").textContent = state.musicMuted ? "🔇 Music Muted" : "🔊 Music On";
+  }
+  function updateLoopBtn() {
+    $("loopBtn").textContent = state.musicLoop ? "🔁 Loop On" : "➡ Loop Off";
+    $("loopBtn").classList.toggle("active", state.musicLoop);
+  }
+
   // ---------- Rendering ----------
   function fmt(sec) {
     sec = Math.max(0, Math.round(sec));
@@ -452,8 +920,27 @@
     return state.tasks[(state.activeTask + 1) % state.tasks.length] || "—";
   }
 
+  // Display title for a live block (e.g. "Focus 2", "Break", "Community / Reset").
+  function blockTitle(index) {
+    var b = LIVE_SESSION[index];
+    if (!b) return "";
+    if (b.type === "community") return "Community / Reset";
+    if (b.type === "break") return "Break";
+    var n = 0;
+    for (var i = 0; i <= index; i++) { if (LIVE_SESSION[i].type === "focus") n++; }
+    return "Focus " + n;
+  }
+
+  function liveElapsedSeconds() {
+    var elapsed = 0;
+    for (var i = 0; i < state.live.index; i++) elapsed += LIVE_SESSION[i].min * 60;
+    var sec = state.running ? remainingFrom(state.endTime, Date.now()) : state.remaining;
+    elapsed += (LIVE_SESSION[state.live.index].min * 60 - Math.max(0, sec));
+    return elapsed;
+  }
+
   function renderTimer() {
-    var sec = state.running ? (state.endTime - Date.now()) / 1000 : state.remaining;
+    var sec = state.running ? remainingFrom(state.endTime, Date.now()) : state.remaining;
     $("timeDisplay").textContent = fmt(sec);
 
     var total = periodTotal();
@@ -467,7 +954,77 @@
     $("roundNum").textContent = state.round;
     $("completedCount").textContent = state.completed;
 
-    document.title = fmt(sec) + " · " + (state.isBreak ? "Break" : "Focus");
+    renderBlockUI(sec);
+
+    document.title = fmt(sec) + " · " + (state.live ? blockTitle(state.live.index) : (state.isBreak ? "Break" : "Focus"));
+  }
+
+  // Live-session UI: block label, next block, whole-session progress, messages, media.
+  function renderBlockUI(sec) {
+    var label = $("sessionLabel");
+    var nextEl = $("nextBlock");
+    var sp = $("sessionProgress");
+
+    if (state.live) {
+      $("modeBadge").textContent = "Live Session";
+      label.textContent = blockTitle(state.live.index);
+      label.style.display = "block";
+      var nb = state.live.index + 1;
+      nextEl.textContent = LIVE_SESSION[nb] ? ("Next: " + blockTitle(nb)) : "Final block of the session";
+      nextEl.style.display = "block";
+      sp.classList.add("show");
+      var spct = liveTotalSeconds() > 0 ? (liveElapsedSeconds() / liveTotalSeconds()) * 100 : 0;
+      $("sessionFill").style.width = Math.min(100, Math.max(0, spct)) + "%";
+    } else {
+      label.style.display = "none";
+      nextEl.style.display = "none";
+      sp.classList.remove("show");
+    }
+
+    renderBlockMessage();
+    renderMedia();
+  }
+
+  function renderBlockMessage() {
+    var el = $("blockMessage");
+    var type = currentBlockType();
+    if (type === "community") {
+      el.innerHTML = communityHTML();
+      el.classList.add("show");
+    } else if (type === "break") {
+      el.innerHTML = breakHTML();
+      el.classList.add("show");
+    } else {
+      el.classList.remove("show");
+      el.innerHTML = "";
+    }
+  }
+  function breakHTML() {
+    return '<div class="block-msg-title">Break</div>' +
+      '<ul class="block-msg-list">' +
+      '<li>🎵 Music: ' + esc(currentTrackName()) + '</li>' +
+      '<li>👀 ' + esc(lbVal("brk")) + '</li>' +
+      '<li>🧘 Stretch your shoulders, neck, and back</li>' +
+      '<li>💧 Drink some water</li>' +
+      '<li>Next focus starts soon</li>' +
+      '</ul>';
+  }
+  function communityHTML() {
+    return '<div class="block-msg-title">Community / Reset</div>' +
+      '<ul class="block-msg-list">' +
+      '<li>Comment your next task</li>' +
+      '<li>Follow for daily focus sessions</li>' +
+      '<li>Use the free timer in bio</li>' +
+      '</ul>';
+  }
+
+  // Media: show image during break + community blocks (if it loads), else gradient.
+  var mediaImageOk = false;
+  function renderMedia() {
+    var type = currentBlockType();
+    var show = (type === "break" || type === "community") && mediaImageOk;
+    $("mediaImg").style.display = show ? "block" : "none";
+    $("mediaPlaceholder").style.display = show ? "none" : "flex";
   }
 
   // ---------- Timer loop (Date.now based for accuracy through screen sleep) ----------
@@ -481,7 +1038,7 @@
   }
   function tick() {
     if (!state.running) return;
-    var left = (state.endTime - Date.now()) / 1000;
+    var left = remainingFrom(state.endTime, Date.now());
     if (left <= 0) {
       periodComplete();
     } else {
@@ -491,17 +1048,19 @@
 
   function periodComplete() {
     chime();
+    if (state.live) { advanceLive(); return; }
+
+    var next = computeCycle({ isBreak: state.isBreak, completed: state.completed, round: state.round });
     if (state.isBreak) {
       // Break finished -> advance to next focus on next task
       advanceTaskForward();
-      state.round = state.round >= LONG_BREAK_AFTER ? 1 : state.round + 1;
+      state.round = next.round;
       switchTo(false, true);
     } else {
       // Focus finished -> count it, go to break
-      state.completed += 1;
+      state.completed = next.completed;
       save(STORE.completed, state.completed);
-      var showLong = (state.completed % LONG_BREAK_AFTER === 0);
-      $("longBreakNote").classList.toggle("show", showLong);
+      $("longBreakNote").classList.toggle("show", next.showLong);
       switchTo(true, true);
     }
   }
@@ -521,10 +1080,53 @@
     if (!isBreak) $("longBreakNote").classList.remove("show");
     if (autostart) {
       state.running = true;
-      state.endTime = Date.now() + state.remaining * 1000;
+      state.endTime = endTimeFor(Date.now(), state.remaining);
     } else {
       state.running = false;
     }
+    updateStartBtn();
+    renderTimer();
+  }
+
+  // ---------- 2-Hour Live Session ----------
+  function startLiveSession() {
+    ensureAudio();
+    state.live = { index: 0 };
+    applyLiveBlock(true);
+    startTicker();
+  }
+  function applyLiveBlock(autostart) {
+    var b = LIVE_SESSION[state.live.index];
+    state.isBreak = (b.type !== "focus"); // break + community use the calm theme
+    state.remaining = b.min * 60;
+    if (b.type === "focus") $("longBreakNote").classList.remove("show");
+    if (autostart) {
+      state.running = true;
+      state.endTime = endTimeFor(Date.now(), state.remaining);
+    } else {
+      state.running = false;
+    }
+    updateStartBtn();
+    renderTimer();
+  }
+  function advanceLive() {
+    if (!state.live) return;
+    if (state.live.index >= LIVE_SESSION.length - 1) { endLiveSession(); return; }
+    state.live.index += 1;
+    applyLiveBlock(true);
+  }
+  function skipLiveBlock() {
+    if (!state.live) return;
+    ensureAudio();
+    if (state.live.index >= LIVE_SESSION.length - 1) { endLiveSession(); return; }
+    state.live.index += 1;
+    applyLiveBlock(state.running);
+  }
+  function endLiveSession() {
+    state.live = null;
+    state.isBreak = false;
+    state.running = false;
+    state.remaining = periodTotal();
     updateStartBtn();
     renderTimer();
   }
@@ -539,14 +1141,14 @@
     if (state.running) return;
     if (state.remaining <= 0) state.remaining = periodTotal();
     state.running = true;
-    state.endTime = Date.now() + state.remaining * 1000;
+    state.endTime = endTimeFor(Date.now(), state.remaining);
     startTicker();
     updateStartBtn();
     renderTimer();
   }
   function pauseTimer() {
     if (!state.running) return;
-    state.remaining = Math.max(0, (state.endTime - Date.now()) / 1000);
+    state.remaining = remainingFrom(state.endTime, Date.now());
     state.running = false;
     updateStartBtn();
     renderTimer();
@@ -557,11 +1159,12 @@
   function resetTimer() {
     state.remaining = periodTotal();
     if (state.running) {
-      state.endTime = Date.now() + state.remaining * 1000;
+      state.endTime = endTimeFor(Date.now(), state.remaining);
     }
     renderTimer();
   }
   function resetSession() {
+    state.live = null;
     state.isBreak = false;
     state.running = false;
     state.round = 1;
@@ -592,9 +1195,11 @@
     Array.prototype.forEach.call($("modeBtns").children, function (b) {
       b.classList.toggle("active", b.getAttribute("data-focus") === key);
     });
-    // Apply new durations to the current (non-running-from-zero) period
-    state.remaining = periodTotal();
-    if (state.running) state.endTime = Date.now() + state.remaining * 1000;
+    // Apply new durations to the current period (but never disrupt a live session)
+    if (!state.live) {
+      state.remaining = periodTotal();
+      if (state.running) state.endTime = endTimeFor(Date.now(), state.remaining);
+    }
     renderTimer();
   }
 
@@ -632,9 +1237,9 @@
       del.innerHTML = "&times;";
       del.setAttribute("aria-label", "Delete task");
       del.addEventListener("click", function () {
-        state.tasks.splice(idx, 1);
-        if (state.tasks.length === 0) state.tasks.push("New task");
-        if (state.activeTask >= state.tasks.length) state.activeTask = state.tasks.length - 1;
+        var r = deleteTask(state.tasks, state.activeTask, idx);
+        state.tasks = r.tasks;
+        state.activeTask = r.activeTask;
         save(STORE.tasks, state.tasks);
         save(STORE.activeTask, state.activeTask);
         renderTasks();
@@ -662,14 +1267,37 @@
   }
   function initHeader() {
     var t = $("titleField"), m = $("messageField");
-    t.value = load(STORE.title, "Body Double Focus Session");
+    t.value = load(STORE.title, "Life CEO Focus Room");
     m.value = load(STORE.message, "Today we are focusing, switching tasks, and coming back gently.");
     autosize(m);
     t.addEventListener("input", function () { save(STORE.title, t.value); });
     m.addEventListener("input", function () { save(STORE.message, m.value); autosize(m); });
   }
 
-  // ---------- Sound toggle ----------
+  // ---------- Live Board ----------
+  function lbVal(key) {
+    var map = { focus: "lbFocus", community: "lbCommunity", link: "lbLink", brk: "lbBreak" };
+    var el = $(map[key]);
+    return el ? el.value : "";
+  }
+  function initLiveBoard() {
+    var fields = [
+      { id: "lbFocus", store: STORE.lbFocus, def: LB_DEFAULTS.focus },
+      { id: "lbCommunity", store: STORE.lbCommunity, def: LB_DEFAULTS.community },
+      { id: "lbLink", store: STORE.lbLink, def: LB_DEFAULTS.link },
+      { id: "lbBreak", store: STORE.lbBreak, def: LB_DEFAULTS.brk }
+    ];
+    fields.forEach(function (f) {
+      var el = $(f.id);
+      el.value = load(f.store, f.def);
+      el.addEventListener("input", function () {
+        save(f.store, el.value);
+        if (state.isBreak || state.live) renderTimer();
+      });
+    });
+  }
+
+  // ---------- Sound toggle (timer chime) ----------
   function updateMuteBtn() {
     $("muteBtn").textContent = state.muted ? "🔇 Muted" : "🔊 Sound On";
   }
@@ -678,6 +1306,44 @@
     save(STORE.muted, state.muted);
     updateMuteBtn();
     if (!state.muted) { ensureAudio(); chime(); }
+  }
+
+  // ---------- Music panel wiring ----------
+  function initMusic() {
+    var sel = $("trackSelect");
+    sel.innerHTML = "";
+    focusTracks.forEach(function (t, i) {
+      var o = document.createElement("option");
+      o.value = i;
+      o.textContent = t.name;
+      sel.appendChild(o);
+    });
+    sel.value = state.trackIndex;
+    $("currentTrackLabel").textContent = currentTrackName();
+    $("volumeSlider").value = state.volume;
+    updateMusicBtn();
+    updateMusicMuteBtn();
+    updateLoopBtn();
+
+    sel.addEventListener("change", function () { selectTrack(parseInt(sel.value, 10)); });
+    $("musicPlayBtn").addEventListener("click", toggleMusic);
+    $("testSoundBtn").addEventListener("click", testSound);
+    $("musicMuteBtn").addEventListener("click", toggleMusicMute);
+    $("loopBtn").addEventListener("click", toggleLoop);
+    $("volumeSlider").addEventListener("input", function () {
+      var v = parseFloat($("volumeSlider").value);
+      state.volume = isNaN(v) ? 0.6 : v;
+      save(STORE.volume, state.volume);
+      if (music) music.volume = state.volume;
+    });
+  }
+
+  // ---------- Media ----------
+  function initMedia() {
+    var img = $("mediaImg");
+    img.addEventListener("load", function () { mediaImageOk = true; renderMedia(); });
+    img.addEventListener("error", function () { mediaImageOk = false; renderMedia(); });
+    img.src = BREAK_IMAGE;
   }
 
   // ---------- Fullscreen ----------
@@ -695,6 +1361,9 @@
   // ---------- Wire up ----------
   function init() {
     initHeader();
+    initLiveBoard();
+    initMusic();
+    initMedia();
     setMode(state.modeKey);
     state.remaining = periodTotal();
     renderTasks();
@@ -711,6 +1380,8 @@
     $("muteBtn").addEventListener("click", toggleMute);
     $("fullscreenBtn").addEventListener("click", toggleFullscreen);
     $("addTaskBtn").addEventListener("click", addTask);
+    $("liveStartBtn").addEventListener("click", startLiveSession);
+    $("skipBlockBtn").addEventListener("click", skipLiveBlock);
 
     Array.prototype.forEach.call($("modeBtns").children, function (b) {
       b.addEventListener("click", function () { setMode(b.getAttribute("data-focus")); });
@@ -730,6 +1401,30 @@
       }
     });
   }
+
+  // ====================================================================
+  // Test hook — exposes PURE logic only, for tests.html. Production
+  // behavior is unchanged; nothing here mutates internal app state.
+  // ====================================================================
+  window.__lifeCeoTest = {
+    fmt: fmt,
+    MODES: MODES,
+    LONG_BREAK_AFTER: LONG_BREAK_AFTER,
+    LIVE_SESSION: LIVE_SESSION,
+    liveTotalSeconds: liveTotalSeconds,
+    liveBlockAt: liveBlockAt,
+    blockTitle: blockTitle,
+    computeCycle: computeCycle,
+    deleteTask: deleteTask,
+    clampActive: clampActive,
+    parseStored: parseStored,
+    remainingFrom: remainingFrom,
+    endTimeFor: endTimeFor,
+    defaultTasks: defaultTasks,
+    focusTracks: focusTracks
+  };
+  // Back-compat alias requested in the brief.
+  window.__bdf = window.__lifeCeoTest;
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", init);
