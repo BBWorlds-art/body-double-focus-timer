@@ -356,6 +356,23 @@
         </div>
       </div>
 
+      <!-- Daily Sphere Prompt (rotates through the seven Life CEO spheres) -->
+      <div class="section" id="sphere-card" style="border-left:5px solid var(--secondary);">
+        <div class="section-title"><span>🧭 Today's Life CEO Sphere</span><i class="fas fa-circle-nodes"></i></div>
+        <div style="display:flex; flex-wrap:wrap; gap:14px; align-items:flex-start;">
+          <div style="flex:1 1 220px;">
+            <div class="lb-label" style="font-size:.72rem; letter-spacing:1.4px; text-transform:uppercase; color:var(--text-soft); font-weight:700;">Today's Sphere</div>
+            <div id="sphere-name" style="font-size:1.4em; font-weight:800; color:var(--primary); margin:4px 0 10px;">—</div>
+            <div class="lb-label" style="font-size:.72rem; letter-spacing:1.4px; text-transform:uppercase; color:var(--text-soft); font-weight:700;">Deposit Prompt</div>
+            <div id="sphere-prompt" style="font-size:1.05em; margin-top:4px; line-height:1.5;">—</div>
+          </div>
+          <div style="flex:2 1 320px; min-width:0;">
+            <div class="lb-label" style="font-size:.72rem; letter-spacing:1.4px; text-transform:uppercase; color:var(--text-soft); font-weight:700; margin-bottom:6px;">Your deposit today</div>
+            <textarea id="sphere-response" placeholder="One small deposit you can make in this sphere today…" rows="3"></textarea>
+          </div>
+        </div>
+      </div>
+
       <div class="planner-grid">
         <div class="section">
           <div class="section-title"><span>🎯 Today's Goals</span><i class="fas fa-bullseye"></i></div>
@@ -506,6 +523,9 @@
         <button class="reminder-btn" id="export-data" style="background:var(--success);"><i class="fas fa-download"></i> Export</button>
         <button class="reminder-btn" id="import-data" style="background:var(--primary);"><i class="fas fa-upload"></i> Import</button>
       </div>
+      <p style="font-size:.78em; color:#888; line-height:1.5; background:var(--gray); border-radius:12px; padding:10px 12px;">
+        <i class="fas fa-lock"></i> Your data is saved locally on this device. It is not uploaded to GitHub or shared online. Use Export to back up your data.
+      </p>
 
       <div style="margin-top:22px;">
         <div class="section-title"><span>⭐ Sticker Collection</span><i class="fas fa-star"></i></div>
@@ -529,6 +549,7 @@
 
       <button class="reminder-btn" id="open-shop" style="background:var(--secondary);"><i class="fas fa-store"></i> Sticker Shop</button>
       <button class="reminder-btn" id="weekly-review" style="background:var(--sleep);"><i class="fas fa-chart-bar"></i> Weekly Review</button>
+      <button class="reminder-btn" id="daily-review" style="background:var(--primary);"><i class="fas fa-clipboard-check"></i> Daily Review</button>
     </aside>
   </div>
 
@@ -573,7 +594,7 @@
 
   var FIELD_IDS = ['todays-goals', 'gratitude', 'tomorrow-notes', 'exercise-minutes', 'total-steps',
     'exercise-notes', 'money-in', 'money-out', 'money-from', 'money-for',
-    'meal-breakfast', 'meal-lunch', 'meal-dinner', 'meal-snacks'];
+    'meal-breakfast', 'meal-lunch', 'meal-dinner', 'meal-snacks', 'sphere-response'];
   var APPT_COUNT = 4;
 
   function captureState() {
@@ -689,7 +710,7 @@
       coins = data.coins || 0; stickers = data.stickers || []; habits = data.habits || []; reminders = data.reminders || [];
       rearmReminders();
       renderTasks(); renderHabits(); renderReminders(); renderStickerCollection(); updateCoinDisplay(); updateAllStats();
-      renderMediaArea(); renderAudioArea();
+      renderMediaArea(); renderAudioArea(); renderSphere();
       historyStates = []; historyIndex = -1; pushState();
     });
     loadProfile();
@@ -1186,6 +1207,71 @@
     q.addEventListener('blur', function () { localStorage.setItem('customQuote', q.textContent); });
   }
 
+  // ---------- Daily Sphere Prompt (rotates through the seven Life CEO spheres) ----------
+  var SPHERES = [
+    { name: 'Relationships', prompt: 'Who can you connect with or appreciate today?' },
+    { name: 'Resources / Standard of Living', prompt: 'What small step protects or grows your resources today?' },
+    { name: 'Purpose / Achievement', prompt: 'What one meaningful task moves your purpose forward today?' },
+    { name: 'Self-Growth / Meaning', prompt: 'What will you learn or reflect on today?' },
+    { name: 'Health / Lifestyle', prompt: 'What will you do for your body and energy today?' },
+    { name: 'Leisure / Joy', prompt: 'What will you do purely for joy or rest today?' },
+    { name: 'Autonomy / Environment', prompt: 'What will you tidy, simplify, or take ownership of today?' }
+  ];
+  function sphereForDate(dateStr) {
+    var t = new Date(dateStr + 'T00:00:00').getTime();
+    if (isNaN(t)) t = new Date().getTime();
+    var dayNum = Math.floor(t / 86400000);
+    return SPHERES[((dayNum % SPHERES.length) + SPHERES.length) % SPHERES.length];
+  }
+  function renderSphere() {
+    var s = sphereForDate(currentDate);
+    if ($('sphere-name')) $('sphere-name').textContent = s.name;
+    if ($('sphere-prompt')) $('sphere-prompt').textContent = s.prompt;
+  }
+  function setupSphere() {
+    renderSphere();
+    var resp = $('sphere-response');
+    if (resp) resp.addEventListener('input', function () { pushStateDebounced(); });
+  }
+
+  // ---------- Daily Review (local summary of today) ----------
+  function dailyReview() {
+    var water = document.querySelectorAll('.water-check:checked').length;
+    var sleep = parseFloat($('sleep-slider').value) || 0;
+    var done = tasks.filter(function (t) { return t.checked; }).length;
+    var goals = ($('todays-goals').value || '').trim();
+    var moodEl = document.querySelector('.mood-option.active');
+    var mood = moodEl ? moodEl.dataset.mood : '—';
+    var habitsDone = habits.filter(function (h) { return h.checkedToday; }).length;
+    var notes = ($('tomorrow-notes').value || '').trim();
+    var s = sphereForDate(currentDate);
+
+    var rows = [
+      ['🧭 Sphere', s.name],
+      ['🎯 Goals', goals ? goals : 'none written'],
+      ['✅ Tasks completed', done + ' / ' + tasks.length],
+      ['🌊 Hydration', water + ' / 4 glasses'],
+      ['😴 Sleep', sleep + ' hours'],
+      ['😊 Mood', mood],
+      ['🔥 Habits done', habitsDone + ' / ' + habits.length],
+      ['📝 Notes for tomorrow', notes ? notes : 'none']
+    ];
+    var old = $('daily-modal'); if (old) old.remove();
+    var modal = document.createElement('div'); modal.id = 'daily-modal'; modal.className = 'modal show';
+    var html = '<div class="modal-content"><h2 style="margin-bottom:12px;">Daily Review · ' + currentDate + '</h2>';
+    rows.forEach(function (r) {
+      html += '<div style="display:flex; justify-content:space-between; gap:14px; padding:9px 0; border-bottom:1px solid var(--gray);">' +
+        '<strong style="white-space:nowrap;">' + r[0] + '</strong>' +
+        '<span style="text-align:right; color:var(--text);">' + escapeHtml(r[1]) + '</span></div>';
+    });
+    html += '<p style="font-size:.8em; color:#888; margin-top:12px;">Saved locally only. Tap Save (💾) to keep today\'s entries.</p>';
+    html += '<button class="secondary-btn" id="close-daily" style="width:100%; margin-top:14px;">Close</button></div>';
+    modal.innerHTML = html;
+    document.body.appendChild(modal);
+    $('close-daily').addEventListener('click', function () { modal.remove(); });
+    modal.addEventListener('click', function (e) { if (e.target === modal) modal.remove(); });
+  }
+
   // ---------- Wire everything ----------
   function bindToolbar() {
     $('focus-mode-btn').addEventListener('click', openFocus);
@@ -1249,6 +1335,7 @@
     $('close-shop').addEventListener('click', function () { $('shop-modal').classList.remove('show'); });
     $('shop-modal').addEventListener('click', function (e) { if (e.target === $('shop-modal')) $('shop-modal').classList.remove('show'); });
     $('weekly-review').addEventListener('click', weeklyReview);
+    $('daily-review').addEventListener('click', dailyReview);
     $('today-btn').addEventListener('click', function () { currentDate = todayStr(); loadAllData(); renderCalendar(); });
     $('export-data').addEventListener('click', exportData);
     $('import-data').addEventListener('click', importData);
@@ -1299,7 +1386,7 @@
 
   // ---------- Init ----------
   function init() {
-    setupTheme(); setupDate(); setupQuote();
+    setupTheme(); setupDate(); setupQuote(); setupSphere();
     bindToolbar(); bindTimer(); bindAudioControls(); bindMisc(); initDragDrop();
     updateTimerDisplay();
     initDB(function () { loadAllData(); renderCalendar(); });

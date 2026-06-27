@@ -25,7 +25,6 @@
   }
 
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-
   html, body { height: 100%; margin: 0; }
 
   body {
@@ -35,436 +34,212 @@
     background-attachment: fixed;
     min-height: 100%;
     padding: clamp(14px, 3vw, 32px);
-    padding-bottom: max(env(safe-area-inset-bottom), 24px);
+    padding-bottom: 96px;
     display: flex;
     justify-content: center;
     -webkit-font-smoothing: antialiased;
   }
 
-  .app {
-    width: 100%;
-    max-width: 1180px;
-    display: flex;
-    flex-direction: column;
-    gap: clamp(14px, 2.5vw, 22px);
+  /* Customizable background image layer (behind everything) */
+  #bgLayer {
+    position: fixed; inset: 0; z-index: -1; display: none;
+    background-size: cover; background-position: center; background-repeat: no-repeat;
+    opacity: 0.5; pointer-events: none;
   }
 
-  /* ---------- Placeholder navigation (future Life CEO pages) ---------- */
-  .nav-placeholder {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-    justify-content: center;
-  }
+  .app { width: 100%; max-width: 1180px; display: flex; flex-direction: column; gap: clamp(14px, 2.5vw, 22px); }
+
+  /* ---------- Navigation ---------- */
+  .nav-placeholder { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
   .nav-item {
-    font-size: 0.78rem;
-    letter-spacing: 0.6px;
-    font-weight: 600;
-    padding: 7px 15px;
-    border-radius: 999px;
-    color: var(--text-soft);
-    background: rgba(255, 251, 245, 0.5);
-    border: 1px solid var(--card-border);
-    text-decoration: none;
+    font-size: 0.78rem; letter-spacing: 0.6px; font-weight: 600; padding: 7px 15px; border-radius: 999px;
+    color: var(--text-soft); background: rgba(255, 251, 245, 0.5); border: 1px solid var(--card-border); text-decoration: none;
   }
-  .nav-item.active {
-    color: #fff8f2;
-    background: linear-gradient(135deg, var(--accent), var(--accent-deep));
-    border-color: transparent;
-  }
+  .nav-item.active { color: #fff8f2; background: linear-gradient(135deg, var(--accent), var(--accent-deep)); border-color: transparent; }
   .nav-item.soon { opacity: 0.6; cursor: default; }
 
   /* ---------- Header ---------- */
   header { text-align: center; padding: 4px 0; }
-
   .title-field {
-    font-size: clamp(1.5rem, 4.5vw, 2.3rem);
-    font-weight: 700;
-    letter-spacing: 0.2px;
-    color: var(--text);
-    text-align: center;
-    width: 100%;
-    border: none;
-    background: transparent;
-    outline: none;
-    padding: 6px 10px;
-    border-radius: var(--radius-sm);
-    transition: background 0.2s;
+    font-size: clamp(1.5rem, 4.5vw, 2.3rem); font-weight: 700; letter-spacing: 0.2px; color: var(--text);
+    text-align: center; width: 100%; border: none; background: transparent; outline: none; padding: 6px 10px;
+    border-radius: var(--radius-sm); transition: background 0.2s;
   }
   .message-field {
-    font-size: clamp(0.95rem, 2.6vw, 1.1rem);
-    color: var(--text-soft);
-    text-align: center;
-    width: 100%;
-    border: none;
-    background: transparent;
-    outline: none;
-    padding: 6px 10px;
-    margin-top: 4px;
-    border-radius: var(--radius-sm);
-    resize: none;
-    overflow: hidden;
-    line-height: 1.5;
-    font-family: inherit;
-    transition: background 0.2s;
+    font-size: clamp(0.95rem, 2.6vw, 1.1rem); color: var(--text-soft); text-align: center; width: 100%;
+    border: none; background: transparent; outline: none; padding: 6px 10px; margin-top: 4px; border-radius: var(--radius-sm);
+    resize: none; overflow: hidden; line-height: 1.5; font-family: inherit; transition: background 0.2s;
   }
   .title-field:focus, .message-field:focus { background: rgba(255, 251, 245, 0.6); }
   .title-field:hover, .message-field:hover { background: rgba(255, 251, 245, 0.35); }
 
-  /* ---------- Layout: main column + Live Board sidebar ---------- */
-  .layout {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: clamp(14px, 2.5vw, 22px);
-  }
-  @media (min-width: 920px) {
-    .layout { grid-template-columns: minmax(0, 1.7fr) minmax(300px, 1fr); align-items: start; }
-  }
-  .main-col, .side-col {
-    display: flex;
-    flex-direction: column;
-    gap: clamp(14px, 2.5vw, 22px);
-    min-width: 0;
-  }
-
   /* ---------- Cards ---------- */
   .card {
-    background: var(--card);
-    border: 1px solid var(--card-border);
-    border-radius: var(--radius);
-    box-shadow: var(--shadow);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    background: var(--card); border: 1px solid var(--card-border); border-radius: var(--radius);
+    box-shadow: var(--shadow); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
     padding: clamp(20px, 4vw, 36px);
   }
+  .studio-grid { display: grid; grid-template-columns: 1fr; gap: clamp(14px, 2.5vw, 22px); }
+  @media (min-width: 900px) { .studio-grid { grid-template-columns: 1fr 1fr; align-items: start; } }
+  .studio-divider { text-align: center; color: var(--text-soft); font-size: 0.72rem; letter-spacing: 2px; text-transform: uppercase; font-weight: 700; margin: 6px 0 -4px; opacity: 0.8; }
 
-  /* ---------- Timer card ---------- */
-  .timer-card { text-align: center; }
-
+  /* ---------- Timer card (camera hero) ---------- */
+  .timer-card { text-align: center; position: relative; }
   .mode-badge {
-    display: inline-block;
-    font-size: 0.85rem;
-    font-weight: 700;
-    letter-spacing: 2.5px;
-    text-transform: uppercase;
-    color: var(--accent-deep);
-    background: rgba(176, 133, 115, 0.14);
-    padding: 7px 18px;
-    border-radius: 999px;
+    display: inline-block; font-size: 0.85rem; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase;
+    color: var(--accent-deep); background: rgba(176, 133, 115, 0.14); padding: 7px 18px; border-radius: 999px;
   }
   .timer-card.is-break .mode-badge { color: var(--break-deep); background: rgba(143, 163, 148, 0.18); }
-
-  .session-label {
-    font-size: clamp(1.05rem, 3.4vw, 1.5rem);
-    font-weight: 700;
-    color: var(--accent-deep);
-    margin-top: 12px;
-    display: none;
-  }
+  .session-label { font-size: clamp(1.05rem, 3.4vw, 1.5rem); font-weight: 700; color: var(--accent-deep); margin-top: 12px; display: none; }
   .timer-card.is-break .session-label { color: var(--break-deep); }
-
   .time {
-    font-size: clamp(4.6rem, 21vw, 9.5rem);
-    font-weight: 700;
-    line-height: 1;
-    margin: clamp(12px, 3vw, 22px) 0;
-    font-variant-numeric: tabular-nums;
-    letter-spacing: 1px;
-    color: var(--text);
+    font-size: clamp(4.6rem, 21vw, 9.5rem); font-weight: 700; line-height: 1; margin: clamp(12px, 3vw, 22px) 0;
+    font-variant-numeric: tabular-nums; letter-spacing: 1px; color: var(--text);
   }
-
-  .next-block {
-    color: var(--text-soft);
-    font-weight: 600;
-    font-size: clamp(0.95rem, 2.6vw, 1.15rem);
-    margin: -6px 0 4px;
-    display: none;
-  }
-
-  .task-row {
-    display: flex;
-    justify-content: center;
-    gap: clamp(18px, 6vw, 60px);
-    flex-wrap: wrap;
-    color: var(--text-soft);
-  }
+  .next-block { color: var(--text-soft); font-weight: 600; font-size: clamp(0.95rem, 2.6vw, 1.15rem); margin: -6px 0 4px; display: none; }
+  .task-row { display: flex; justify-content: center; gap: clamp(18px, 6vw, 60px); flex-wrap: wrap; color: var(--text-soft); }
   .task-label { font-size: 0.74rem; letter-spacing: 1.5px; text-transform: uppercase; opacity: 0.8; }
-  .task-value { font-size: clamp(1rem, 3vw, 1.25rem); font-weight: 600; color: var(--text); margin-top: 3px; }
-
-  .progress-track {
-    height: 8px;
-    background: rgba(176, 133, 115, 0.16);
-    border-radius: 999px;
-    overflow: hidden;
-    margin: clamp(18px, 4vw, 26px) 0 14px;
-  }
-  .progress-fill {
-    height: 100%;
-    width: 0%;
-    background: linear-gradient(90deg, var(--accent-soft), var(--accent));
-    border-radius: 999px;
-    transition: width 0.3s linear;
-  }
+  .task-value { font-size: clamp(1.1rem, 3vw, 1.45rem); font-weight: 700; color: var(--text); margin-top: 3px; }
+  .progress-track { height: 8px; background: rgba(176, 133, 115, 0.16); border-radius: 999px; overflow: hidden; margin: clamp(18px, 4vw, 26px) 0 14px; }
+  .progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--accent-soft), var(--accent)); border-radius: 999px; transition: width 0.3s linear; }
   .timer-card.is-break .progress-fill { background: linear-gradient(90deg, #a9bdac, var(--break)); }
-
-  /* Whole 2-hour session progress (live mode only) */
   .session-progress { display: none; }
   .session-progress.show { display: block; }
-  .session-progress .session-cap {
-    font-size: 0.72rem;
-    letter-spacing: 1.4px;
-    text-transform: uppercase;
-    color: var(--text-soft);
-    font-weight: 700;
-    margin-bottom: 6px;
-  }
-  .session-track {
-    height: 10px;
-    background: rgba(176, 133, 115, 0.16);
-    border-radius: 999px;
-    overflow: hidden;
-    margin-bottom: 14px;
-  }
-  .session-fill {
-    height: 100%;
-    width: 0%;
-    background: linear-gradient(90deg, var(--accent-soft), var(--accent-deep));
-    border-radius: 999px;
-    transition: width 0.3s linear;
-  }
-
-  .stats {
-    display: flex;
-    justify-content: center;
-    gap: clamp(16px, 5vw, 48px);
-    flex-wrap: wrap;
-    color: var(--text-soft);
-    font-size: 0.95rem;
-    margin-top: 4px;
-  }
+  .session-progress .session-cap { font-size: 0.72rem; letter-spacing: 1.4px; text-transform: uppercase; color: var(--text-soft); font-weight: 700; margin-bottom: 6px; }
+  .session-track { height: 10px; background: rgba(176, 133, 115, 0.16); border-radius: 999px; overflow: hidden; margin-bottom: 14px; }
+  .session-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--accent-soft), var(--accent-deep)); border-radius: 999px; transition: width 0.3s linear; }
+  .stats { display: flex; justify-content: center; gap: clamp(16px, 5vw, 48px); flex-wrap: wrap; color: var(--text-soft); font-size: 0.95rem; margin-top: 4px; }
   .stats strong { color: var(--text); font-weight: 700; }
-
-  .long-break-note {
-    margin-top: 16px;
-    color: var(--accent-deep);
-    background: rgba(176, 133, 115, 0.12);
-    border-radius: var(--radius-sm);
-    padding: 12px 16px;
-    font-weight: 600;
-    font-size: 0.98rem;
-    display: none;
-  }
+  .long-break-note { margin-top: 16px; color: var(--accent-deep); background: rgba(176, 133, 115, 0.12); border-radius: var(--radius-sm); padding: 12px 16px; font-weight: 600; font-size: 0.98rem; display: none; }
   .long-break-note.show { display: block; }
-
-  /* Break / community block message */
-  .block-msg {
-    margin-top: 18px;
-    text-align: left;
-    background: rgba(255, 251, 245, 0.55);
-    border: 1px solid var(--card-border);
-    border-radius: var(--radius-sm);
-    padding: 16px 18px;
-    display: none;
-  }
+  .block-msg { margin-top: 18px; text-align: left; background: rgba(255, 251, 245, 0.55); border: 1px solid var(--card-border); border-radius: var(--radius-sm); padding: 16px 18px; display: none; }
   .block-msg.show { display: block; }
   .block-msg-title { font-weight: 700; font-size: 1.05rem; margin-bottom: 10px; color: var(--accent-deep); }
   .timer-card.is-break .block-msg-title { color: var(--break-deep); }
   .block-msg-list { margin: 0; padding-left: 20px; line-height: 1.8; color: var(--text); }
 
-  /* ---------- Buttons ---------- */
-  .btn-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    justify-content: center;
+  /* Session-start countdown overlay (over the timer area only) */
+  .cd-overlay {
+    position: absolute; inset: 0; display: none; align-items: center; justify-content: center; flex-direction: column;
+    border-radius: var(--radius); z-index: 5; background: rgba(255, 251, 245, 0.86); backdrop-filter: blur(4px);
   }
+  .cd-overlay.show { display: flex; }
+  .cd-overlay.cd-break { background: rgba(237, 244, 239, 0.86); }
+  .cd-eyebrow { font-size: 0.8rem; letter-spacing: 2.5px; text-transform: uppercase; font-weight: 700; color: var(--accent-deep); }
+  .cd-overlay.cd-break .cd-eyebrow { color: var(--break-deep); }
+  .cd-number { font-size: clamp(5rem, 22vw, 11rem); font-weight: 800; line-height: 1; color: var(--accent-deep); font-variant-numeric: tabular-nums; animation: cdPop 1s ease; }
+  .cd-overlay.cd-break .cd-number { color: var(--break-deep); }
+  @keyframes cdPop { 0% { transform: scale(0.7); opacity: 0.2; } 40% { transform: scale(1.05); opacity: 1; } 100% { transform: scale(1); } }
 
+  /* ---------- Buttons ---------- */
+  .btn-grid { display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; }
   button {
-    font-family: inherit;
-    cursor: pointer;
-    border: 1px solid var(--card-border);
-    background: rgba(255, 251, 245, 0.85);
-    color: var(--text);
-    font-size: 1rem;
-    font-weight: 600;
-    padding: 14px 20px;
-    border-radius: var(--radius-sm);
-    min-height: 52px;
-    transition: transform 0.08s ease, background 0.2s, box-shadow 0.2s, color 0.2s;
-    flex: 1 1 auto;
+    font-family: inherit; cursor: pointer; border: 1px solid var(--card-border); background: rgba(255, 251, 245, 0.85);
+    color: var(--text); font-size: 1rem; font-weight: 600; padding: 14px 20px; border-radius: var(--radius-sm); min-height: 52px;
+    transition: transform 0.08s ease, background 0.2s, box-shadow 0.2s, color 0.2s; flex: 1 1 auto;
   }
   button:hover { background: rgba(255, 251, 245, 1); }
   button:active { transform: scale(0.97); }
   button:focus-visible { outline: 3px solid var(--accent-soft); outline-offset: 2px; }
-
-  .btn-primary {
-    background: linear-gradient(135deg, var(--accent), var(--accent-deep));
-    color: #fff8f2;
-    border-color: transparent;
-    box-shadow: 0 8px 20px rgba(154, 109, 91, 0.28);
-  }
+  .btn-primary { background: linear-gradient(135deg, var(--accent), var(--accent-deep)); color: #fff8f2; border-color: transparent; box-shadow: 0 8px 20px rgba(154, 109, 91, 0.28); }
   .btn-primary:hover { background: linear-gradient(135deg, var(--accent-deep), var(--accent-deep)); }
+  .btn-live { font-size: 1.12rem; padding: 18px 22px; min-height: 62px; letter-spacing: 0.4px; }
+  .mode-btns button.active, .seg.active, .loop-btn.active, .toggle-on { background: linear-gradient(135deg, var(--accent), var(--accent-deep)); color: #fff8f2; border-color: transparent; box-shadow: 0 8px 20px rgba(154, 109, 91, 0.26); }
+  .btn-small { min-height: 44px; padding: 9px 14px; font-size: 0.92rem; flex: 0 1 auto; }
+  .btn-danger { color: #a23b2c; }
 
-  .btn-live {
-    font-size: 1.12rem;
-    padding: 18px 22px;
-    min-height: 62px;
-    letter-spacing: 0.4px;
-  }
-
-  .mode-btns button.active {
-    background: linear-gradient(135deg, var(--accent), var(--accent-deep));
-    color: #fff8f2;
-    border-color: transparent;
-    box-shadow: 0 8px 20px rgba(154, 109, 91, 0.26);
-  }
-  .loop-btn.active {
-    background: linear-gradient(135deg, var(--accent), var(--accent-deep));
-    color: #fff8f2;
-    border-color: transparent;
-  }
-
-  .section-label {
-    font-size: 0.78rem;
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    color: var(--text-soft);
-    margin: 0 0 14px;
-    font-weight: 700;
-  }
+  .section-label { font-size: 0.78rem; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-soft); margin: 0 0 14px; font-weight: 700; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
   .section-hint { font-size: 0.82rem; color: var(--text-soft); margin: 10px 0 0; line-height: 1.5; }
 
   /* ---------- Tasks ---------- */
   .task-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
-  .task-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    background: rgba(255, 251, 245, 0.6);
-    border: 1px solid var(--card-border);
-    border-radius: var(--radius-sm);
-    padding: 8px 10px 8px 14px;
-    transition: background 0.2s, border-color 0.2s;
-  }
-  .task-item.active {
-    border-color: var(--accent-soft);
-    background: rgba(176, 133, 115, 0.12);
-  }
-  .task-dot {
-    width: 14px; height: 14px; border-radius: 50%;
-    border: 2px solid var(--accent-soft);
-    flex: 0 0 auto;
-    cursor: pointer;
-    background: transparent;
-    padding: 0;
-    min-height: 0;
-  }
+  .task-item { display: flex; align-items: center; gap: 10px; background: rgba(255, 251, 245, 0.6); border: 1px solid var(--card-border); border-radius: var(--radius-sm); padding: 8px 10px 8px 14px; transition: background 0.2s, border-color 0.2s; }
+  .task-item.active { border-color: var(--accent-soft); background: rgba(176, 133, 115, 0.12); }
+  .task-dot { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--accent-soft); flex: 0 0 auto; cursor: pointer; background: transparent; padding: 0; min-height: 0; }
   .task-item.active .task-dot { background: var(--accent); border-color: var(--accent); }
-  .task-name {
-    flex: 1 1 auto;
-    border: none;
-    background: transparent;
-    outline: none;
-    font-size: 1.02rem;
-    color: var(--text);
-    font-weight: 600;
-    font-family: inherit;
-    padding: 6px 4px;
-    min-width: 0;
-  }
-  .task-del {
-    flex: 0 0 auto;
-    background: transparent;
-    border: none;
-    color: var(--text-soft);
-    font-size: 1.3rem;
-    line-height: 1;
-    padding: 6px 12px;
-    min-height: 0;
-    border-radius: 10px;
-  }
+  .task-name { flex: 1 1 auto; border: none; background: transparent; outline: none; font-size: 1.02rem; color: var(--text); font-weight: 600; font-family: inherit; padding: 6px 4px; min-width: 0; }
+  .task-del { flex: 0 0 auto; background: transparent; border: none; color: var(--text-soft); font-size: 1.3rem; line-height: 1; padding: 6px 12px; min-height: 0; border-radius: 10px; }
   .task-del:hover { color: var(--accent-deep); background: rgba(176, 133, 115, 0.12); }
   .add-task-btn { background: rgba(176, 133, 115, 0.12); border-style: dashed; }
 
-  /* ---------- Live Board ---------- */
-  .lb-field { margin-bottom: 14px; }
-  .lb-field:last-child { margin-bottom: 0; }
-  .lb-label {
-    font-size: 0.72rem;
-    letter-spacing: 1.4px;
-    text-transform: uppercase;
-    color: var(--text-soft);
-    font-weight: 700;
-    margin-bottom: 5px;
-  }
+  /* ---------- Live Board (wide, camera-readable) ---------- */
+  .lb-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+  @media (min-width: 760px) { .lb-grid { grid-template-columns: 1fr 1fr; } }
+  .lb-field { margin: 0; }
+  .lb-label { font-size: 0.74rem; letter-spacing: 1.4px; text-transform: uppercase; color: var(--text-soft); font-weight: 700; margin-bottom: 6px; }
   .lb-input {
-    width: 100%;
-    border: 1px solid var(--card-border);
-    background: rgba(255, 251, 245, 0.6);
-    border-radius: var(--radius-sm);
-    padding: 11px 13px;
-    font-family: inherit;
-    font-size: 1.02rem;
-    line-height: 1.45;
-    color: var(--text);
-    outline: none;
-    resize: vertical;
-    transition: background 0.2s, border-color 0.2s;
+    width: 100%; min-height: 58px; border: 1px solid var(--card-border); background: rgba(255, 251, 245, 0.7);
+    border-radius: var(--radius-sm); padding: 13px 15px; font-family: inherit; font-size: clamp(1.05rem, 2.2vw, 1.3rem);
+    line-height: 1.4; color: var(--text); outline: none; transition: background 0.2s, border-color 0.2s;
   }
-  .lb-input:focus { background: rgba(255, 251, 245, 0.95); border-color: var(--accent-soft); }
+  .lb-input:focus { background: rgba(255, 251, 245, 0.97); border-color: var(--accent-soft); }
+  .lb-input:empty:before { content: attr(data-placeholder); color: var(--text-soft); opacity: 0.7; }
 
-  /* ---------- Media placeholder ---------- */
-  .media-area {
-    position: relative;
-    border-radius: var(--radius);
-    overflow: hidden;
-    border: 1px solid var(--card-border);
-    box-shadow: var(--shadow);
-    min-height: 180px;
-  }
-  .media-placeholder {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(155deg, #f1e5d6 0%, #e6d3bd 50%, #d9c2a6 100%);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    color: var(--text-soft);
-    font-size: 0.85rem;
-    padding: 16px;
-  }
-  .media-img {
-    position: relative;
-    width: 100%;
-    display: none;
-    border-radius: var(--radius);
-  }
+  /* Rich-text formatting toolbar */
+  .rt-toolbar { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin-bottom: 14px; }
+  .rt-btn { min-height: 40px; padding: 6px 12px; font-size: 0.95rem; flex: 0 0 auto; }
+  .rt-btn b, .rt-btn i, .rt-btn u { pointer-events: none; }
+  .rt-color { width: 40px; height: 40px; padding: 2px; border-radius: 10px; border: 1px solid var(--card-border); background: rgba(255,251,245,0.85); cursor: pointer; }
+  .rt-color-label { font-size: 0.74rem; color: var(--text-soft); font-weight: 700; }
 
-  /* ---------- Music panel ---------- */
-  .music-current {
-    font-size: 1.05rem;
-    font-weight: 700;
-    color: var(--text);
-    margin: 2px 0 12px;
-  }
+  /* ---------- Advertisement panel ---------- */
+  .ad-stage { position: relative; border-radius: var(--radius-sm); overflow: hidden; border: 1px solid var(--card-border); background: linear-gradient(155deg, #f1e5d6, #e6d3bd 55%, #d9c2a6); min-height: 200px; display: flex; align-items: center; justify-content: center; }
+  .ad-stage img, .ad-stage video { width: 100%; max-height: 60vh; display: block; object-fit: contain; background: #000; }
+  .ad-empty { color: var(--text-soft); text-align: center; padding: 24px; font-size: 0.9rem; }
+  .ad-caption { margin-top: 14px; text-align: center; font-size: clamp(1.05rem, 2.4vw, 1.4rem); font-weight: 600; color: var(--accent-deep); border: 1px dashed var(--card-border); border-radius: var(--radius-sm); padding: 12px 16px; outline: none; }
+  .ad-caption:focus { background: rgba(255, 251, 245, 0.95); }
+  .ad-status { font-size: 0.8rem; color: var(--text-soft); margin-top: 8px; }
+
+  /* ---------- Music / sound ---------- */
+  .music-current { font-size: 1.02rem; font-weight: 700; color: var(--text); margin: 2px 0 12px; }
   .music-current span { color: var(--accent-deep); }
-  .music-select {
-    width: 100%;
-    font-family: inherit;
-    font-size: 1rem;
-    color: var(--text);
-    background: rgba(255, 251, 245, 0.85);
-    border: 1px solid var(--card-border);
-    border-radius: var(--radius-sm);
-    padding: 12px 13px;
-    min-height: 50px;
-    margin-bottom: 12px;
-  }
+  .music-select { width: 100%; font-family: inherit; font-size: 1rem; color: var(--text); background: rgba(255, 251, 245, 0.85); border: 1px solid var(--card-border); border-radius: var(--radius-sm); padding: 12px 13px; min-height: 50px; margin-bottom: 12px; }
   .music-row { display: flex; gap: 10px; flex-wrap: wrap; }
   .vol-row { display: flex; align-items: center; gap: 12px; margin-top: 14px; }
   .vol-row label { font-size: 0.82rem; color: var(--text-soft); font-weight: 700; letter-spacing: 0.5px; }
   input[type="range"] { flex: 1 1 auto; accent-color: var(--accent); height: 28px; }
+  .music-status { font-size: 0.85rem; margin-top: 10px; font-weight: 600; }
+  .music-status.warn { color: #a23b2c; }
+  .music-status.ok { color: var(--break-deep); }
+
+  /* ---------- Live Room Timer ---------- */
+  .lr-display { font-size: clamp(3rem, 12vw, 5rem); font-weight: 800; text-align: center; font-variant-numeric: tabular-nums; color: var(--accent-deep); margin: 6px 0 12px; }
+  .lr-display.warn { color: #b8412f; animation: lrPulse 1s infinite; }
+  @keyframes lrPulse { 0%,100% { opacity: 1; } 50% { opacity: 0.45; } }
+  .seg-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .seg { min-height: 44px; padding: 9px 13px; font-size: 0.9rem; flex: 1 1 auto; }
+  .lr-custom { display: flex; gap: 8px; align-items: center; margin-top: 10px; }
+  .lr-custom input { flex: 1 1 auto; min-height: 46px; border: 1px solid var(--card-border); border-radius: var(--radius-sm); padding: 10px 12px; font-family: inherit; font-size: 1rem; background: rgba(255,251,245,0.85); color: var(--text); }
+
+  /* ---------- Background customization ---------- */
+  .bg-row { display: flex; align-items: center; gap: 12px; margin-top: 12px; flex-wrap: wrap; }
+  .bg-row label { font-size: 0.82rem; color: var(--text-soft); font-weight: 700; min-width: 92px; }
+  .color-input { width: 52px; height: 40px; padding: 2px; border-radius: 10px; border: 1px solid var(--card-border); background: rgba(255,251,245,0.85); cursor: pointer; }
+
+  /* ---------- Emoji communication bar ---------- */
+  .emoji-bar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; background: rgba(255, 251, 245, 0.95); border-top: 1px solid var(--card-border); box-shadow: 0 -6px 24px rgba(120,90,65,0.14); padding: 8px 10px; backdrop-filter: blur(8px); }
+  .emoji-bar.collapsed .emoji-bar-body { display: none; }
+  .emoji-bar-head { display: flex; align-items: center; gap: 8px; justify-content: space-between; }
+  .emoji-cats { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; }
+  .emoji-cat { flex: 0 0 auto; min-height: 36px; padding: 6px 12px; font-size: 0.82rem; border-radius: 999px; }
+  .emoji-cat.active { background: linear-gradient(135deg, var(--accent), var(--accent-deep)); color: #fff8f2; border-color: transparent; }
+  .emoji-items { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; max-height: 120px; overflow-y: auto; }
+  .emoji-key { min-height: 48px; min-width: 48px; font-size: 1.5rem; padding: 6px 10px; flex: 0 0 auto; border-radius: 12px; position: relative; }
+  .emoji-key.text-key { font-size: 1rem; font-weight: 700; }
+  .emoji-edit { display: flex; gap: 8px; align-items: center; margin-top: 8px; flex-wrap: wrap; }
+  .emoji-small { min-height: 40px; padding: 7px 11px; font-size: 0.9rem; flex: 0 0 auto; }
+
+  /* Big emoji/message stage (shown on screen) */
+  .emoji-stage { position: fixed; inset: 0; z-index: 60; display: none; align-items: center; justify-content: center; background: rgba(247, 239, 228, 0.92); backdrop-filter: blur(6px); padding: 20px; text-align: center; }
+  .emoji-stage.show { display: flex; }
+  #emojiStageText { font-size: 22vmin; font-weight: 800; line-height: 1.1; max-width: 95%; word-break: break-word; }
+  .emoji-stage-close { position: fixed; top: 18px; right: 18px; }
+
+  /* Large speaker-timer overlay */
+  .speaker-stage { position: fixed; inset: 0; z-index: 55; display: none; align-items: center; justify-content: center; flex-direction: column; gap: 20px; background: rgba(247, 239, 228, 0.95); padding: 20px; text-align: center; }
+  .speaker-stage.show { display: flex; }
+  #speakerTime { font-size: 30vmin; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; color: var(--accent-deep); }
+  #speakerTime.warn { color: #b8412f; animation: lrPulse 1s infinite; }
 
   .footer-note { text-align: center; color: var(--text-soft); font-size: 0.82rem; opacity: 0.75; }
 
@@ -476,9 +251,11 @@
 </style>
 </head>
 <body>
+<div id="bgLayer"></div>
+
 <div class="app">
 
-  <!-- Placeholder navigation for future Life CEO pages (timer is the only built page) -->
+  <!-- Life CEO system navigation -->
   <nav class="nav-placeholder" aria-label="Life CEO sections">
     <a class="nav-item active" href="index.html">Focus Room</a>
     <span class="nav-item soon" aria-disabled="true" title="Coming later">Home Hub</span>
@@ -492,141 +269,257 @@
     <textarea id="messageField" class="message-field" rows="1" aria-label="Session message or goal" maxlength="240"></textarea>
   </header>
 
-  <div class="layout">
-    <!-- ===================== MAIN COLUMN ===================== -->
-    <main class="main-col">
+  <!-- ============ CAMERA HERO: timer ============ -->
+  <section class="card timer-card" id="timerCard" aria-live="polite">
+    <span class="mode-badge" id="modeBadge">Focus</span>
+    <div class="session-label" id="sessionLabel"></div>
+    <div class="time" id="timeDisplay">25:00</div>
+    <div class="next-block" id="nextBlock"></div>
 
-      <!-- Timer -->
-      <section class="card timer-card" id="timerCard" aria-live="polite">
-        <span class="mode-badge" id="modeBadge">Focus</span>
-        <div class="session-label" id="sessionLabel"></div>
-        <div class="time" id="timeDisplay">25:00</div>
-        <div class="next-block" id="nextBlock"></div>
-
-        <div class="task-row">
-          <div>
-            <div class="task-label">Current task</div>
-            <div class="task-value" id="currentTask">—</div>
-          </div>
-          <div>
-            <div class="task-label">Next task</div>
-            <div class="task-value" id="nextTask">—</div>
-          </div>
-        </div>
-
-        <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
-
-        <div class="session-progress" id="sessionProgress">
-          <div class="session-cap">2-Hour live session progress</div>
-          <div class="session-track"><div class="session-fill" id="sessionFill"></div></div>
-        </div>
-
-        <div class="stats">
-          <span>Round <strong id="roundNum">1</strong> of 4</span>
-          <span>Focus blocks today: <strong id="completedCount">0</strong></span>
-        </div>
-
-        <div class="long-break-note" id="longBreakNote">🌿 Long break suggested: 15 minutes</div>
-        <div class="block-msg" id="blockMessage"></div>
-      </section>
-
-      <!-- 2-Hour Live Session -->
-      <section class="card">
-        <p class="section-label">TikTok Live Session</p>
-        <div class="btn-grid">
-          <button class="btn-primary btn-live" id="liveStartBtn">▶ Start 2-Hour Live Session</button>
-          <button id="skipBlockBtn">Skip Block</button>
-        </div>
-        <p class="section-hint">2 hours total: 25 · 5 · 25 · 5 · 20 · 5 · 20 · 5 · 10 (Community / Reset). Runs block to block automatically. Pause, Reset Timer, and Skip Block all work below.</p>
-      </section>
-
-      <!-- Modes -->
-      <section class="card">
-        <p class="section-label">Timer mode</p>
-        <div class="btn-grid mode-btns" id="modeBtns" role="group" aria-label="Timer mode">
-          <button data-focus="25" data-break="5">25 / 5</button>
-          <button data-focus="20" data-break="5">20 / 5</button>
-          <button data-focus="15" data-break="3">15 / 3</button>
-        </div>
-      </section>
-
-      <!-- Controls -->
-      <section class="card">
-        <p class="section-label">Controls</p>
-        <div class="btn-grid controls">
-          <button class="btn-primary" id="startPauseBtn">Start</button>
-          <button id="resetTimerBtn">Reset Timer</button>
-          <button id="skipBreakBtn">Skip to Break</button>
-          <button id="skipFocusBtn">Skip to Focus</button>
-          <button id="muteBtn">🔊 Sound On</button>
-          <button id="fullscreenBtn">⛶ Full Screen</button>
-          <button id="resetSessionBtn">Reset Full Session</button>
-        </div>
-      </section>
-
-      <!-- Tasks -->
-      <section class="card">
-        <p class="section-label">Tasks</p>
-        <div class="task-list" id="taskList"></div>
-        <button class="add-task-btn" id="addTaskBtn">+ Add task</button>
-      </section>
-
-    </main>
-
-    <!-- ===================== SIDE COLUMN ===================== -->
-    <aside class="side-col">
-
-      <!-- Live Board -->
-      <section class="card live-board">
-        <p class="section-label">Live Board</p>
-        <div class="lb-field">
-          <div class="lb-label">Today's Focus</div>
-          <textarea id="lbFocus" class="lb-input" rows="2" aria-label="Today's Focus"></textarea>
-        </div>
-        <div class="lb-field">
-          <div class="lb-label">Community Message</div>
-          <textarea id="lbCommunity" class="lb-input" rows="2" aria-label="Community Message"></textarea>
-        </div>
-        <div class="lb-field">
-          <div class="lb-label">Link Reminder</div>
-          <textarea id="lbLink" class="lb-input" rows="2" aria-label="Link Reminder"></textarea>
-        </div>
-        <div class="lb-field">
-          <div class="lb-label">Break Reminder</div>
-          <textarea id="lbBreak" class="lb-input" rows="2" aria-label="Break Reminder"></textarea>
-        </div>
-      </section>
-
-      <!-- Media placeholder (shown during break + community blocks) -->
-      <div class="media-area" id="mediaArea" aria-label="Calm media area">
-        <div class="media-placeholder" id="mediaPlaceholder">Calm media area · add assets/break-image.jpg to show an image during breaks</div>
-        <img class="media-img" id="mediaImg" alt="Break visual" />
+    <div class="task-row">
+      <div>
+        <div class="task-label">Current task</div>
+        <div class="task-value" id="currentTask">—</div>
       </div>
+      <div>
+        <div class="task-label">Next task</div>
+        <div class="task-value" id="nextTask">—</div>
+      </div>
+    </div>
 
-      <!-- Focus Music -->
-      <section class="card">
-        <p class="section-label">Focus Music</p>
-        <div class="music-current">Track: <span id="currentTrackLabel">—</span></div>
-        <select class="music-select" id="trackSelect" aria-label="Select focus track"></select>
-        <div class="music-row">
-          <button id="musicPlayBtn">▶ Play Music</button>
-          <button id="testSoundBtn">🎧 Test Sound</button>
-        </div>
-        <div class="music-row" style="margin-top:10px;">
-          <button id="musicMuteBtn">🔊 Music On</button>
-          <button class="loop-btn" id="loopBtn">🔁 Loop On</button>
-        </div>
-        <div class="vol-row">
-          <label for="volumeSlider">Volume</label>
-          <input type="range" id="volumeSlider" min="0" max="1" step="0.01" value="0.6" />
-        </div>
-        <p class="section-hint">Add your own audio to a <strong>/music</strong> folder in the repo. Music is separate from the timer chime and starts only after you tap a button (works on iPhone/Safari).</p>
-      </section>
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
 
-    </aside>
+    <div class="session-progress" id="sessionProgress">
+      <div class="session-cap">2-Hour live session progress</div>
+      <div class="session-track"><div class="session-fill" id="sessionFill"></div></div>
+    </div>
+
+    <div class="stats">
+      <span>Round <strong id="roundNum">1</strong> of 4</span>
+      <span>Focus blocks today: <strong id="completedCount">0</strong></span>
+    </div>
+
+    <div class="long-break-note" id="longBreakNote">🌿 Long break suggested: 15 minutes</div>
+    <div class="block-msg" id="blockMessage"></div>
+
+    <!-- session-start countdown overlay -->
+    <div class="cd-overlay" id="cdOverlay" aria-hidden="true">
+      <div class="cd-eyebrow" id="cdEyebrow">Focus starts in</div>
+      <div class="cd-number" id="cdNumber">5</div>
+    </div>
+  </section>
+
+  <!-- ============ LIVE BOARD (wide, under timer) ============ -->
+  <section class="card">
+    <p class="section-label"><span>📋 Live Board</span></p>
+    <div class="rt-toolbar" id="rtToolbar" role="toolbar" aria-label="Text styling">
+      <button class="rt-btn" data-cmd="bold" title="Bold"><b>B</b></button>
+      <button class="rt-btn" data-cmd="italic" title="Italic"><i>I</i></button>
+      <button class="rt-btn" data-cmd="underline" title="Underline"><u>U</u></button>
+      <button class="rt-btn" data-cmd="insertUnorderedList" title="Bullet list">• List</button>
+      <span class="rt-color-label">Text</span>
+      <input type="color" class="rt-color" id="rtFore" value="#9a6d5b" title="Text colour" aria-label="Text colour" />
+      <span class="rt-color-label">Highlight</span>
+      <input type="color" class="rt-color" id="rtBack" value="#ffe9a8" title="Highlight colour" aria-label="Highlight colour" />
+      <button class="rt-btn" data-cmd="removeFormat" title="Clear formatting">Clear</button>
+    </div>
+    <div class="lb-grid">
+      <div class="lb-field">
+        <div class="lb-label">Today's Focus</div>
+        <div id="lbFocus" class="lb-input" contenteditable="true" data-rich data-store="bdf_lb_focus" data-placeholder="Today's focus…" aria-label="Today's Focus"></div>
+      </div>
+      <div class="lb-field">
+        <div class="lb-label">Community Message</div>
+        <div id="lbCommunity" class="lb-input" contenteditable="true" data-rich data-store="bdf_lb_community" data-placeholder="Community message…" aria-label="Community Message"></div>
+      </div>
+      <div class="lb-field">
+        <div class="lb-label">Link Reminder</div>
+        <div id="lbLink" class="lb-input" contenteditable="true" data-rich data-store="bdf_lb_link" data-placeholder="Link reminder…" aria-label="Link Reminder"></div>
+      </div>
+      <div class="lb-field">
+        <div class="lb-label">Break Reminder</div>
+        <div id="lbBreak" class="lb-input" contenteditable="true" data-rich data-store="bdf_lb_break" data-placeholder="Break reminder…" aria-label="Break Reminder"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ADVERTISEMENT / MEDIA PANEL ============ -->
+  <section class="card">
+    <p class="section-label"><span>📣 Advertisement</span></p>
+    <div class="ad-stage" id="adStage">
+      <div class="ad-empty" id="adEmpty">No advertisement yet. Upload an image or a short video (max 60 seconds).</div>
+    </div>
+    <div class="music-row" style="margin-top:14px;">
+      <button id="adImageBtn">🖼️ Upload image</button>
+      <button id="adVideoBtn">🎬 Upload video (≤60s)</button>
+      <button class="loop-btn" id="adLoopBtn">🔁 Loop On</button>
+      <button id="adMuteBtn">🔇 Muted</button>
+      <button class="btn-danger" id="adRemoveBtn">🗑️ Remove</button>
+    </div>
+    <input type="file" id="adImageInput" accept="image/*" style="display:none;" />
+    <input type="file" id="adVideoInput" accept="video/*" style="display:none;" />
+    <div class="ad-status" id="adStatus"></div>
+    <div class="lb-label" style="margin-top:16px;">Advertisement caption</div>
+    <div id="adCaption" class="ad-caption" contenteditable="true" data-rich data-store="bdf_ad_caption" aria-label="Advertisement caption"></div>
+  </section>
+
+  <p class="studio-divider">Studio controls</p>
+
+  <div class="studio-grid">
+    <!-- Live session -->
+    <section class="card">
+      <p class="section-label"><span>🔴 TikTok Live Session</span></p>
+      <div class="btn-grid">
+        <button class="btn-primary btn-live" id="liveStartBtn">▶ Start 2-Hour Live Session</button>
+        <button id="skipBlockBtn">Skip Block</button>
+      </div>
+      <p class="section-hint">2 hours total: 25 · 5 · 25 · 5 · 20 · 5 · 20 · 5 · 10 (Community / Reset). Runs block to block automatically.</p>
+      <div class="bg-row" style="margin-top:14px;">
+        <label>Start countdown</label>
+        <button class="btn-small toggle" id="cdToggle">On</button>
+        <div class="seg-row" id="cdLenRow">
+          <button class="seg btn-small" data-cdlen="3">3s</button>
+          <button class="seg btn-small" data-cdlen="5">5s</button>
+          <button class="seg btn-small" data-cdlen="10">10s</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Live Room Timer -->
+    <section class="card">
+      <p class="section-label"><span>🎙️ Live Room Timer</span><button class="btn-small" id="lrBigBtn">⛶ Big</button></p>
+      <div class="seg-row" id="lrModeRow">
+        <button class="seg" data-lrmode="countdown">Countdown</button>
+        <button class="seg" data-lrmode="stopwatch">Stopwatch</button>
+      </div>
+      <div class="lr-display" id="lrDisplay">00:30</div>
+      <div class="seg-row" id="lrPresetRow">
+        <button class="seg btn-small" data-secs="30">30s</button>
+        <button class="seg btn-small" data-secs="60">1m</button>
+        <button class="seg btn-small" data-secs="120">2m</button>
+        <button class="seg btn-small" data-secs="180">3m</button>
+        <button class="seg btn-small" data-secs="300">5m</button>
+      </div>
+      <div class="lr-custom">
+        <input type="text" id="lrCustom" placeholder="Custom (e.g. 1:30 or 90)" aria-label="Custom speaking time" />
+        <button class="btn-small" id="lrSetBtn">Set</button>
+      </div>
+      <div class="music-row" style="margin-top:12px;">
+        <button class="btn-primary" id="lrStartBtn">Start</button>
+        <button id="lrPauseBtn">Pause</button>
+        <button id="lrResetBtn">Reset</button>
+      </div>
+      <p class="section-hint">Separate from the focus timer — use it to manage speaking turns during the community block or any live discussion.</p>
+    </section>
+
+    <!-- Modes -->
+    <section class="card">
+      <p class="section-label"><span>⏱️ Timer mode</span></p>
+      <div class="btn-grid mode-btns" id="modeBtns" role="group" aria-label="Timer mode">
+        <button data-focus="25" data-break="5">25 / 5</button>
+        <button data-focus="20" data-break="5">20 / 5</button>
+        <button data-focus="15" data-break="3">15 / 3</button>
+      </div>
+    </section>
+
+    <!-- Controls -->
+    <section class="card">
+      <p class="section-label"><span>🎛️ Controls</span></p>
+      <div class="btn-grid controls">
+        <button class="btn-primary" id="startPauseBtn">Start</button>
+        <button id="resetTimerBtn">Reset Timer</button>
+        <button id="skipBreakBtn">Skip to Break</button>
+        <button id="skipFocusBtn">Skip to Focus</button>
+        <button id="muteBtn">🔊 Sound On</button>
+        <button id="fullscreenBtn">⛶ Full Screen</button>
+        <button id="resetSessionBtn">Reset Full Session</button>
+      </div>
+    </section>
+
+    <!-- Tasks -->
+    <section class="card">
+      <p class="section-label"><span>✅ Tasks</span></p>
+      <div class="task-list" id="taskList"></div>
+      <button class="add-task-btn" id="addTaskBtn">+ Add task</button>
+    </section>
+
+    <!-- Focus Music / Sound -->
+    <section class="card">
+      <p class="section-label"><span>🎧 Focus Sound</span></p>
+      <div class="music-current">Selected: <span id="currentTrackLabel">—</span></div>
+      <select class="music-select" id="trackSelect" aria-label="Select focus sound"></select>
+      <div class="music-row">
+        <button class="btn-primary" id="musicPlayBtn">▶ Play</button>
+        <button id="musicStopBtn">⏹ Stop</button>
+        <button id="testSoundBtn">🎚️ Test</button>
+      </div>
+      <div class="music-row" style="margin-top:10px;">
+        <button id="musicMuteBtn">🔊 Sound On</button>
+        <button class="loop-btn" id="loopBtn">🔁 Loop On</button>
+      </div>
+      <div class="vol-row">
+        <label for="volumeSlider">Volume</label>
+        <input type="range" id="volumeSlider" min="0" max="1" step="0.01" value="0.6" />
+      </div>
+      <div class="music-status" id="musicStatus"></div>
+      <p class="section-hint">Built-in brown / pink / white noise works with no files. Uploaded tracks read from the <strong>/music</strong> folder; a missing file says “file missing” instead of pretending to play.</p>
+    </section>
+
+    <!-- Background customization -->
+    <section class="card">
+      <p class="section-label"><span>🎨 Background &amp; Colours</span></p>
+      <div class="music-row">
+        <button id="bgUploadBtn">🖼️ Upload background</button>
+        <button class="btn-danger" id="bgRemoveBtn">🗑️ Remove</button>
+      </div>
+      <input type="file" id="bgInput" accept="image/*" style="display:none;" />
+      <div class="bg-row"><label for="bgOpacity">Opacity</label><input type="range" id="bgOpacity" min="0" max="1" step="0.01" value="0.5" /></div>
+      <div class="bg-row"><label for="bgBlur">Blur</label><input type="range" id="bgBlur" min="0" max="20" step="0.5" value="0" /></div>
+      <div class="bg-row"><label for="themeColor">Theme colour</label><input type="color" class="color-input" id="themeColor" value="#efe2d2" /><button class="btn-small" id="themeColorReset">Reset</button></div>
+      <div class="bg-row"><label for="accentColor">Accent colour</label><input type="color" class="color-input" id="accentColor" value="#b08573" /><button class="btn-small" id="accentColorReset">Reset</button></div>
+      <p class="section-hint">Keep it soft — the background sits behind the timer so it never competes with it.</p>
+    </section>
   </div>
 
-  <p class="footer-note">Everything saves on this device. Work gently, switch tasks, come back softly.</p>
+  <p class="footer-note">Everything saves on this device, in this browser. Nothing is uploaded. Work gently, switch tasks, come back softly.</p>
+</div>
+
+<!-- ============ Emoji communication bar ============ -->
+<div class="emoji-bar" id="emojiBar">
+  <div class="emoji-bar-head">
+    <div class="emoji-cats" id="emojiCats"></div>
+    <button class="btn-small" id="emojiToggle" title="Show / hide" style="flex:0 0 auto;">▾</button>
+  </div>
+  <div class="emoji-bar-body">
+    <div class="emoji-items" id="emojiItems"></div>
+    <div class="emoji-edit">
+      <button class="emoji-small" id="emojiAdd">＋ Custom</button>
+      <button class="emoji-small" id="emojiSizeUp">A＋</button>
+      <button class="emoji-small" id="emojiSizeDown">A－</button>
+      <span class="rt-color-label">Colour</span>
+      <input type="color" class="rt-color" id="emojiColor" value="#9a6d5b" aria-label="Big emoji colour" />
+      <button class="emoji-small toggle" id="emojiHighlight">Highlight</button>
+      <button class="emoji-small btn-danger" id="emojiClear">Clear screen</button>
+    </div>
+  </div>
+</div>
+
+<!-- Big emoji / message stage -->
+<div class="emoji-stage" id="emojiStage" aria-hidden="true">
+  <button class="btn-small emoji-stage-close" id="emojiStageClose">✕ Close</button>
+  <div id="emojiStageText"></div>
+</div>
+
+<!-- Large speaker-timer overlay -->
+<div class="speaker-stage" id="speakerStage" aria-hidden="true">
+  <div class="cd-eyebrow" id="speakerLabel">Speaking time</div>
+  <div id="speakerTime">00:30</div>
+  <div class="music-row" style="max-width:420px;">
+    <button class="btn-primary" id="speakerStart">Start</button>
+    <button id="speakerPause">Pause</button>
+    <button id="speakerReset">Reset</button>
+    <button id="speakerClose">✕ Close</button>
+  </div>
 </div>
 
 <script>
@@ -634,21 +527,16 @@
   "use strict";
 
   // ====================================================================
-  // Editable focus-music list. Add your own local files to a /music
-  // folder in the repo and edit the names/paths here.
+  // Editable focus-music list — local files in a /music folder.
   // ====================================================================
   var focusTracks = [
-    { name: "Brown Noise", file: "music/brown-noise.mp3" },
+    { name: "Brown Noise File", file: "music/brown-noise.mp3" },
     { name: "Rain Focus", file: "music/rain-focus.mp3" },
     { name: "Ocean Focus", file: "music/ocean-focus.mp3" },
     { name: "Cafe Focus", file: "music/cafe-focus.mp3" },
     { name: "Deep Focus", file: "music/deep-focus.mp3" },
     { name: "Break Reset", file: "music/break-reset.mp3" }
   ];
-
-  // Optional break/community image. Add this file later to show it during
-  // break + community blocks; otherwise a soft gradient placeholder shows.
-  var BREAK_IMAGE = "assets/break-image.jpg";
 
   // ====================================================================
   // 2-Hour TikTok Live Session structure (total = 120 minutes).
@@ -671,25 +559,16 @@
   }
   function liveBlockAt(i) { return LIVE_SESSION[i] || null; }
 
-  // ---------- Constants & storage keys ----------
+  // ---------- Storage keys ----------
   var STORE = {
-    title: "bdf_title",
-    message: "bdf_message",
-    tasks: "bdf_tasks",
-    activeTask: "bdf_activeTask",
-    mode: "bdf_mode",
-    completed: "bdf_completed",
-    muted: "bdf_muted",
-    // Live Board
-    lbFocus: "bdf_lb_focus",
-    lbCommunity: "bdf_lb_community",
-    lbLink: "bdf_lb_link",
-    lbBreak: "bdf_lb_break",
-    // Music
-    track: "bdf_track",
-    volume: "bdf_volume",
-    musicMuted: "bdf_musicMuted",
-    musicLoop: "bdf_musicLoop"
+    title: "bdf_title", message: "bdf_message", tasks: "bdf_tasks", activeTask: "bdf_activeTask",
+    mode: "bdf_mode", completed: "bdf_completed", muted: "bdf_muted",
+    lbFocus: "bdf_lb_focus", lbCommunity: "bdf_lb_community", lbLink: "bdf_lb_link", lbBreak: "bdf_lb_break",
+    adCaption: "bdf_ad_caption", adLoop: "bdf_ad_loop", adMuted: "bdf_ad_muted",
+    soundSel: "bdf_sound_sel", volume: "bdf_volume", musicMuted: "bdf_musicMuted", musicLoop: "bdf_musicLoop",
+    cdOn: "bdf_cd_on", cdLen: "bdf_cd_len",
+    bgOpacity: "bdf_bg_opacity", bgBlur: "bdf_bg_blur", bgTheme: "bdf_bg_theme", bgAccent: "bdf_bg_accent",
+    emojiCustom: "bdf_emoji_custom", emojiSize: "bdf_emoji_size", emojiColor: "bdf_emoji_color"
   };
 
   var LB_DEFAULTS = {
@@ -698,6 +577,7 @@
     link: "Free Focus Room link in bio.",
     brk: "20-20-20 rule: look 6 metres away for 20 seconds."
   };
+  var AD_CAPTION_DEFAULT = "Use the free Life CEO Focus Room link in bio.";
 
   var MODES = {
     "25": { focus: 25 * 60, brk: 5 * 60, label: "25 / 5" },
@@ -705,566 +585,358 @@
     "15": { focus: 15 * 60, brk: 3 * 60, label: "15 / 3" }
   };
   var LONG_BREAK_AFTER = 4;
-
   function defaultTasks() { return ["Gift wrapping", "Template work", "Extra task"]; }
 
   // ---------- Helpers ----------
   function $(id) { return document.getElementById(id); }
+  function parseStored(raw, fallback) { try { return raw === null ? fallback : JSON.parse(raw); } catch (e) { return fallback; } }
+  function load(key, fallback) { try { return parseStored(localStorage.getItem(key), fallback); } catch (e) { return fallback; } }
+  function save(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) {} }
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
 
-  // Pure parse used by load() and by the tests (corrupt JSON -> fallback).
-  function parseStored(raw, fallback) {
-    try {
-      return raw === null ? fallback : JSON.parse(raw);
-    } catch (e) { return fallback; }
-  }
-  function load(key, fallback) {
-    try {
-      return parseStored(localStorage.getItem(key), fallback);
-    } catch (e) { return fallback; }
-  }
-  function save(key, value) {
-    try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) {}
-  }
-  function esc(s) {
-    return String(s).replace(/[&<>"]/g, function (c) {
-      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c];
-    });
+  // Hex shade helper for theme/accent derivation
+  function shade(hex, percent) {
+    hex = String(hex || "").replace("#", "");
+    if (hex.length === 3) hex = hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
+    if (hex.length !== 6) return "#" + hex;
+    var r = parseInt(hex.slice(0,2),16), g = parseInt(hex.slice(2,4),16), b = parseInt(hex.slice(4,6),16);
+    var f = percent / 100;
+    function adj(c) { c = Math.round(c + (f >= 0 ? (255 - c) * f : c * f)); return Math.max(0, Math.min(255, c)); }
+    function hx(c) { var s = c.toString(16); return s.length === 1 ? "0"+s : s; }
+    return "#" + hx(adj(r)) + hx(adj(g)) + hx(adj(b));
   }
 
-  // ---------- Pure timing helpers (wall-clock model, also tested) ----------
+  // ---------- Pure timing / cycle / task helpers (also exposed for tests) ----------
   function remainingFrom(endTime, now) { return Math.max(0, (endTime - now) / 1000); }
   function endTimeFor(now, remainingSec) { return now + remainingSec * 1000; }
-
-  // ---------- Pure cycle logic (focus<->break), also tested ----------
-  // Given the current {isBreak, completed, round} when a period completes,
-  // return the next values. Matches periodComplete()'s behavior.
   function computeCycle(s) {
-    if (s.isBreak) {
-      return {
-        isBreak: false,
-        completed: s.completed,
-        round: s.round >= LONG_BREAK_AFTER ? 1 : s.round + 1,
-        showLong: false
-      };
-    }
+    if (s.isBreak) { return { isBreak: false, completed: s.completed, round: s.round >= LONG_BREAK_AFTER ? 1 : s.round + 1, showLong: false }; }
     var completed = s.completed + 1;
-    return {
-      isBreak: true,
-      completed: completed,
-      round: s.round,
-      showLong: (completed % LONG_BREAK_AFTER === 0)
-    };
+    return { isBreak: true, completed: completed, round: s.round, showLong: (completed % LONG_BREAK_AFTER === 0) };
   }
-
-  // ---------- Pure task helpers (also tested) ----------
-  // Delete task at idx; never leave list empty; keep activeTask in range.
   function deleteTask(tasks, activeTask, idx) {
-    var t = tasks.slice();
-    t.splice(idx, 1);
+    var t = tasks.slice(); t.splice(idx, 1);
     if (t.length === 0) t.push("New task");
-    var a = activeTask;
-    if (a >= t.length) a = t.length - 1;
+    var a = activeTask; if (a >= t.length) a = t.length - 1;
     return { tasks: t, activeTask: a };
   }
-  // Clamp an active-task index to a valid value (load-time sanitize rule).
-  function clampActive(activeTask, len) {
-    return activeTask >= len ? 0 : activeTask;
-  }
+  function clampActive(activeTask, len) { return activeTask >= len ? 0 : activeTask; }
 
   // ---------- State ----------
   var state = {
-    modeKey: load(STORE.mode, "25"),
-    isBreak: false,
-    running: false,
-    endTime: 0,          // ms timestamp when current period ends (while running)
-    remaining: 0,        // seconds left (authoritative when paused)
-    round: 1,            // current focus block within a set of 4
-    completed: load(STORE.completed, 0),
-    tasks: load(STORE.tasks, defaultTasks()),
-    activeTask: load(STORE.activeTask, 0),
-    muted: load(STORE.muted, false),
-    live: null,          // when active: { index: <block index> }
-    // music
-    trackIndex: load(STORE.track, 0),
-    volume: load(STORE.volume, 0.6),
-    musicMuted: load(STORE.musicMuted, false),
-    musicLoop: load(STORE.musicLoop, true)
+    modeKey: load(STORE.mode, "25"), isBreak: false, running: false, endTime: 0, remaining: 0,
+    round: 1, completed: load(STORE.completed, 0),
+    tasks: load(STORE.tasks, defaultTasks()), activeTask: load(STORE.activeTask, 0),
+    muted: load(STORE.muted, false), live: null,
+    volume: load(STORE.volume, 0.6), musicMuted: load(STORE.musicMuted, false), musicLoop: load(STORE.musicLoop, true)
   };
-  if (!Array.isArray(state.tasks) || state.tasks.length === 0) {
-    state.tasks = defaultTasks();
-  }
+  if (!Array.isArray(state.tasks) || state.tasks.length === 0) state.tasks = defaultTasks();
   state.activeTask = clampActive(state.activeTask, state.tasks.length);
-  if (typeof state.trackIndex !== "number" || state.trackIndex < 0 || state.trackIndex >= focusTracks.length) {
-    state.trackIndex = 0;
-  }
   if (typeof state.volume !== "number" || isNaN(state.volume)) state.volume = 0.6;
 
   function curMode() { return MODES[state.modeKey] || MODES["25"]; }
-  function periodTotal() {
-    if (state.live) return LIVE_SESSION[state.live.index].min * 60;
-    return state.isBreak ? curMode().brk : curMode().focus;
-  }
-  function currentBlockType() {
-    if (state.live) return LIVE_SESSION[state.live.index].type;
-    return state.isBreak ? "break" : "focus";
-  }
+  function periodTotal() { if (state.live) return LIVE_SESSION[state.live.index].min * 60; return state.isBreak ? curMode().brk : curMode().focus; }
+  function currentBlockType() { if (state.live) return LIVE_SESSION[state.live.index].type; return state.isBreak ? "break" : "focus"; }
 
-  // ---------- Audio (gentle chime, created lazily on first Start) ----------
+  // ---------- Web Audio: chime, beeps, and noise generator ----------
   var audioCtx = null;
   function ensureAudio() {
-    if (!audioCtx) {
-      try {
-        var AC = window.AudioContext || window.webkitAudioContext;
-        if (AC) audioCtx = new AC();
-      } catch (e) { audioCtx = null; }
-    }
+    if (!audioCtx) { try { var AC = window.AudioContext || window.webkitAudioContext; if (AC) audioCtx = new AC(); } catch (e) { audioCtx = null; } }
     if (audioCtx && audioCtx.state === "suspended") audioCtx.resume();
+    return audioCtx;
   }
   function chime() {
     if (state.muted || !audioCtx) return;
     var now = audioCtx.currentTime;
-    // soft two-note chime
     [523.25, 783.99].forEach(function (freq, i) {
-      var osc = audioCtx.createOscillator();
-      var gain = audioCtx.createGain();
-      osc.type = "sine";
-      osc.frequency.value = freq;
+      var osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
+      osc.type = "sine"; osc.frequency.value = freq;
       var t = now + i * 0.18;
-      gain.gain.setValueAtTime(0.0001, t);
-      gain.gain.exponentialRampToValueAtTime(0.22, t + 0.04);
-      gain.gain.exponentialRampToValueAtTime(0.0001, t + 1.3);
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-      osc.start(t);
-      osc.stop(t + 1.4);
+      gain.gain.setValueAtTime(0.0001, t); gain.gain.exponentialRampToValueAtTime(0.22, t + 0.04); gain.gain.exponentialRampToValueAtTime(0.0001, t + 1.3);
+      osc.connect(gain); gain.connect(audioCtx.destination); osc.start(t); osc.stop(t + 1.4);
     });
   }
+  function tone(freq, dur, vol) {
+    ensureAudio(); if (!audioCtx) return;
+    var t = audioCtx.currentTime, osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
+    osc.type = "sine"; osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0.0001, t); gain.gain.exponentialRampToValueAtTime(vol || 0.18, t + 0.03); gain.gain.exponentialRampToValueAtTime(0.0001, t + (dur || 0.3));
+    osc.connect(gain); gain.connect(audioCtx.destination); osc.start(t); osc.stop(t + (dur || 0.3) + 0.05);
+  }
+  function endChime() { tone(660, 0.25, 0.2); setTimeout(function () { tone(880, 0.4, 0.2); }, 180); }
 
-  // ---------- Focus music (separate HTMLAudioElement, not the chime) ----------
-  var music = null;
-  function ensureMusic() {
-    if (!music) {
-      music = new Audio();
-      music.preload = "none";
-      music.loop = state.musicLoop;
-      music.volume = state.volume;
-      music.muted = state.musicMuted;
-      music.addEventListener("play", updateMusicBtn);
-      music.addEventListener("pause", updateMusicBtn);
+  function noiseBuffer(type) {
+    var len = audioCtx.sampleRate * 2, buf = audioCtx.createBuffer(1, len, audioCtx.sampleRate), d = buf.getChannelData(0), last = 0;
+    for (var i = 0; i < len; i++) {
+      var w = Math.random() * 2 - 1;
+      if (type === "brown") { d[i] = (last + 0.02 * w) / 1.02; last = d[i]; d[i] *= 3.2; }
+      else if (type === "pink") { d[i] = (last + 0.045 * w) / 1.045; last = d[i]; d[i] *= 2.0; }
+      else d[i] = w * 0.55;
+    }
+    return buf;
+  }
+
+  // ---------- Focus Sound engine (noise + uploaded files) ----------
+  var musicEl = null, noiseSrc = null, noiseGain = null, soundKind = null, soundPlaying = false;
+  var SOUND_OPTIONS = [
+    { id: "noise:brown", name: "Brown Noise (built-in)" },
+    { id: "noise:pink", name: "Pink Noise (built-in)" },
+    { id: "noise:white", name: "White Noise (built-in)" }
+  ];
+  for (var fi = 0; fi < focusTracks.length; fi++) SOUND_OPTIONS.push({ id: "file:" + fi, name: focusTracks[fi].name + " (file)" });
+
+  function selectedSound() {
+    var s = load(STORE.soundSel, "noise:brown");
+    var ok = false; for (var i = 0; i < SOUND_OPTIONS.length; i++) if (SOUND_OPTIONS[i].id === s) ok = true;
+    return ok ? s : "noise:brown";
+  }
+  function selectedSoundName() { var s = selectedSound(); for (var i = 0; i < SOUND_OPTIONS.length; i++) if (SOUND_OPTIONS[i].id === s) return SOUND_OPTIONS[i].name; return "—"; }
+  function ensureMusicEl() {
+    if (!musicEl) {
+      musicEl = new Audio(); musicEl.preload = "none"; musicEl.loop = state.musicLoop;
+      musicEl.volume = state.volume; musicEl.muted = state.musicMuted;
+      musicEl.addEventListener("error", function () { if (soundKind === "file") { soundPlaying = false; setMusicStatus("File missing — add it to /music.", "warn"); updateMusicBtn(); } });
     }
   }
-  function currentTrackName() {
-    return focusTracks[state.trackIndex] ? focusTracks[state.trackIndex].name : "—";
+  function stopAllSound() {
+    if (noiseSrc) { try { noiseSrc.stop(); } catch (e) {} try { noiseSrc.disconnect(); } catch (e) {} noiseSrc = null; }
+    if (musicEl) { try { musicEl.pause(); } catch (e) {} }
+    soundKind = null;
   }
-  function selectTrack(idx) {
-    state.trackIndex = idx;
-    save(STORE.track, idx);
-    $("currentTrackLabel").textContent = currentTrackName();
-    ensureMusic();
-    var wasPlaying = !music.paused;
-    music.src = focusTracks[idx].file;
-    if (wasPlaying) { music.play()["catch"](function () {}); }
-    if (state.isBreak || state.live) renderTimer();
-  }
-  function toggleMusic() {
-    ensureMusic();
-    if (!music.src) music.src = focusTracks[state.trackIndex].file;
-    if (music.paused) { music.play()["catch"](function () {}); }
-    else { music.pause(); }
+  function musicPlay() {
+    ensureAudio();
+    var sel = selectedSound();
+    if (sel.indexOf("noise:") === 0) {
+      if (!audioCtx) { setMusicStatus("Audio not supported here.", "warn"); return; }
+      stopAllSound();
+      var type = sel.split(":")[1];
+      noiseSrc = audioCtx.createBufferSource(); noiseSrc.buffer = noiseBuffer(type); noiseSrc.loop = true;
+      noiseGain = audioCtx.createGain(); noiseGain.gain.value = state.musicMuted ? 0 : state.volume;
+      noiseSrc.connect(noiseGain); noiseGain.connect(audioCtx.destination); noiseSrc.start();
+      soundKind = "noise"; soundPlaying = true; setMusicStatus(selectedSoundName() + " playing", "ok");
+    } else {
+      var idx = parseInt(sel.split(":")[1], 10); var track = focusTracks[idx];
+      ensureMusicEl(); stopAllSound();
+      musicEl.src = track.file; musicEl.loop = state.musicLoop; musicEl.muted = state.musicMuted; musicEl.volume = state.volume;
+      soundKind = "file";
+      musicEl.play().then(function () { soundPlaying = true; setMusicStatus(track.name + " playing", "ok"); updateMusicBtn(); })
+        ["catch"](function () { soundPlaying = false; setMusicStatus("“" + track.name + "” file missing — add it to /music.", "warn"); updateMusicBtn(); });
+    }
     updateMusicBtn();
   }
-  function testSound() {
-    ensureMusic();
-    if (!music.src) music.src = focusTracks[state.trackIndex].file;
-    try { music.currentTime = 0; } catch (e) {}
-    music.play()["catch"](function () {});
+  function musicPause() {
+    if (soundKind === "file" && musicEl) { musicEl.pause(); soundPlaying = false; }
+    else { stopAllSound(); soundPlaying = false; } // noise can't pause mid-buffer; it restarts on play
+    setMusicStatus("Paused", "");
     updateMusicBtn();
   }
-  function toggleMusicMute() {
-    ensureMusic();
-    state.musicMuted = !state.musicMuted;
-    music.muted = state.musicMuted;
-    save(STORE.musicMuted, state.musicMuted);
-    updateMusicMuteBtn();
+  function musicStop() { stopAllSound(); soundPlaying = false; setMusicStatus("Stopped", ""); updateMusicBtn(); }
+  function musicPlayPause() { if (soundPlaying) musicPause(); else musicPlay(); }
+  function musicTest() {
+    ensureAudio();
+    var sel = selectedSound();
+    if (sel.indexOf("noise:") === 0) { var wasPlaying = soundPlaying; musicPlay(); setTimeout(function () { if (!wasPlaying) musicStop(); setMusicStatus("Test done — audio works.", "ok"); }, 1400); }
+    else {
+      var idx = parseInt(sel.split(":")[1], 10), track = focusTracks[idx];
+      ensureMusicEl(); var probe = new Audio(); probe.src = track.file; probe.volume = state.musicMuted ? 0 : state.volume;
+      probe.play().then(function () { setMusicStatus(track.name + " plays ✓", "ok"); setTimeout(function () { try { probe.pause(); } catch (e) {} }, 1400); })
+        ["catch"](function () { setMusicStatus("“" + track.name + "” file missing.", "warn"); });
+    }
   }
-  function toggleLoop() {
-    state.musicLoop = !state.musicLoop;
-    if (music) music.loop = state.musicLoop;
-    save(STORE.musicLoop, state.musicLoop);
-    updateLoopBtn();
-  }
-  function updateMusicBtn() {
-    $("musicPlayBtn").textContent = (music && !music.paused) ? "⏸ Pause Music" : "▶ Play Music";
-  }
-  function updateMusicMuteBtn() {
-    $("musicMuteBtn").textContent = state.musicMuted ? "🔇 Music Muted" : "🔊 Music On";
-  }
-  function updateLoopBtn() {
-    $("loopBtn").textContent = state.musicLoop ? "🔁 Loop On" : "➡ Loop Off";
-    $("loopBtn").classList.toggle("active", state.musicLoop);
+  function setMusicStatus(txt, cls) { var el = $("musicStatus"); el.textContent = txt; el.className = "music-status" + (cls ? " " + cls : ""); }
+  function updateMusicBtn() { $("musicPlayBtn").textContent = soundPlaying ? "⏸ Pause" : "▶ Play"; }
+  function updateMusicMuteBtn() { $("musicMuteBtn").textContent = state.musicMuted ? "🔇 Sound Off" : "🔊 Sound On"; }
+  function updateLoopBtn() { $("loopBtn").textContent = state.musicLoop ? "🔁 Loop On" : "➡ Loop Off"; $("loopBtn").classList.toggle("active", state.musicLoop); }
+  function applySoundVolume() { if (noiseGain) noiseGain.gain.value = state.musicMuted ? 0 : state.volume; if (musicEl) { musicEl.volume = state.volume; musicEl.muted = state.musicMuted; } }
+
+  function initSound() {
+    var sel = $("trackSelect"); sel.innerHTML = "";
+    SOUND_OPTIONS.forEach(function (o) { var op = document.createElement("option"); op.value = o.id; op.textContent = o.name; sel.appendChild(op); });
+    sel.value = selectedSound();
+    $("currentTrackLabel").textContent = selectedSoundName();
+    $("volumeSlider").value = state.volume;
+    updateMusicBtn(); updateMusicMuteBtn(); updateLoopBtn();
+    sel.addEventListener("change", function () { save(STORE.soundSel, sel.value); $("currentTrackLabel").textContent = selectedSoundName(); if (soundPlaying) musicPlay(); });
+    $("musicPlayBtn").addEventListener("click", musicPlayPause);
+    $("musicStopBtn").addEventListener("click", musicStop);
+    $("testSoundBtn").addEventListener("click", musicTest);
+    $("musicMuteBtn").addEventListener("click", function () { state.musicMuted = !state.musicMuted; save(STORE.musicMuted, state.musicMuted); applySoundVolume(); updateMusicMuteBtn(); });
+    $("loopBtn").addEventListener("click", function () { state.musicLoop = !state.musicLoop; if (musicEl) musicEl.loop = state.musicLoop; save(STORE.musicLoop, state.musicLoop); updateLoopBtn(); });
+    $("volumeSlider").addEventListener("input", function () { var v = parseFloat($("volumeSlider").value); state.volume = isNaN(v) ? 0.6 : v; save(STORE.volume, state.volume); applySoundVolume(); });
   }
 
   // ---------- Rendering ----------
-  function fmt(sec) {
-    sec = Math.max(0, Math.round(sec));
-    var m = Math.floor(sec / 60);
-    var s = sec % 60;
-    return (m < 10 ? "0" + m : m) + ":" + (s < 10 ? "0" + s : s);
-  }
-
-  function currentTaskName() {
-    return state.tasks[state.activeTask] || "—";
-  }
-  function nextTaskName() {
-    if (state.tasks.length === 0) return "—";
-    return state.tasks[(state.activeTask + 1) % state.tasks.length] || "—";
-  }
-
-  // Display title for a live block (e.g. "Focus 2", "Break", "Community / Reset").
+  function fmt(sec) { sec = Math.max(0, Math.round(sec)); var m = Math.floor(sec / 60), s = sec % 60; return (m < 10 ? "0" + m : m) + ":" + (s < 10 ? "0" + s : s); }
+  function currentTaskName() { return state.tasks[state.activeTask] || "—"; }
+  function nextTaskName() { if (state.tasks.length === 0) return "—"; return state.tasks[(state.activeTask + 1) % state.tasks.length] || "—"; }
   function blockTitle(index) {
-    var b = LIVE_SESSION[index];
-    if (!b) return "";
+    var b = LIVE_SESSION[index]; if (!b) return "";
     if (b.type === "community") return "Community / Reset";
     if (b.type === "break") return "Break";
-    var n = 0;
-    for (var i = 0; i <= index; i++) { if (LIVE_SESSION[i].type === "focus") n++; }
+    var n = 0; for (var i = 0; i <= index; i++) { if (LIVE_SESSION[i].type === "focus") n++; }
     return "Focus " + n;
   }
-
   function liveElapsedSeconds() {
-    var elapsed = 0;
-    for (var i = 0; i < state.live.index; i++) elapsed += LIVE_SESSION[i].min * 60;
+    var elapsed = 0; for (var i = 0; i < state.live.index; i++) elapsed += LIVE_SESSION[i].min * 60;
     var sec = state.running ? remainingFrom(state.endTime, Date.now()) : state.remaining;
     elapsed += (LIVE_SESSION[state.live.index].min * 60 - Math.max(0, sec));
     return elapsed;
   }
-
   function renderTimer() {
     var sec = state.running ? remainingFrom(state.endTime, Date.now()) : state.remaining;
     $("timeDisplay").textContent = fmt(sec);
-
-    var total = periodTotal();
-    var pct = total > 0 ? (1 - Math.max(0, sec) / total) * 100 : 0;
+    var total = periodTotal(); var pct = total > 0 ? (1 - Math.max(0, sec) / total) * 100 : 0;
     $("progressFill").style.width = Math.min(100, Math.max(0, pct)) + "%";
-
     $("modeBadge").textContent = state.isBreak ? "Break" : "Focus";
     $("timerCard").classList.toggle("is-break", state.isBreak);
     $("currentTask").textContent = currentTaskName();
     $("nextTask").textContent = nextTaskName();
     $("roundNum").textContent = state.round;
     $("completedCount").textContent = state.completed;
-
     renderBlockUI(sec);
-
     document.title = fmt(sec) + " · " + (state.live ? blockTitle(state.live.index) : (state.isBreak ? "Break" : "Focus"));
   }
-
-  // Live-session UI: block label, next block, whole-session progress, messages, media.
-  function renderBlockUI(sec) {
-    var label = $("sessionLabel");
-    var nextEl = $("nextBlock");
-    var sp = $("sessionProgress");
-
+  function renderBlockUI() {
+    var label = $("sessionLabel"), nextEl = $("nextBlock"), sp = $("sessionProgress");
     if (state.live) {
       $("modeBadge").textContent = "Live Session";
-      label.textContent = blockTitle(state.live.index);
-      label.style.display = "block";
+      label.textContent = blockTitle(state.live.index); label.style.display = "block";
       var nb = state.live.index + 1;
       nextEl.textContent = LIVE_SESSION[nb] ? ("Next: " + blockTitle(nb)) : "Final block of the session";
       nextEl.style.display = "block";
       sp.classList.add("show");
       var spct = liveTotalSeconds() > 0 ? (liveElapsedSeconds() / liveTotalSeconds()) * 100 : 0;
       $("sessionFill").style.width = Math.min(100, Math.max(0, spct)) + "%";
-    } else {
-      label.style.display = "none";
-      nextEl.style.display = "none";
-      sp.classList.remove("show");
-    }
-
+    } else { label.style.display = "none"; nextEl.style.display = "none"; sp.classList.remove("show"); }
     renderBlockMessage();
-    renderMedia();
+    renderAdForBlock();
   }
-
   function renderBlockMessage() {
-    var el = $("blockMessage");
-    var type = currentBlockType();
-    if (type === "community") {
-      el.innerHTML = communityHTML();
-      el.classList.add("show");
-    } else if (type === "break") {
-      el.innerHTML = breakHTML();
-      el.classList.add("show");
-    } else {
-      el.classList.remove("show");
-      el.innerHTML = "";
-    }
+    var el = $("blockMessage"), type = currentBlockType();
+    if (type === "community") { el.innerHTML = communityHTML(); el.classList.add("show"); }
+    else if (type === "break") { el.innerHTML = breakHTML(); el.classList.add("show"); }
+    else { el.classList.remove("show"); el.innerHTML = ""; }
   }
   function breakHTML() {
-    return '<div class="block-msg-title">Break</div>' +
-      '<ul class="block-msg-list">' +
-      '<li>🎵 Music: ' + esc(currentTrackName()) + '</li>' +
-      '<li>👀 ' + esc(lbVal("brk")) + '</li>' +
+    return '<div class="block-msg-title">Break</div><ul class="block-msg-list">' +
+      '<li>🎵 Sound: ' + esc(selectedSoundName()) + '</li>' +
+      '<li>👀 ' + (lbHtml("brk") || "Rest your eyes") + '</li>' +
       '<li>🧘 Stretch your shoulders, neck, and back</li>' +
       '<li>💧 Drink some water</li>' +
-      '<li>Next focus starts soon</li>' +
-      '</ul>';
+      '<li>Next focus starts soon</li></ul>';
   }
   function communityHTML() {
-    return '<div class="block-msg-title">Community / Reset</div>' +
-      '<ul class="block-msg-list">' +
+    return '<div class="block-msg-title">Community / Reset</div><ul class="block-msg-list">' +
       '<li>Comment your next task</li>' +
       '<li>Follow for daily focus sessions</li>' +
-      '<li>Use the free timer in bio</li>' +
-      '</ul>';
+      '<li>' + (lbHtml("link") || "Use the free timer in bio") + '</li></ul>';
   }
 
-  // Media: show image during break + community blocks (if it loads), else gradient.
-  var mediaImageOk = false;
-  function renderMedia() {
-    var type = currentBlockType();
-    var show = (type === "break" || type === "community") && mediaImageOk;
-    $("mediaImg").style.display = show ? "block" : "none";
-    $("mediaPlaceholder").style.display = show ? "none" : "flex";
-  }
-
-  // ---------- Timer loop (Date.now based for accuracy through screen sleep) ----------
+  // ---------- Timer loop (wall-clock based) ----------
   var ticker = null;
-  function startTicker() {
-    stopTicker();
-    ticker = setInterval(tick, 250);
-  }
-  function stopTicker() {
-    if (ticker) { clearInterval(ticker); ticker = null; }
-  }
-  function tick() {
-    if (!state.running) return;
-    var left = remainingFrom(state.endTime, Date.now());
-    if (left <= 0) {
-      periodComplete();
-    } else {
-      renderTimer();
-    }
-  }
+  function startTicker() { stopTicker(); ticker = setInterval(tick, 250); }
+  function stopTicker() { if (ticker) { clearInterval(ticker); ticker = null; } }
+  function tick() { if (!state.running) return; var left = remainingFrom(state.endTime, Date.now()); if (left <= 0) periodComplete(); else renderTimer(); }
 
   function periodComplete() {
     chime();
     if (state.live) { advanceLive(); return; }
-
     var next = computeCycle({ isBreak: state.isBreak, completed: state.completed, round: state.round });
-    if (state.isBreak) {
-      // Break finished -> advance to next focus on next task
-      advanceTaskForward();
-      state.round = next.round;
-      switchTo(false, true);
-    } else {
-      // Focus finished -> count it, go to break
-      state.completed = next.completed;
-      save(STORE.completed, state.completed);
-      $("longBreakNote").classList.toggle("show", next.showLong);
-      switchTo(true, true);
-    }
+    if (state.isBreak) { advanceTaskForward(); state.round = next.round; switchTo(false, true); }
+    else { state.completed = next.completed; save(STORE.completed, state.completed); $("longBreakNote").classList.toggle("show", next.showLong); switchTo(true, true); }
   }
+  function advanceTaskForward() { if (state.tasks.length > 0) { state.activeTask = (state.activeTask + 1) % state.tasks.length; save(STORE.activeTask, state.activeTask); renderTasks(); } }
 
-  function advanceTaskForward() {
-    if (state.tasks.length > 0) {
-      state.activeTask = (state.activeTask + 1) % state.tasks.length;
-      save(STORE.activeTask, state.activeTask);
-      renderTasks();
-    }
+  // ---------- Session-start countdown overlay ----------
+  var cdInterval = null, countdownActive = false;
+  function cdEnabled() { return load(STORE.cdOn, true) === true; }
+  function cdLength() { var n = load(STORE.cdLen, 5); return (n === 3 || n === 5 || n === 10) ? n : 5; }
+  function beginRun(kind, after) { if (!cdEnabled()) { after(); return; } runStartCountdown(kind, cdLength(), after); }
+  function runStartCountdown(kind, len, after) {
+    if (cdInterval) { clearInterval(cdInterval); cdInterval = null; }
+    countdownActive = true;
+    var overlay = $("cdOverlay");
+    overlay.className = "cd-overlay show " + (kind === "break" ? "cd-break" : "cd-focus");
+    overlay.setAttribute("aria-hidden", "false");
+    $("cdEyebrow").textContent = (kind === "break" ? "Break starts in" : "Focus starts in");
+    var n = len; var num = $("cdNumber");
+    num.textContent = n; num.style.animation = "none"; void num.offsetWidth; num.style.animation = "";
+    cdInterval = setInterval(function () {
+      n -= 1;
+      if (n <= 0) { clearInterval(cdInterval); cdInterval = null; overlay.classList.remove("show"); overlay.setAttribute("aria-hidden", "true"); countdownActive = false; after(); return; }
+      num.textContent = n; num.style.animation = "none"; void num.offsetWidth; num.style.animation = "";
+    }, 1000);
   }
+  function cancelCountdown() { if (cdInterval) { clearInterval(cdInterval); cdInterval = null; } countdownActive = false; var o = $("cdOverlay"); o.classList.remove("show"); o.setAttribute("aria-hidden", "true"); }
 
-  // Move to a period. autostart keeps the timer running across transitions.
+  // ---------- Period transitions ----------
   function switchTo(isBreak, autostart) {
-    state.isBreak = isBreak;
-    state.remaining = periodTotal();
+    state.isBreak = isBreak; state.remaining = periodTotal();
     if (!isBreak) $("longBreakNote").classList.remove("show");
-    if (autostart) {
-      state.running = true;
-      state.endTime = endTimeFor(Date.now(), state.remaining);
-    } else {
-      state.running = false;
-    }
-    updateStartBtn();
-    renderTimer();
+    state.running = false; updateStartBtn(); renderTimer();
+    if (autostart) beginRun(isBreak ? "break" : "focus", function () { state.running = true; state.endTime = endTimeFor(Date.now(), state.remaining); updateStartBtn(); renderTimer(); });
   }
 
   // ---------- 2-Hour Live Session ----------
-  function startLiveSession() {
-    ensureAudio();
-    state.live = { index: 0 };
-    applyLiveBlock(true);
-    startTicker();
-  }
+  function startLiveSession() { ensureAudio(); state.live = { index: 0 }; startTicker(); applyLiveBlock(true); }
   function applyLiveBlock(autostart) {
     var b = LIVE_SESSION[state.live.index];
-    state.isBreak = (b.type !== "focus"); // break + community use the calm theme
-    state.remaining = b.min * 60;
+    state.isBreak = (b.type !== "focus"); state.remaining = b.min * 60;
     if (b.type === "focus") $("longBreakNote").classList.remove("show");
-    if (autostart) {
-      state.running = true;
-      state.endTime = endTimeFor(Date.now(), state.remaining);
-    } else {
-      state.running = false;
-    }
-    updateStartBtn();
-    renderTimer();
+    state.running = false; updateStartBtn(); renderTimer();
+    if (autostart) beginRun(b.type === "focus" ? "focus" : "break", function () { state.running = true; state.endTime = endTimeFor(Date.now(), state.remaining); updateStartBtn(); renderTimer(); });
   }
-  function advanceLive() {
-    if (!state.live) return;
-    if (state.live.index >= LIVE_SESSION.length - 1) { endLiveSession(); return; }
-    state.live.index += 1;
-    applyLiveBlock(true);
-  }
-  function skipLiveBlock() {
-    if (!state.live) return;
-    ensureAudio();
-    if (state.live.index >= LIVE_SESSION.length - 1) { endLiveSession(); return; }
-    state.live.index += 1;
-    applyLiveBlock(state.running);
-  }
-  function endLiveSession() {
-    state.live = null;
-    state.isBreak = false;
-    state.running = false;
-    state.remaining = periodTotal();
-    updateStartBtn();
-    renderTimer();
-  }
-
-  function updateStartBtn() {
-    $("startPauseBtn").textContent = state.running ? "Pause" : "Start";
-  }
+  function advanceLive() { if (!state.live) return; if (state.live.index >= LIVE_SESSION.length - 1) { endLiveSession(); return; } state.live.index += 1; applyLiveBlock(true); }
+  function skipLiveBlock() { if (!state.live) return; ensureAudio(); cancelCountdown(); if (state.live.index >= LIVE_SESSION.length - 1) { endLiveSession(); return; } state.live.index += 1; applyLiveBlock(state.running || true); }
+  function endLiveSession() { state.live = null; state.isBreak = false; state.running = false; state.remaining = periodTotal(); updateStartBtn(); renderTimer(); }
+  function updateStartBtn() { $("startPauseBtn").textContent = state.running ? "Pause" : "Start"; }
 
   // ---------- Controls ----------
   function startTimer() {
     ensureAudio();
     if (state.running) return;
     if (state.remaining <= 0) state.remaining = periodTotal();
-    state.running = true;
-    state.endTime = endTimeFor(Date.now(), state.remaining);
     startTicker();
-    updateStartBtn();
-    renderTimer();
+    var fresh = state.remaining >= periodTotal() - 0.5;
+    var go = function () { state.running = true; state.endTime = endTimeFor(Date.now(), state.remaining); updateStartBtn(); renderTimer(); };
+    if (fresh) { state.running = false; updateStartBtn(); renderTimer(); beginRun(state.isBreak ? "break" : "focus", go); } else go();
   }
-  function pauseTimer() {
-    if (!state.running) return;
-    state.remaining = remainingFrom(state.endTime, Date.now());
-    state.running = false;
-    updateStartBtn();
-    renderTimer();
-  }
-  function toggleStartPause() {
-    if (state.running) pauseTimer(); else startTimer();
-  }
-  function resetTimer() {
-    state.remaining = periodTotal();
-    if (state.running) {
-      state.endTime = endTimeFor(Date.now(), state.remaining);
-    }
-    renderTimer();
-  }
+  function pauseTimer() { if (!state.running) return; state.remaining = remainingFrom(state.endTime, Date.now()); state.running = false; updateStartBtn(); renderTimer(); }
+  function toggleStartPause() { if (countdownActive) { cancelCountdown(); state.running = true; state.endTime = endTimeFor(Date.now(), state.remaining); updateStartBtn(); renderTimer(); return; } if (state.running) pauseTimer(); else startTimer(); }
+  function resetTimer() { cancelCountdown(); state.remaining = periodTotal(); if (state.running) state.endTime = endTimeFor(Date.now(), state.remaining); renderTimer(); }
   function resetSession() {
-    state.live = null;
-    state.isBreak = false;
-    state.running = false;
-    state.round = 1;
-    state.completed = 0;
-    state.activeTask = 0;
-    state.remaining = periodTotal();
-    save(STORE.completed, 0);
-    save(STORE.activeTask, 0);
-    $("longBreakNote").classList.remove("show");
-    updateStartBtn();
-    renderTasks();
-    renderTimer();
+    cancelCountdown(); state.live = null; state.isBreak = false; state.running = false; state.round = 1; state.completed = 0; state.activeTask = 0;
+    state.remaining = periodTotal(); save(STORE.completed, 0); save(STORE.activeTask, 0);
+    $("longBreakNote").classList.remove("show"); updateStartBtn(); renderTasks(); renderTimer();
   }
-  function skipToBreak() {
-    ensureAudio();
-    switchTo(true, state.running);
-  }
-  function skipToFocus() {
-    ensureAudio();
-    advanceTaskForward();
-    state.round = state.round >= LONG_BREAK_AFTER ? 1 : state.round + 1;
-    switchTo(false, state.running);
-  }
-
+  function skipToBreak() { ensureAudio(); switchTo(true, state.running); }
+  function skipToFocus() { ensureAudio(); advanceTaskForward(); state.round = state.round >= LONG_BREAK_AFTER ? 1 : state.round + 1; switchTo(false, state.running); }
   function setMode(key) {
-    state.modeKey = key;
-    save(STORE.mode, key);
-    Array.prototype.forEach.call($("modeBtns").children, function (b) {
-      b.classList.toggle("active", b.getAttribute("data-focus") === key);
-    });
-    // Apply new durations to the current period (but never disrupt a live session)
-    if (!state.live) {
-      state.remaining = periodTotal();
-      if (state.running) state.endTime = endTimeFor(Date.now(), state.remaining);
-    }
+    state.modeKey = key; save(STORE.mode, key);
+    Array.prototype.forEach.call($("modeBtns").children, function (b) { b.classList.toggle("active", b.getAttribute("data-focus") === key); });
+    if (!state.live) { state.remaining = periodTotal(); if (state.running) state.endTime = endTimeFor(Date.now(), state.remaining); }
     renderTimer();
   }
 
   // ---------- Tasks UI ----------
   function renderTasks() {
-    var list = $("taskList");
-    list.innerHTML = "";
+    var list = $("taskList"); list.innerHTML = "";
     state.tasks.forEach(function (name, idx) {
       var item = document.createElement("div");
       item.className = "task-item" + (idx === state.activeTask ? " active" : "");
-
-      var dot = document.createElement("button");
-      dot.className = "task-dot";
-      dot.setAttribute("aria-label", "Set as active task");
-      dot.addEventListener("click", function () {
-        state.activeTask = idx;
-        save(STORE.activeTask, idx);
-        renderTasks();
-        renderTimer();
-      });
-
-      var input = document.createElement("input");
-      input.className = "task-name";
-      input.type = "text";
-      input.value = name;
-      input.setAttribute("aria-label", "Task name");
-      input.addEventListener("input", function () {
-        state.tasks[idx] = input.value;
-        save(STORE.tasks, state.tasks);
-        renderTimer();
-      });
-
-      var del = document.createElement("button");
-      del.className = "task-del";
-      del.innerHTML = "&times;";
-      del.setAttribute("aria-label", "Delete task");
-      del.addEventListener("click", function () {
-        var r = deleteTask(state.tasks, state.activeTask, idx);
-        state.tasks = r.tasks;
-        state.activeTask = r.activeTask;
-        save(STORE.tasks, state.tasks);
-        save(STORE.activeTask, state.activeTask);
-        renderTasks();
-        renderTimer();
-      });
-
-      item.appendChild(dot);
-      item.appendChild(input);
-      item.appendChild(del);
-      list.appendChild(item);
+      var dot = document.createElement("button"); dot.className = "task-dot"; dot.setAttribute("aria-label", "Set as active task");
+      dot.addEventListener("click", function () { state.activeTask = idx; save(STORE.activeTask, idx); renderTasks(); renderTimer(); });
+      var input = document.createElement("input"); input.className = "task-name"; input.type = "text"; input.value = name; input.setAttribute("aria-label", "Task name");
+      input.addEventListener("input", function () { state.tasks[idx] = input.value; save(STORE.tasks, state.tasks); renderTimer(); });
+      var del = document.createElement("button"); del.className = "task-del"; del.innerHTML = "&times;"; del.setAttribute("aria-label", "Delete task");
+      del.addEventListener("click", function () { var r = deleteTask(state.tasks, state.activeTask, idx); state.tasks = r.tasks; state.activeTask = r.activeTask; save(STORE.tasks, state.tasks); save(STORE.activeTask, state.activeTask); renderTasks(); renderTimer(); });
+      item.appendChild(dot); item.appendChild(input); item.appendChild(del); list.appendChild(item);
     });
   }
+  function addTask() { state.tasks.push("New task"); save(STORE.tasks, state.tasks); renderTasks(); renderTimer(); }
 
-  function addTask() {
-    state.tasks.push("New task");
-    save(STORE.tasks, state.tasks);
-    renderTasks();
-    renderTimer();
-  }
-
-  // ---------- Header fields ----------
-  function autosize(el) {
-    el.style.height = "auto";
-    el.style.height = el.scrollHeight + "px";
-  }
+  // ---------- Header ----------
+  function autosize(el) { el.style.height = "auto"; el.style.height = el.scrollHeight + "px"; }
   function initHeader() {
     var t = $("titleField"), m = $("messageField");
     t.value = load(STORE.title, "Life CEO Focus Room");
@@ -1274,12 +946,8 @@
     m.addEventListener("input", function () { save(STORE.message, m.value); autosize(m); });
   }
 
-  // ---------- Live Board ----------
-  function lbVal(key) {
-    var map = { focus: "lbFocus", community: "lbCommunity", link: "lbLink", brk: "lbBreak" };
-    var el = $(map[key]);
-    return el ? el.value : "";
-  }
+  // ---------- Live Board (rich text) ----------
+  function lbHtml(key) { var map = { focus: "lbFocus", community: "lbCommunity", link: "lbLink", brk: "lbBreak" }; var el = $(map[key]); return el ? el.innerHTML : ""; }
   function initLiveBoard() {
     var fields = [
       { id: "lbFocus", store: STORE.lbFocus, def: LB_DEFAULTS.focus },
@@ -1288,89 +956,287 @@
       { id: "lbBreak", store: STORE.lbBreak, def: LB_DEFAULTS.brk }
     ];
     fields.forEach(function (f) {
-      var el = $(f.id);
-      el.value = load(f.store, f.def);
-      el.addEventListener("input", function () {
-        save(f.store, el.value);
-        if (state.isBreak || state.live) renderTimer();
+      var el = $(f.id); el.innerHTML = load(f.store, esc(f.def));
+      el.addEventListener("input", function () { save(f.store, el.innerHTML); if (state.isBreak || state.live) renderTimer(); });
+    });
+    // Advertisement caption
+    var cap = $("adCaption"); cap.innerHTML = load(STORE.adCaption, esc(AD_CAPTION_DEFAULT));
+    cap.addEventListener("input", function () { save(STORE.adCaption, cap.innerHTML); });
+  }
+
+  // ---------- Rich-text toolbar ----------
+  var lastEditable = null;
+  function initRichToolbar() {
+    document.addEventListener("focusin", function (e) { if (e.target && e.target.getAttribute && e.target.getAttribute("data-rich") !== null) lastEditable = e.target; });
+    Array.prototype.forEach.call(document.querySelectorAll("#rtToolbar [data-cmd]"), function (b) {
+      b.addEventListener("mousedown", function (e) { e.preventDefault(); });
+      b.addEventListener("click", function () { applyCmd(b.getAttribute("data-cmd")); });
+    });
+    $("rtFore").addEventListener("input", function () { applyCmd("foreColor", $("rtFore").value); });
+    $("rtBack").addEventListener("input", function () { applyCmd("hiliteColor", $("rtBack").value); });
+  }
+  function applyCmd(cmd, val) {
+    if (!lastEditable) lastEditable = $("lbFocus");
+    lastEditable.focus();
+    try { document.execCommand(cmd, false, val || null); } catch (e) {}
+    if (cmd === "hiliteColor" && lastEditable.innerHTML.indexOf("background") === -1) { try { document.execCommand("backColor", false, val); } catch (e) {} }
+    var key = lastEditable.getAttribute("data-store"); if (key) save(key, lastEditable.innerHTML);
+    if (state.isBreak || state.live) renderTimer();
+  }
+
+  // ---------- Blob storage (IndexedDB) for ad + background ----------
+  var blobDB = null;
+  function initBlobDB(cb) {
+    try {
+      var r = indexedDB.open("LifeCeoFocusBlobs", 1);
+      r.onupgradeneeded = function (e) { var d = e.target.result; if (!d.objectStoreNames.contains("blobs")) d.createObjectStore("blobs", { keyPath: "id" }); };
+      r.onsuccess = function (e) { blobDB = e.target.result; cb && cb(); };
+      r.onerror = function () { blobDB = null; cb && cb(); };
+    } catch (e) { blobDB = null; cb && cb(); }
+  }
+  function putBlob(rec, cb) { if (!blobDB) { cb && cb(false); return; } try { var tx = blobDB.transaction(["blobs"], "readwrite"); tx.objectStore("blobs").put(rec); tx.oncomplete = function () { cb && cb(true); }; tx.onerror = function () { cb && cb(false); }; } catch (e) { cb && cb(false); } }
+  function getBlob(id, cb) { if (!blobDB) { cb(null); return; } try { var tx = blobDB.transaction(["blobs"], "readonly"); var rq = tx.objectStore("blobs").get(id); rq.onsuccess = function () { cb(rq.result || null); }; rq.onerror = function () { cb(null); }; } catch (e) { cb(null); } }
+  function delBlob(id, cb) { if (!blobDB) { cb && cb(); return; } try { var tx = blobDB.transaction(["blobs"], "readwrite"); tx.objectStore("blobs").delete(id); tx.oncomplete = function () { cb && cb(); }; } catch (e) { cb && cb(); } }
+
+  // ---------- Advertisement panel ----------
+  var adFallback = null;     // {blob,mediaType} when IndexedDB is unavailable
+  var adUrl = null;
+  function adSetStatus(t) { $("adStatus").textContent = t || ""; }
+  function adLoopOn() { return load(STORE.adLoop, true) === true; }
+  function adMutedOn() { return load(STORE.adMuted, true) === true; }
+  function handleAdFile(file, kind) {
+    if (!file) return;
+    if (kind === "video") {
+      var url = URL.createObjectURL(file); var v = document.createElement("video"); v.preload = "metadata";
+      v.onloadedmetadata = function () { var dur = v.duration; URL.revokeObjectURL(url); if (dur && dur > 60.5) { adSetStatus("That video is " + Math.round(dur) + "s — please use 60 seconds or less."); return; } storeAd(file, "video"); };
+      v.onerror = function () { URL.revokeObjectURL(url); adSetStatus("Could not read that video file."); };
+      v.src = url;
+    } else { storeAd(file, "image"); }
+  }
+  function storeAd(file, mediaType) {
+    putBlob({ id: "ad", blob: file, mime: file.type || "", mediaType: mediaType }, function (ok) {
+      if (ok) { adFallback = null; adSetStatus("Saved on this device."); }
+      else { adFallback = { blob: file, mediaType: mediaType }; adSetStatus("Preview only — too large or storage unavailable, so it is not saved between visits."); }
+      renderAd();
+    });
+  }
+  function renderAd() {
+    function draw(rec) {
+      var stage = $("adStage");
+      if (adUrl) { URL.revokeObjectURL(adUrl); adUrl = null; }
+      if (!rec) { stage.innerHTML = '<div class="ad-empty" id="adEmpty">No advertisement yet. Upload an image or a short video (max 60 seconds).</div>'; return; }
+      adUrl = URL.createObjectURL(rec.blob);
+      if (rec.mediaType === "video") {
+        var loop = adLoopOn(), muted = adMutedOn();
+        stage.innerHTML = '<video id="adVideo" ' + (loop ? "loop " : "") + (muted ? "muted " : "") + 'controls playsinline></video>';
+        var vid = $("adVideo"); vid.src = adUrl; vid.loop = loop; vid.muted = muted;
+      } else { stage.innerHTML = '<img id="adImg" alt="Advertisement" />'; $("adImg").src = adUrl; }
+    }
+    if (blobDB) getBlob("ad", function (rec) { draw(rec || adFallback); });
+    else draw(adFallback);
+  }
+  function renderAdForBlock() { /* ad always visible; hook kept for future per-block behavior */ }
+  function initAd() {
+    $("adImageBtn").addEventListener("click", function () { $("adImageInput").click(); });
+    $("adVideoBtn").addEventListener("click", function () { $("adVideoInput").click(); });
+    $("adImageInput").addEventListener("change", function (e) { handleAdFile(e.target.files[0], "image"); e.target.value = ""; });
+    $("adVideoInput").addEventListener("change", function (e) { handleAdFile(e.target.files[0], "video"); e.target.value = ""; });
+    $("adRemoveBtn").addEventListener("click", function () { adFallback = null; delBlob("ad", function () { adSetStatus("Removed."); renderAd(); }); });
+    var lb = $("adLoopBtn"), mb = $("adMuteBtn");
+    function updAdBtns() { lb.textContent = adLoopOn() ? "🔁 Loop On" : "➡ Loop Off"; lb.classList.toggle("loop-btn", true); lb.classList.toggle("active", adLoopOn()); mb.textContent = adMutedOn() ? "🔇 Muted" : "🔊 Sound"; }
+    lb.addEventListener("click", function () { save(STORE.adLoop, !adLoopOn()); updAdBtns(); var v = $("adVideo"); if (v) v.loop = adLoopOn(); });
+    mb.addEventListener("click", function () { save(STORE.adMuted, !adMutedOn()); updAdBtns(); var v = $("adVideo"); if (v) v.muted = adMutedOn(); });
+    updAdBtns();
+    renderAd();
+  }
+
+  // ---------- Background customization ----------
+  var bgUrl = null;
+  function applyBgStyle() {
+    var op = load(STORE.bgOpacity, 0.5), bl = load(STORE.bgBlur, 0);
+    var layer = $("bgLayer"); layer.style.opacity = op; layer.style.filter = "blur(" + bl + "px)";
+    var accent = load(STORE.bgAccent, ""); var root = document.documentElement.style;
+    if (accent) { root.setProperty("--accent", accent); root.setProperty("--accent-deep", shade(accent, -22)); root.setProperty("--accent-soft", shade(accent, 28)); }
+    else { root.removeProperty("--accent"); root.removeProperty("--accent-deep"); root.removeProperty("--accent-soft"); }
+    var theme = load(STORE.bgTheme, "");
+    if (theme) { document.body.style.background = "linear-gradient(155deg," + shade(theme, 22) + " 0%," + theme + " 55%," + shade(theme, -12) + " 100%)"; document.body.style.backgroundAttachment = "fixed"; }
+    else { document.body.style.background = ""; }
+  }
+  function loadBgImage() {
+    getBlob("bg", function (rec) {
+      var layer = $("bgLayer");
+      if (bgUrl) { URL.revokeObjectURL(bgUrl); bgUrl = null; }
+      if (rec) { bgUrl = URL.createObjectURL(rec.blob); layer.style.backgroundImage = "url(" + bgUrl + ")"; layer.style.display = "block"; }
+      else { layer.style.backgroundImage = ""; layer.style.display = "none"; }
+    });
+  }
+  function initBg() {
+    $("bgOpacity").value = load(STORE.bgOpacity, 0.5);
+    $("bgBlur").value = load(STORE.bgBlur, 0);
+    var th = load(STORE.bgTheme, ""), ac = load(STORE.bgAccent, "");
+    if (th) $("themeColor").value = th; if (ac) $("accentColor").value = ac;
+    $("bgUploadBtn").addEventListener("click", function () { $("bgInput").click(); });
+    $("bgInput").addEventListener("change", function (e) {
+      var f = e.target.files[0]; e.target.value = "";
+      if (!f) return;
+      putBlob({ id: "bg", blob: f }, function (ok) { if (!ok) alert("Could not save the background image on this device (storage unavailable)."); loadBgImage(); });
+    });
+    $("bgRemoveBtn").addEventListener("click", function () { delBlob("bg", function () { loadBgImage(); }); });
+    $("bgOpacity").addEventListener("input", function () { save(STORE.bgOpacity, parseFloat($("bgOpacity").value)); applyBgStyle(); });
+    $("bgBlur").addEventListener("input", function () { save(STORE.bgBlur, parseFloat($("bgBlur").value)); applyBgStyle(); });
+    $("themeColor").addEventListener("input", function () { save(STORE.bgTheme, $("themeColor").value); applyBgStyle(); });
+    $("accentColor").addEventListener("input", function () { save(STORE.bgAccent, $("accentColor").value); applyBgStyle(); });
+    $("themeColorReset").addEventListener("click", function () { save(STORE.bgTheme, ""); applyBgStyle(); });
+    $("accentColorReset").addEventListener("click", function () { save(STORE.bgAccent, ""); applyBgStyle(); });
+    applyBgStyle(); loadBgImage();
+  }
+
+  // ---------- Live Room Timer (separate from focus timer) ----------
+  var lr = { mode: "countdown", target: 30, endAt: 0, remaining: 30, running: false, swStart: 0, swAcc: 0, interval: null };
+  function lrFmt(sec) { sec = Math.max(0, Math.floor(sec)); var m = Math.floor(sec / 60), s = sec % 60; return (m < 10 ? "0" + m : m) + ":" + (s < 10 ? "0" + s : s); }
+  function lrRender() {
+    var sec, warn = false;
+    if (lr.mode === "countdown") { sec = lr.running ? remainingFrom(lr.endAt, Date.now()) : lr.remaining; warn = sec <= Math.min(10, Math.max(3, lr.target * 0.2)) && sec > 0 && lr.running; }
+    else { sec = lr.running ? lr.swAcc + (Date.now() - lr.swStart) / 1000 : lr.swAcc; }
+    var txt = lrFmt(sec);
+    $("lrDisplay").textContent = txt; $("lrDisplay").classList.toggle("warn", warn);
+    $("speakerTime").textContent = txt; $("speakerTime").classList.toggle("warn", warn);
+  }
+  function lrTickStart() { if (lr.interval) return; lr.interval = setInterval(function () {
+    if (lr.mode === "countdown" && lr.running) { var left = remainingFrom(lr.endAt, Date.now()); if (left <= 0) { lr.running = false; lr.remaining = 0; lrRender(); lrStop(); endChime(); return; } }
+    lrRender();
+  }, 200); }
+  function lrTickStop() { if (lr.interval) { clearInterval(lr.interval); lr.interval = null; } }
+  function lrSetMode(m) { lr.mode = m; lr.running = false; lrTickStop(); Array.prototype.forEach.call($("lrModeRow").children, function (b) { b.classList.toggle("active", b.getAttribute("data-lrmode") === m); }); if (m === "countdown") lr.remaining = lr.target; else lr.swAcc = 0; lrRender(); }
+  function lrSetTarget(secs) { lr.target = secs; lr.remaining = secs; lr.running = false; lrTickStop(); if (lr.mode !== "countdown") lrSetMode("countdown"); lrRender(); }
+  function lrStart() { ensureAudio(); if (lr.running) return; lr.running = true; if (lr.mode === "countdown") { if (lr.remaining <= 0) lr.remaining = lr.target; lr.endAt = endTimeFor(Date.now(), lr.remaining); } else { lr.swStart = Date.now(); } lrTickStart(); lrRender(); }
+  function lrPause() { if (!lr.running) return; if (lr.mode === "countdown") lr.remaining = remainingFrom(lr.endAt, Date.now()); else lr.swAcc = lr.swAcc + (Date.now() - lr.swStart) / 1000; lr.running = false; lrTickStop(); lrRender(); }
+  function lrStop() { lr.running = false; lrTickStop(); }
+  function lrReset() { lr.running = false; lrTickStop(); if (lr.mode === "countdown") lr.remaining = lr.target; else lr.swAcc = 0; lrRender(); }
+  function parseTimeInput(v) { v = String(v || "").trim(); if (!v) return null; if (v.indexOf(":") >= 0) { var p = v.split(":"); var m = parseInt(p[0], 10) || 0, s = parseInt(p[1], 10) || 0; return m * 60 + s; } var n = parseInt(v, 10); return isNaN(n) ? null : n; }
+  function initLiveRoomTimer() {
+    Array.prototype.forEach.call($("lrModeRow").children, function (b) { b.addEventListener("click", function () { lrSetMode(b.getAttribute("data-lrmode")); }); });
+    Array.prototype.forEach.call($("lrPresetRow").children, function (b) { b.addEventListener("click", function () { lrSetTarget(parseInt(b.getAttribute("data-secs"), 10)); }); });
+    $("lrSetBtn").addEventListener("click", function () { var s = parseTimeInput($("lrCustom").value); if (s && s > 0) lrSetTarget(s); });
+    $("lrStartBtn").addEventListener("click", lrStart);
+    $("lrPauseBtn").addEventListener("click", lrPause);
+    $("lrResetBtn").addEventListener("click", lrReset);
+    $("lrBigBtn").addEventListener("click", function () { $("speakerStage").classList.add("show"); $("speakerStage").setAttribute("aria-hidden", "false"); lrRender(); });
+    $("speakerStart").addEventListener("click", lrStart);
+    $("speakerPause").addEventListener("click", lrPause);
+    $("speakerReset").addEventListener("click", lrReset);
+    $("speakerClose").addEventListener("click", function () { $("speakerStage").classList.remove("show"); $("speakerStage").setAttribute("aria-hidden", "true"); });
+    lrSetMode("countdown"); lrSetTarget(30);
+  }
+
+  // ---------- Emoji communication bar ----------
+  var EMOJI_CATS = [
+    { key: "all", label: "All", items: ["✅","❌","☕","💧","👀","🧘","⭐","🔥","❤️","😂","👏","🎯","⏰","🧠","🌿","🙌","✨","🚶","📌"] },
+    { key: "focus", label: "Focus", items: ["🎯","🧠","📌","⭐","🔥"] },
+    { key: "break", label: "Break", items: ["🧘","🌿","🚶","☕"] },
+    { key: "reaction", label: "Reaction", items: ["👀","🙌","✨","👏"] },
+    { key: "water", label: "Water", items: ["💧"] },
+    { key: "coffee", label: "Coffee", items: ["☕"] },
+    { key: "stretch", label: "Stretch", items: ["🧘","🚶","🙆"] },
+    { key: "celebration", label: "Celebrate", items: ["🎉","🥳","👏","⭐","🙌"] },
+    { key: "warning", label: "Warning", items: ["⚠️","⏰","🛑"] },
+    { key: "love", label: "Love", items: ["❤️","🥰","💛"] },
+    { key: "funny", label: "Funny", items: ["😂","🤣","😅"] },
+    { key: "calm", label: "Calm", items: ["🌿","😌","✅"] },
+    { key: "custom", label: "Custom", items: [] }
+  ];
+  var emojiActiveCat = "all";
+  var emojiSize = load(STORE.emojiSize, 22);
+  var emojiHighlightOn = false;
+  function customEmojis() { var c = load(STORE.emojiCustom, []); return Array.isArray(c) ? c : []; }
+  function renderEmojiCats() {
+    var box = $("emojiCats"); box.innerHTML = "";
+    EMOJI_CATS.forEach(function (c) {
+      var b = document.createElement("button"); b.className = "btn-small emoji-cat" + (c.key === emojiActiveCat ? " active" : ""); b.textContent = c.label;
+      b.addEventListener("click", function () { emojiActiveCat = c.key; renderEmojiCats(); renderEmojiItems(); });
+      box.appendChild(b);
+    });
+  }
+  function renderEmojiItems() {
+    var box = $("emojiItems"); box.innerHTML = "";
+    if (emojiActiveCat === "custom") {
+      var list = customEmojis();
+      if (!list.length) { var n = document.createElement("div"); n.className = "section-hint"; n.textContent = "No custom buttons yet — tap “＋ Custom”."; box.appendChild(n); }
+      list.forEach(function (txt, idx) {
+        var b = document.createElement("button"); b.className = "emoji-key" + (txt.length > 2 ? " text-key" : ""); b.textContent = txt; b.title = "Tap to show · long set below";
+        b.addEventListener("click", function () { showEmoji(txt); });
+        var edit = document.createElement("button"); edit.className = "emoji-small"; edit.textContent = "✎"; edit.title = "Edit"; edit.style.marginLeft = "2px";
+        edit.addEventListener("click", function (e) { e.stopPropagation(); var v = prompt("Edit button (emoji or short text):", txt); if (v !== null) { var l = customEmojis(); l[idx] = v.trim() || txt; save(STORE.emojiCustom, l); renderEmojiItems(); } });
+        var del = document.createElement("button"); del.className = "emoji-small btn-danger"; del.textContent = "✕"; del.title = "Delete";
+        del.addEventListener("click", function (e) { e.stopPropagation(); var l = customEmojis(); l.splice(idx, 1); save(STORE.emojiCustom, l); renderEmojiItems(); });
+        var wrap = document.createElement("span"); wrap.style.cssText = "display:inline-flex;gap:2px;align-items:center;"; wrap.appendChild(b); wrap.appendChild(edit); wrap.appendChild(del); box.appendChild(wrap);
       });
+      return;
+    }
+    var cat = null; for (var i = 0; i < EMOJI_CATS.length; i++) if (EMOJI_CATS[i].key === emojiActiveCat) cat = EMOJI_CATS[i];
+    (cat ? cat.items : []).forEach(function (em) {
+      var b = document.createElement("button"); b.className = "emoji-key"; b.textContent = em;
+      b.addEventListener("click", function () { showEmoji(em); });
+      box.appendChild(b);
     });
   }
-
-  // ---------- Sound toggle (timer chime) ----------
-  function updateMuteBtn() {
-    $("muteBtn").textContent = state.muted ? "🔇 Muted" : "🔊 Sound On";
+  function showEmoji(content) {
+    var stage = $("emojiStage"), t = $("emojiStageText");
+    t.textContent = content; t.style.fontSize = emojiSize + "vmin";
+    t.style.color = $("emojiColor").value;
+    t.style.background = emojiHighlightOn ? "rgba(154,109,91,0.18)" : "transparent";
+    t.style.padding = emojiHighlightOn ? "0.2em 0.4em" : "0";
+    t.style.borderRadius = "20px";
+    stage.classList.add("show"); stage.setAttribute("aria-hidden", "false");
   }
-  function toggleMute() {
-    state.muted = !state.muted;
-    save(STORE.muted, state.muted);
-    updateMuteBtn();
-    if (!state.muted) { ensureAudio(); chime(); }
-  }
-
-  // ---------- Music panel wiring ----------
-  function initMusic() {
-    var sel = $("trackSelect");
-    sel.innerHTML = "";
-    focusTracks.forEach(function (t, i) {
-      var o = document.createElement("option");
-      o.value = i;
-      o.textContent = t.name;
-      sel.appendChild(o);
-    });
-    sel.value = state.trackIndex;
-    $("currentTrackLabel").textContent = currentTrackName();
-    $("volumeSlider").value = state.volume;
-    updateMusicBtn();
-    updateMusicMuteBtn();
-    updateLoopBtn();
-
-    sel.addEventListener("change", function () { selectTrack(parseInt(sel.value, 10)); });
-    $("musicPlayBtn").addEventListener("click", toggleMusic);
-    $("testSoundBtn").addEventListener("click", testSound);
-    $("musicMuteBtn").addEventListener("click", toggleMusicMute);
-    $("loopBtn").addEventListener("click", toggleLoop);
-    $("volumeSlider").addEventListener("input", function () {
-      var v = parseFloat($("volumeSlider").value);
-      state.volume = isNaN(v) ? 0.6 : v;
-      save(STORE.volume, state.volume);
-      if (music) music.volume = state.volume;
-    });
+  function initEmoji() {
+    renderEmojiCats(); renderEmojiItems();
+    $("emojiColor").value = load(STORE.emojiColor, "#9a6d5b");
+    $("emojiAdd").addEventListener("click", function () { var v = prompt("New button — an emoji or short text:"); if (v && v.trim()) { var l = customEmojis(); l.push(v.trim()); save(STORE.emojiCustom, l); emojiActiveCat = "custom"; renderEmojiCats(); renderEmojiItems(); } });
+    $("emojiSizeUp").addEventListener("click", function () { emojiSize = Math.min(40, emojiSize + 3); save(STORE.emojiSize, emojiSize); var t = $("emojiStageText"); if (t.textContent) t.style.fontSize = emojiSize + "vmin"; });
+    $("emojiSizeDown").addEventListener("click", function () { emojiSize = Math.max(8, emojiSize - 3); save(STORE.emojiSize, emojiSize); var t = $("emojiStageText"); if (t.textContent) t.style.fontSize = emojiSize + "vmin"; });
+    $("emojiColor").addEventListener("input", function () { save(STORE.emojiColor, $("emojiColor").value); var t = $("emojiStageText"); if (t.textContent) t.style.color = $("emojiColor").value; });
+    $("emojiHighlight").addEventListener("click", function () { emojiHighlightOn = !emojiHighlightOn; $("emojiHighlight").classList.toggle("toggle-on", emojiHighlightOn); var t = $("emojiStageText"); if (t.textContent) { t.style.background = emojiHighlightOn ? "rgba(154,109,91,0.18)" : "transparent"; t.style.padding = emojiHighlightOn ? "0.2em 0.4em" : "0"; } });
+    $("emojiClear").addEventListener("click", function () { var s = $("emojiStage"); s.classList.remove("show"); s.setAttribute("aria-hidden", "true"); $("emojiStageText").textContent = ""; });
+    $("emojiStageClose").addEventListener("click", function () { var s = $("emojiStage"); s.classList.remove("show"); s.setAttribute("aria-hidden", "true"); });
+    $("emojiStage").addEventListener("click", function (e) { if (e.target === $("emojiStage")) { $("emojiStage").classList.remove("show"); $("emojiStage").setAttribute("aria-hidden", "true"); } });
+    $("emojiToggle").addEventListener("click", function () { $("emojiBar").classList.toggle("collapsed"); $("emojiToggle").textContent = $("emojiBar").classList.contains("collapsed") ? "▴" : "▾"; });
   }
 
-  // ---------- Media ----------
-  function initMedia() {
-    var img = $("mediaImg");
-    img.addEventListener("load", function () { mediaImageOk = true; renderMedia(); });
-    img.addEventListener("error", function () { mediaImageOk = false; renderMedia(); });
-    img.src = BREAK_IMAGE;
+  // ---------- Countdown settings UI ----------
+  function initCountdownSettings() {
+    function updCdUI() {
+      var on = cdEnabled(); $("cdToggle").textContent = on ? "On" : "Off"; $("cdToggle").classList.toggle("toggle-on", on);
+      Array.prototype.forEach.call($("cdLenRow").children, function (b) { b.classList.toggle("active", parseInt(b.getAttribute("data-cdlen"), 10) === cdLength()); });
+    }
+    $("cdToggle").addEventListener("click", function () { save(STORE.cdOn, !cdEnabled()); updCdUI(); });
+    Array.prototype.forEach.call($("cdLenRow").children, function (b) { b.addEventListener("click", function () { save(STORE.cdLen, parseInt(b.getAttribute("data-cdlen"), 10)); updCdUI(); }); });
+    updCdUI();
   }
 
-  // ---------- Fullscreen ----------
+  // ---------- Mute (timer chime) + fullscreen ----------
+  function updateMuteBtn() { $("muteBtn").textContent = state.muted ? "🔇 Muted" : "🔊 Sound On"; }
+  function toggleMute() { state.muted = !state.muted; save(STORE.muted, state.muted); updateMuteBtn(); if (!state.muted) { ensureAudio(); chime(); } }
   function toggleFullscreen() {
     var el = document.documentElement;
-    if (!document.fullscreenElement && !document.webkitFullscreenElement) {
-      if (el.requestFullscreen) el.requestFullscreen();
-      else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
-    } else {
-      if (document.exitFullscreen) document.exitFullscreen();
-      else if (document.webkitExitFullscreen) document.webkitExitFullscreen();
-    }
+    if (!document.fullscreenElement && !document.webkitFullscreenElement) { if (el.requestFullscreen) el.requestFullscreen(); else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen(); }
+    else { if (document.exitFullscreen) document.exitFullscreen(); else if (document.webkitExitFullscreen) document.webkitExitFullscreen(); }
   }
 
-  // ---------- Wire up ----------
+  // ---------- Init ----------
   function init() {
     initHeader();
     initLiveBoard();
-    initMusic();
-    initMedia();
+    initRichToolbar();
+    initSound();
+    initLiveRoomTimer();
+    initEmoji();
+    initCountdownSettings();
     setMode(state.modeKey);
     state.remaining = periodTotal();
-    renderTasks();
-    updateMuteBtn();
-    updateStartBtn();
-    renderTimer();
-    startTicker();
+    renderTasks(); updateMuteBtn(); updateStartBtn(); renderTimer(); startTicker();
+
+    initBlobDB(function () { initAd(); initBg(); });
 
     $("startPauseBtn").addEventListener("click", toggleStartPause);
     $("resetTimerBtn").addEventListener("click", resetTimer);
@@ -1383,54 +1249,29 @@
     $("liveStartBtn").addEventListener("click", startLiveSession);
     $("skipBlockBtn").addEventListener("click", skipLiveBlock);
 
-    Array.prototype.forEach.call($("modeBtns").children, function (b) {
-      b.addEventListener("click", function () { setMode(b.getAttribute("data-focus")); });
-    });
+    Array.prototype.forEach.call($("modeBtns").children, function (b) { b.addEventListener("click", function () { setMode(b.getAttribute("data-focus")); }); });
 
-    // Re-render immediately when tab/screen wakes so Date.now stays accurate
-    document.addEventListener("visibilitychange", function () {
-      if (!document.hidden) tick();
-    });
-
-    // Spacebar = start/pause (ignore while typing in a field)
+    document.addEventListener("visibilitychange", function () { if (!document.hidden) tick(); });
     document.addEventListener("keydown", function (e) {
       var tag = (e.target.tagName || "").toLowerCase();
-      if (e.code === "Space" && tag !== "input" && tag !== "textarea") {
-        e.preventDefault();
-        toggleStartPause();
-      }
+      var editable = e.target && e.target.getAttribute && e.target.getAttribute("contenteditable") !== null;
+      if (e.code === "Space" && tag !== "input" && tag !== "textarea" && !editable) { e.preventDefault(); toggleStartPause(); }
+      if (e.key === "Escape") { $("emojiStage").classList.remove("show"); $("speakerStage").classList.remove("show"); }
     });
   }
 
   // ====================================================================
-  // Test hook — exposes PURE logic only, for tests.html. Production
-  // behavior is unchanged; nothing here mutates internal app state.
+  // Test hook — PURE logic only, for tests.html. Unchanged contract.
   // ====================================================================
   window.__lifeCeoTest = {
-    fmt: fmt,
-    MODES: MODES,
-    LONG_BREAK_AFTER: LONG_BREAK_AFTER,
-    LIVE_SESSION: LIVE_SESSION,
-    liveTotalSeconds: liveTotalSeconds,
-    liveBlockAt: liveBlockAt,
-    blockTitle: blockTitle,
-    computeCycle: computeCycle,
-    deleteTask: deleteTask,
-    clampActive: clampActive,
-    parseStored: parseStored,
-    remainingFrom: remainingFrom,
-    endTimeFor: endTimeFor,
-    defaultTasks: defaultTasks,
-    focusTracks: focusTracks
+    fmt: fmt, MODES: MODES, LONG_BREAK_AFTER: LONG_BREAK_AFTER, LIVE_SESSION: LIVE_SESSION,
+    liveTotalSeconds: liveTotalSeconds, liveBlockAt: liveBlockAt, blockTitle: blockTitle,
+    computeCycle: computeCycle, deleteTask: deleteTask, clampActive: clampActive, parseStored: parseStored,
+    remainingFrom: remainingFrom, endTimeFor: endTimeFor, defaultTasks: defaultTasks, focusTracks: focusTracks
   };
-  // Back-compat alias requested in the brief.
   window.__bdf = window.__lifeCeoTest;
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", init);
-  } else {
-    init();
-  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init); else init();
 })();
 </script>
 </body>
