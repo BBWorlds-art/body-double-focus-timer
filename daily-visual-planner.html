@@ -272,12 +272,15 @@
   <div class="hamburger" id="hamburger" aria-label="Menu" role="button" tabindex="0"><i class="fas fa-bars"></i></div>
 
   <!-- Life CEO system navigation -->
-  <nav class="life-ceo-nav" aria-label="Life CEO sections">
+  <nav class="life-ceo-nav" id="lifeNav" aria-label="Life CEO sections">
     <a class="lc-nav-item" href="index.html"><i class="fas fa-circle-dot"></i> Focus Room</a>
-    <span class="lc-nav-item soon" aria-disabled="true" title="Coming later"><i class="fas fa-house"></i> Home Hub</span>
     <a class="lc-nav-item active" href="daily-visual-planner.html" aria-current="page"><i class="fas fa-calendar-day"></i> Daily Dashboard</a>
-    <span class="lc-nav-item soon" aria-disabled="true" title="Coming later"><i class="fas fa-circle-nodes"></i> Seven Spheres</span>
-    <span class="lc-nav-item soon" aria-disabled="true" title="Coming later"><i class="fas fa-compass"></i> Guide</span>
+    <span class="lc-nav-item soon" contenteditable="true" data-navkey="nav_home" title="Click to rename">Home Hub</span>
+    <span class="lc-nav-item soon" contenteditable="true" data-navkey="nav_spheres" title="Click to rename">Seven Spheres</span>
+    <span class="lc-nav-item soon" contenteditable="true" data-navkey="nav_resources" title="Click to rename">Resources</span>
+    <span class="lc-nav-item soon" contenteditable="true" data-navkey="nav_guide" title="Click to rename">Guide</span>
+    <span class="lc-nav-item soon" contenteditable="true" data-navkey="nav_extra1" title="Click to rename">Library</span>
+    <span class="lc-nav-item soon" contenteditable="true" data-navkey="nav_extra2" title="Click to rename">Notes Hub</span>
   </nav>
 
   <div class="container">
@@ -288,9 +291,15 @@
       <div class="profile-field"><i class="fas fa-cake-candles"></i><input type="date" id="profile-birthday" value="1990-01-01" aria-label="Your birthday" /></div>
 
       <div class="section-title"><span>📅 Calendar</span><i class="fas fa-calendar-alt"></i></div>
+      <div style="display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:8px;">
+        <button class="ghost-btn" id="cal-prev" style="min-height:38px; padding:6px 12px;" aria-label="Previous month"><i class="fas fa-chevron-left"></i></button>
+        <strong id="cal-label" style="font-size:.95em;"></strong>
+        <button class="ghost-btn" id="cal-next" style="min-height:38px; padding:6px 12px;" aria-label="Next month"><i class="fas fa-chevron-right"></i></button>
+      </div>
       <div class="calendar-header"><div>Su</div><div>Mo</div><div>Tu</div><div>We</div><div>Th</div><div>Fr</div><div>Sa</div></div>
       <div id="calendar-grid" class="calendar-grid"></div>
-      <button class="secondary-btn" id="today-btn" style="width:100%; margin-top:10px;"><i class="fas fa-sun"></i> Today</button>
+      <p style="font-size:.78em; color:#888; margin-top:8px; line-height:1.4;">Tap any day — past or future — to plan it. Days with saved plans show a dot.</p>
+      <button class="secondary-btn" id="today-btn" style="width:100%; margin-top:8px;"><i class="fas fa-sun"></i> Today</button>
 
       <div class="section-title" style="margin-top:24px;"><span>📊 Daily Stats</span><i class="fas fa-chart-line"></i></div>
       <div class="stats-grid">
@@ -377,6 +386,8 @@
         <div class="section">
           <div class="section-title"><span>🎯 Today's Goals</span><i class="fas fa-bullseye"></i></div>
           <textarea id="todays-goals" placeholder="What do you want to achieve today?" rows="4"></textarea>
+          <button class="ghost-btn" id="goals-mic" style="margin-top:8px;"><i class="fas fa-microphone"></i> Voice</button>
+          <span id="goals-mic-hint" style="font-size:.8em; color:#888; margin-left:6px;"></span>
           <div class="sticker-options" id="goals-stickers">
             <button class="sticker sticker-check" data-target="todays-goals" data-sticker="✅">✅</button>
             <button class="sticker sticker-cross" data-target="todays-goals" data-sticker="❌">❌</button>
@@ -495,6 +506,20 @@
         <div class="section full-width">
           <div class="section-title"><span>📝 Notes for Tomorrow</span><i class="fas fa-forward"></i></div>
           <textarea id="tomorrow-notes" placeholder="What do you need to remember for tomorrow?" rows="3"></textarea>
+          <button class="ghost-btn" id="tomorrow-mic" style="margin-top:8px;"><i class="fas fa-microphone"></i> Voice</button>
+          <span id="tomorrow-mic-hint" style="font-size:.8em; color:#888; margin-left:6px;"></span>
+        </div>
+
+        <!-- Notebook: ongoing feedback, comments, and things to remember (saved across days) -->
+        <div class="section full-width">
+          <div class="section-title"><span>📓 Notebook</span><i class="fas fa-book"></i></div>
+          <p style="font-size:.85em; color:#888; margin-bottom:12px;">Collect feedback, comments, and anything you need to remember. Saved on this device and kept across every day.</p>
+          <div class="media-toolbar">
+            <button class="secondary-btn" id="notebook-add"><i class="fas fa-plus"></i> Add note</button>
+            <button class="ghost-btn" id="notebook-mic"><i class="fas fa-microphone"></i> Voice note</button>
+            <span id="notebook-mic-hint" style="align-self:center; font-size:.85em; color:#888;"></span>
+          </div>
+          <div id="notebook-list" style="display:flex; flex-direction:column; gap:10px; margin-top:12px;"></div>
         </div>
       </div>
     </main>
@@ -845,18 +870,21 @@
     reminders.push(r); armReminder(r); renderReminders(); pushState();
   }
 
-  // ---------- Calendar ----------
+  // ---------- Calendar (with month navigation for future planning) ----------
+  var calView = new Date(); calView.setDate(1);
   function renderCalendar() {
     getAllDays(function (days) {
       var dataDates = {}; days.forEach(function (d) { dataDates[d.date] = true; });
-      var now = new Date(), year = now.getFullYear(), month = now.getMonth();
+      var year = calView.getFullYear(), month = calView.getMonth();
+      if ($('cal-label')) $('cal-label').textContent = calView.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
       var firstDay = new Date(year, month, 1).getDay(), daysInMonth = new Date(year, month + 1, 0).getDate();
+      var today = todayStr();
       var html = '';
       for (var i = 0; i < firstDay; i++) html += '<div class="calendar-day empty"></div>';
       for (var d = 1; d <= daysInMonth; d++) {
         var ds = year + '-' + String(month + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
-        var cls = 'calendar-day' + (ds === currentDate ? ' today selected' : '') + (dataDates[ds] ? ' has-data' : '');
-        html += '<div class="' + cls + '" data-date="' + ds + '" role="button" tabindex="0">' + d + '</div>';
+        var cls = 'calendar-day' + (ds === today ? ' today' : '') + (ds === currentDate ? ' selected' : '') + (dataDates[ds] ? ' has-data' : '');
+        html += '<div class="' + cls + '" data-date="' + ds + '" role="button" tabindex="0" aria-label="' + ds + '">' + d + '</div>';
       }
       $('calendar-grid').innerHTML = html;
       document.querySelectorAll('.calendar-day[data-date]').forEach(function (day) {
@@ -869,6 +897,7 @@
       });
     });
   }
+  function calShift(delta) { calView.setMonth(calView.getMonth() + delta); renderCalendar(); }
 
   // ---------- Pomodoro timer ----------
   function updateTimerDisplay() {
@@ -1272,6 +1301,66 @@
     modal.addEventListener('click', function (e) { if (e.target === modal) modal.remove(); });
   }
 
+  // ---------- Editable navigation names (shared keys with the Focus Room) ----------
+  function setupNav() {
+    var nav = $('lifeNav'); if (!nav) return;
+    nav.querySelectorAll('[data-navkey]').forEach(function (el) {
+      var key = el.getAttribute('data-navkey');
+      try { var raw = localStorage.getItem(key); if (raw !== null) { var v = JSON.parse(raw); if (v) el.textContent = v; } } catch (e) {}
+      el.addEventListener('input', function () { try { localStorage.setItem(key, JSON.stringify(el.textContent)); } catch (e) {} });
+      el.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); el.blur(); } });
+    });
+  }
+
+  // ---------- Notebook (ongoing notes, saved across days) ----------
+  function notebookData() { try { var a = JSON.parse(localStorage.getItem('planner_notebook') || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; } }
+  function notebookSave(a) { try { localStorage.setItem('planner_notebook', JSON.stringify(a)); } catch (e) {} }
+  function renderNotebook() {
+    var list = $('notebook-list'); if (!list) return; var data = notebookData(); list.innerHTML = '';
+    if (!data.length) { var e = document.createElement('div'); e.className = 'media-empty'; e.textContent = 'No notes yet — tap "Add note" or "Voice note".'; list.appendChild(e); return; }
+    data.forEach(function (item, idx) {
+      var row = document.createElement('div'); row.style.cssText = 'display:flex; gap:8px; align-items:flex-start; background:var(--gray); border-radius:12px; padding:10px;';
+      var ta = document.createElement('textarea'); ta.value = item.text || ''; ta.rows = 2; ta.style.cssText = 'flex:1 1 auto;'; ta.setAttribute('aria-label', 'Note');
+      ta.addEventListener('input', function () { var d = notebookData(); if (d[idx]) { d[idx].text = ta.value; notebookSave(d); } });
+      var del = document.createElement('button'); del.innerHTML = '<i class="fas fa-trash"></i>'; del.title = 'Delete note';
+      del.style.cssText = 'background:var(--danger); color:#fff; border:none; border-radius:10px; min-width:42px; min-height:42px; cursor:pointer;';
+      del.addEventListener('click', function () { var d = notebookData(); d.splice(idx, 1); notebookSave(d); renderNotebook(); });
+      row.appendChild(ta); row.appendChild(del); list.appendChild(row);
+    });
+  }
+  function notebookAdd(text) { var d = notebookData(); d.unshift({ text: text || '', ts: Date.now() }); notebookSave(d); renderNotebook(); return d; }
+
+  // ---------- Voice typing (Web Speech API; Chrome/Edge on https) ----------
+  var planRecog = null;
+  function speechSupported() { return ('webkitSpeechRecognition' in window) || ('SpeechRecognition' in window); }
+  function wireMic(btnId, hintId, getTarget) {
+    var btn = $(btnId); if (!btn) return;
+    var hint = hintId ? $(hintId) : null;
+    if (!speechSupported()) { btn.disabled = true; btn.style.opacity = '0.5'; if (hint) hint.textContent = 'Voice needs Chrome/Edge.'; return; }
+    btn.addEventListener('click', function () {
+      if (planRecog) { try { planRecog.stop(); } catch (e) {} return; }
+      var el = getTarget(); if (!el) return; if (el.focus) el.focus();
+      var SR = window.SpeechRecognition || window.webkitSpeechRecognition; planRecog = new SR();
+      planRecog.interimResults = false; planRecog.lang = navigator.language || 'en-US';
+      if (hint) hint.textContent = 'Listening…'; btn.style.background = 'var(--danger)'; btn.style.color = '#fff';
+      planRecog.onresult = function (e) {
+        var t = ''; for (var i = e.resultIndex; i < e.results.length; i++) t += e.results[i][0].transcript;
+        if ('value' in el) { el.value = (el.value ? el.value + ' ' : '') + t; if (el.dispatchEvent) el.dispatchEvent(new Event('input')); }
+        else { el.textContent = (el.textContent ? el.textContent + ' ' : '') + t; }
+      };
+      planRecog.onend = function () { if (hint) hint.textContent = ''; btn.style.background = ''; btn.style.color = ''; planRecog = null; };
+      planRecog.onerror = function () { if (hint) hint.textContent = 'Mic error / permission.'; btn.style.background = ''; btn.style.color = ''; planRecog = null; };
+      try { planRecog.start(); } catch (e) { planRecog = null; }
+    });
+  }
+  function setupNotebookAndVoice() {
+    renderNotebook();
+    $('notebook-add').addEventListener('click', function () { notebookAdd(''); var ta = $('notebook-list').querySelector('textarea'); if (ta) ta.focus(); });
+    wireMic('notebook-mic', 'notebook-mic-hint', function () { notebookAdd(''); return $('notebook-list').querySelector('textarea'); });
+    wireMic('goals-mic', 'goals-mic-hint', function () { return $('todays-goals'); });
+    wireMic('tomorrow-mic', 'tomorrow-mic-hint', function () { return $('tomorrow-notes'); });
+  }
+
   // ---------- Wire everything ----------
   function bindToolbar() {
     $('focus-mode-btn').addEventListener('click', openFocus);
@@ -1336,6 +1425,8 @@
     $('shop-modal').addEventListener('click', function (e) { if (e.target === $('shop-modal')) $('shop-modal').classList.remove('show'); });
     $('weekly-review').addEventListener('click', weeklyReview);
     $('daily-review').addEventListener('click', dailyReview);
+    $('cal-prev').addEventListener('click', function () { calShift(-1); });
+    $('cal-next').addEventListener('click', function () { calShift(1); });
     $('today-btn').addEventListener('click', function () { currentDate = todayStr(); loadAllData(); renderCalendar(); });
     $('export-data').addEventListener('click', exportData);
     $('import-data').addEventListener('click', importData);
@@ -1386,7 +1477,7 @@
 
   // ---------- Init ----------
   function init() {
-    setupTheme(); setupDate(); setupQuote(); setupSphere();
+    setupTheme(); setupDate(); setupQuote(); setupSphere(); setupNav(); setupNotebookAndVoice();
     bindToolbar(); bindTimer(); bindAudioControls(); bindMisc(); initDragDrop();
     updateTimerDisplay();
     initDB(function () { loadAllData(); renderCalendar(); });
