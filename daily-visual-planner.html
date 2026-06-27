@@ -48,6 +48,12 @@
   }
   @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 
+  .life-ceo-nav { max-width: 1500px; margin: 0 auto 20px; display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+  .lc-nav-item { font-size: .82em; font-weight: 700; padding: 9px 17px; border-radius: 999px; color: var(--primary); background: var(--light); box-shadow: var(--shadow); text-decoration: none; display: inline-flex; align-items: center; gap: 7px; transition: var(--transition); }
+  .lc-nav-item:hover { transform: translateY(-2px); }
+  .lc-nav-item.active { background: var(--secondary); color: #fff; }
+  .lc-nav-item.soon { opacity: .55; cursor: default; box-shadow: none; }
+
   .container { max-width: 1500px; margin: 0 auto; display: grid; grid-template-columns: 300px 1fr 320px; gap: 24px; }
   .sidebar { background: var(--light); border-radius: var(--radius); padding: 24px; box-shadow: var(--shadow); height: fit-content; }
   .left-sidebar, .right-sidebar { position: sticky; top: 20px; }
@@ -264,6 +270,15 @@
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <div class="hamburger" id="hamburger" aria-label="Menu" role="button" tabindex="0"><i class="fas fa-bars"></i></div>
+
+  <!-- Life CEO system navigation -->
+  <nav class="life-ceo-nav" aria-label="Life CEO sections">
+    <a class="lc-nav-item" href="index.html"><i class="fas fa-circle-dot"></i> Focus Room</a>
+    <span class="lc-nav-item soon" aria-disabled="true" title="Coming later"><i class="fas fa-house"></i> Home Hub</span>
+    <a class="lc-nav-item active" href="daily-visual-planner.html" aria-current="page"><i class="fas fa-calendar-day"></i> Daily Dashboard</a>
+    <span class="lc-nav-item soon" aria-disabled="true" title="Coming later"><i class="fas fa-circle-nodes"></i> Seven Spheres</span>
+    <span class="lc-nav-item soon" aria-disabled="true" title="Coming later"><i class="fas fa-compass"></i> Guide</span>
+  </nav>
 
   <div class="container">
     <!-- ============ LEFT SIDEBAR ============ -->
