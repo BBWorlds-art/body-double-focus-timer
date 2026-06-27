@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Life CEO Focus Room — Tests</title>
+<style>
+  :root {
+    --bg: #f7efe4;
+    --card: #fffbf5;
+    --border: rgba(193, 154, 122, 0.3);
+    --text: #4a3f38;
+    --soft: #8a7a6c;
+    --pass: #3f7d5a;
+    --fail: #b04a3a;
+    --accent: #9a6d5b;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    color: var(--text);
+    background: var(--bg);
+    margin: 0;
+    padding: 28px 18px 60px;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 820px; margin: 0 auto; }
+  h1 { font-size: 1.6rem; margin: 0 0 4px; }
+  .sub { color: var(--soft); margin: 0 0 22px; line-height: 1.5; }
+  .summary {
+    border-radius: 16px;
+    padding: 18px 22px;
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 22px;
+    border: 1px solid var(--border);
+    background: var(--card);
+  }
+  .summary.ok { color: var(--pass); }
+  .summary.bad { color: var(--fail); }
+  .group { margin-bottom: 22px; }
+  .group h2 {
+    font-size: 0.8rem;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--soft);
+    margin: 0 0 8px;
+  }
+  .case {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    padding: 9px 14px;
+    border-radius: 12px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    margin-bottom: 7px;
+    font-size: 0.96rem;
+  }
+  .case .tag { font-weight: 800; flex: 0 0 auto; }
+  .case.pass .tag { color: var(--pass); }
+  .case.fail .tag { color: var(--fail); }
+  .case .msg { color: var(--soft); font-size: 0.85rem; }
+  .note {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px 18px;
+    color: var(--soft);
+    line-height: 1.55;
+    font-size: 0.9rem;
+  }
+  code { background: rgba(176, 133, 115, 0.16); padding: 1px 6px; border-radius: 6px; }
+  iframe { display: none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Life CEO Focus Room — Test Suite</h1>
+  <p class="sub">Zero-dependency browser tests. No npm, no Node, no jsdom, no libraries.
+  This page loads <code>index.html</code> in a hidden iframe and tests the pure logic exposed
+  on <code>window.__lifeCeoTest</code>. Production behavior is untouched.</p>
+
+  <div id="summary" class="summary">Running tests…</div>
+  <div id="results"></div>
+
+  <div class="note" id="failNote" style="display:none;">
+    <strong>Could not reach the test hook.</strong><br />
+    Some browsers (e.g. Chrome) block one local <code>file://</code> page from reading another inside an iframe.
+    Run a tiny local server from the project folder and open this page over <code>http://</code>:
+    <br /><br />
+    <code>python3 -m http.server 8000</code> → then open <code>http://localhost:8000/tests.html</code>
+    <br /><br />
+    On GitHub Pages (https) it works directly.
+  </div>
+</div>
+
+<iframe id="app" src="index.html" title="app under test"></iframe>
+
+<script>
+(function () {
+  "use strict";
+
+  var groups = [];          // { name, cases: [{name, pass, msg}] }
+  var current = null;
+
+  function group(name) { current = { name: name, cases: [] }; groups.push(current); }
+  function record(name, pass, msg) { current.cases.push({ name: name, pass: !!pass, msg: msg || "" }); }
+
+  function eq(a, b) { return a === b; }
+  function deepEq(a, b) { return JSON.stringify(a) === JSON.stringify(b); }
+
+  // assertion helpers
+  function check(name, cond) { record(name, cond, cond ? "" : "expected truthy"); }
+  function checkEq(name, got, want) {
+    record(name, eq(got, want), eq(got, want) ? "" : "got " + JSON.stringify(got) + ", want " + JSON.stringify(want));
+  }
+  function checkDeep(name, got, want) {
+    record(name, deepEq(got, want), deepEq(got, want) ? "" : "got " + JSON.stringify(got) + ", want " + JSON.stringify(want));
+  }
+
+  function runTests(T) {
+    // ---------------- Timer formatting ----------------
+    group("Timer formatting (fmt)");
+    checkEq("fmt(0) -> 00:00", T.fmt(0), "00:00");
+    checkEq("fmt(9) zero-pads seconds", T.fmt(9), "00:09");
+    checkEq("fmt(65) -> 01:05", T.fmt(65), "01:05");
+    checkEq("fmt(600) -> 10:00", T.fmt(600), "10:00");
+    checkEq("fmt(1500) -> 25:00", T.fmt(1500), "25:00");
+    checkEq("fmt(-5) clamps to 00:00", T.fmt(-5), "00:00");
+    checkEq("fmt(59.6) rounds up", T.fmt(59.6), "01:00");
+
+    // ---------------- Focus -> Break transition ----------------
+    group("Focus -> Break transition");
+    var fb = T.computeCycle({ isBreak: false, completed: 0, round: 1 });
+    checkEq("focus end goes to break", fb.isBreak, true);
+    checkEq("focus end increments completed", fb.completed, 1);
+    checkEq("round unchanged on focus->break", fb.round, 1);
+    checkEq("no long-break note at completed=1", fb.showLong, false);
+
+    // ---------------- Break -> Focus transition ----------------
+    group("Break -> Focus transition");
+    var bf = T.computeCycle({ isBreak: true, completed: 4, round: 2 });
+    checkEq("break end goes to focus", bf.isBreak, false);
+    checkEq("completed unchanged on break->focus", bf.completed, 4);
+    checkEq("round bumps on break->focus", bf.round, 3);
+
+    // ---------------- Round counter logic ----------------
+    group("Round counter logic");
+    checkEq("round 1->2", T.computeCycle({ isBreak: true, completed: 1, round: 1 }).round, 2);
+    checkEq("round 3->4", T.computeCycle({ isBreak: true, completed: 3, round: 3 }).round, 4);
+    checkEq("round wraps 4->1", T.computeCycle({ isBreak: true, completed: 4, round: 4 }).round, 1);
+
+    // ---------------- Completed focus count + long-break note ----------------
+    group("Completed count + long-break note");
+    checkEq("completed 0->1", T.computeCycle({ isBreak: false, completed: 0, round: 1 }).completed, 1);
+    checkEq("completed 3->4", T.computeCycle({ isBreak: false, completed: 3, round: 4 }).completed, 4);
+    checkEq("long-break note on 4th focus", T.computeCycle({ isBreak: false, completed: 3, round: 4 }).showLong, true);
+    checkEq("no long-break note on 5th focus", T.computeCycle({ isBreak: false, completed: 4, round: 1 }).showLong, false);
+    checkEq("long-break note on 8th focus", T.computeCycle({ isBreak: false, completed: 7, round: 4 }).showLong, true);
+
+    // ---------------- 2-hour live session block order ----------------
+    group("2-hour live session block order");
+    var types = T.LIVE_SESSION.map(function (b) { return b.type; });
+    checkDeep("block type order",
+      types,
+      ["focus", "break", "focus", "break", "focus", "break", "focus", "break", "community"]);
+    var mins = T.LIVE_SESSION.map(function (b) { return b.min; });
+    checkDeep("block minute order", mins, [25, 5, 25, 5, 20, 5, 20, 5, 10]);
+    checkEq("session has 9 blocks", T.LIVE_SESSION.length, 9);
+    checkEq("first block is 25-min focus", T.liveBlockAt(0).min + "/" + T.liveBlockAt(0).type, "25/focus");
+    checkEq("last block is community", T.liveBlockAt(8).type, "community");
+    checkEq("block title focus #3", T.blockTitle(4), "Focus 3");
+    checkEq("block title community", T.blockTitle(8), "Community / Reset");
+
+    // ---------------- Total duration = 120 minutes ----------------
+    group("2-hour total duration");
+    checkEq("total seconds = 7200", T.liveTotalSeconds(), 7200);
+    checkEq("total minutes = 120", T.liveTotalSeconds() / 60, 120);
+    var sum = 0; T.LIVE_SESSION.forEach(function (b) { sum += b.min; });
+    checkEq("minutes add to 120", sum, 120);
+
+    // ---------------- Skip block behavior (index walk within bounds) ----------------
+    group("Skip block behavior");
+    checkEq("skip from 0 -> block 1 (break)", T.liveBlockAt(0 + 1).type, "break");
+    checkEq("skip from 7 -> block 8 (community)", T.liveBlockAt(7 + 1).type, "community");
+    checkEq("no block past the end", T.liveBlockAt(9), null);
+
+    // ---------------- Task list edge cases ----------------
+    group("Task list edge cases");
+    var d1 = T.deleteTask(["a", "b", "c"], 0, 1);
+    checkDeep("delete middle keeps others", d1.tasks, ["a", "c"]);
+    checkEq("delete keeps active in range", d1.activeTask, 0);
+
+    var d2 = T.deleteTask(["a", "b", "c"], 2, 2);
+    checkDeep("delete last item list", d2.tasks, ["a", "b"]);
+    checkEq("active clamps when last removed", d2.activeTask, 1);
+
+    // deleting the last task creates fallback "New task"
+    group('Deleting last task creates fallback "New task"');
+    var d3 = T.deleteTask(["only"], 0, 0);
+    checkDeep("empty list gets New task", d3.tasks, ["New task"]);
+    checkEq("active resets to 0", d3.activeTask, 0);
+
+    // active index does not go out of range
+    group("Active task index stays in range");
+    checkEq("clampActive(5,3) -> 0", T.clampActive(5, 3), 0);
+    checkEq("clampActive(3,3) -> 0 (==len)", T.clampActive(3, 3), 0);
+    checkEq("clampActive(1,3) -> 1 (valid)", T.clampActive(1, 3), 1);
+    checkEq("clampActive(0,1) -> 0", T.clampActive(0, 1), 0);
+
+    // ---------------- localStorage load/save fallback ----------------
+    group("localStorage load/save fallback");
+    checkEq("null returns fallback", T.parseStored(null, "fallback"), "fallback");
+    checkEq("valid string parses", T.parseStored('"hi"', "x"), "hi");
+    checkEq("valid number parses", T.parseStored("42", 0), 42);
+    checkDeep("valid array parses", T.parseStored("[1,2,3]", []), [1, 2, 3]);
+
+    // corrupt JSON does not crash the app
+    group("Corrupt localStorage JSON does not crash");
+    checkEq("broken JSON -> fallback", T.parseStored("{not valid", "safe"), "safe");
+    checkEq("truncated array -> fallback", T.parseStored("[1,2,", []).length, 0);
+    var threw = false;
+    try { T.parseStored("???", "ok"); } catch (e) { threw = true; }
+    checkEq("parseStored never throws", threw, false);
+
+    // ---------------- Date.now timing behavior ----------------
+    group("Date.now timing behavior");
+    var base = 1000000;
+    checkEq("endTimeFor adds ms", T.endTimeFor(base, 60), base + 60000);
+    checkEq("remainingFrom counts down", T.remainingFrom(base + 60000, base), 60);
+    checkEq("remainingFrom mid-period", T.remainingFrom(base + 60000, base + 20000), 40);
+    checkEq("remaining clamps to 0 (screen slept past end)", T.remainingFrom(base + 60000, base + 999999), 0);
+    check("expired when remaining <= 0", T.remainingFrom(base + 60000, base + 90000) <= 0);
+
+    // ---------------- Pause / resume timing behavior ----------------
+    group("Pause / resume timing behavior");
+    var t0 = 5000000;
+    var endTime = T.endTimeFor(t0, 100);            // start: 100s period
+    var atPause = t0 + 30000;                        // pause after 30s
+    var remainingAtPause = T.remainingFrom(endTime, atPause);
+    checkEq("70s remaining after 30s", remainingAtPause, 70);
+    var resumeAt = atPause + 500000;                // resume much later
+    var newEnd = T.endTimeFor(resumeAt, remainingAtPause);
+    checkEq("resume preserves remaining", T.remainingFrom(newEnd, resumeAt), 70);
+    check("paused time does not drain the clock", remainingAtPause === 70);
+  }
+
+  function render() {
+    var total = 0, passed = 0;
+    var resultsEl = document.getElementById("results");
+    resultsEl.innerHTML = "";
+    groups.forEach(function (g) {
+      var gEl = document.createElement("div");
+      gEl.className = "group";
+      var h = document.createElement("h2");
+      h.textContent = g.name;
+      gEl.appendChild(h);
+      g.cases.forEach(function (c) {
+        total++;
+        if (c.pass) passed++;
+        var cEl = document.createElement("div");
+        cEl.className = "case " + (c.pass ? "pass" : "fail");
+        cEl.innerHTML = '<span class="tag">' + (c.pass ? "PASS" : "FAIL") + '</span>' +
+          '<span>' + c.name + '</span>' +
+          (c.msg ? '<span class="msg">— ' + c.msg + '</span>' : '');
+        gEl.appendChild(cEl);
+      });
+      resultsEl.appendChild(gEl);
+    });
+
+    var sum = document.getElementById("summary");
+    var ok = passed === total && total > 0;
+    sum.className = "summary " + (ok ? "ok" : "bad");
+    sum.textContent = (ok ? "✓ All tests passed — " : "✗ Some tests failed — ") +
+      passed + " / " + total + " passing";
+  }
+
+  function fail(msg) {
+    var sum = document.getElementById("summary");
+    sum.className = "summary bad";
+    sum.textContent = "✗ " + msg;
+    document.getElementById("failNote").style.display = "block";
+  }
+
+  // Wait for the iframe app to expose the test hook, then run.
+  var tries = 0;
+  function attempt() {
+    tries++;
+    var T = null;
+    try {
+      var win = document.getElementById("app").contentWindow;
+      T = win && win.__lifeCeoTest;
+    } catch (e) { T = null; }
+
+    if (T) {
+      try {
+        runTests(T);
+        render();
+      } catch (err) {
+        fail("Test run threw: " + (err && err.message ? err.message : err));
+      }
+      return;
+    }
+    if (tries > 60) { fail("Could not reach window.__lifeCeoTest after waiting."); return; }
+    setTimeout(attempt, 100);
+  }
+
+  window.addEventListener("load", function () { setTimeout(attempt, 150); });
+})();
+</script>
+</body>
+</html>
