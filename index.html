@@ -261,6 +261,28 @@
   #speakerTime { font-size: 30vmin; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; color: var(--accent-deep); }
   #speakerTime.warn { color: #b8412f; animation: lrPulse 1s infinite; }
 
+  /* Silent celebration */
+  #confetti { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 70; display: none; }
+  #confetti.show { display: block; }
+  .well-done { position: fixed; top: 18%; left: 50%; transform: translateX(-50%) scale(0.8); z-index: 71; background: rgba(255, 251, 245, 0.95); color: var(--accent-deep); font-weight: 800; font-size: clamp(1.6rem, 6vw, 3rem); padding: 16px 34px; border-radius: 999px; box-shadow: var(--shadow); opacity: 0; transition: opacity 0.3s ease, transform 0.3s ease; pointer-events: none; }
+  .well-done.show { opacity: 1; transform: translateX(-50%) scale(1); }
+
+  /* Presenter / clean stage mode */
+  .presenter-exit { position: fixed; top: 16px; right: 16px; z-index: 80; display: none; min-height: 44px; }
+  body.presenter .presenter-exit { display: inline-flex; }
+  body.presenter .nav-placeholder,
+  body.presenter header,
+  body.presenter #controlsToggle,
+  body.presenter #controlsDrawer,
+  body.presenter .emoji-bar,
+  body.presenter .footer-note { display: none !important; }
+  body.presenter { padding-bottom: clamp(14px, 3vw, 32px); }
+
+  /* Layout panel */
+  .layout-card .lay-toggles { display: flex; flex-wrap: wrap; gap: 4px 14px; }
+  .lay-toggles label { display: inline-flex; align-items: center; gap: 6px; font-size: 0.92rem; font-weight: 600; color: var(--text); }
+  .lay-toggles input { width: 18px; height: 18px; accent-color: var(--accent); }
+
   .footer-note { text-align: center; color: var(--text-soft); font-size: 0.82rem; opacity: 0.75; }
 
   @media (max-width: 480px) {
@@ -272,6 +294,9 @@
 </head>
 <body>
 <div id="bgLayer"></div>
+<canvas id="confetti" aria-hidden="true"></canvas>
+<div class="well-done" id="wellDone" aria-hidden="true">🎉 Well done!</div>
+<button class="btn-primary presenter-exit" id="presenterExit">✕ Exit presenter</button>
 
 <div class="app">
 
@@ -397,6 +422,12 @@
   <button class="controls-toggle" id="controlsToggle" aria-expanded="true">⚙ Hide controls</button>
   <div class="controls-drawer" id="controlsDrawer">
   <p class="studio-divider">Studio controls</p>
+
+  <section class="card layout-card">
+    <p class="section-label"><span>🧩 Layout &amp; Presenter</span><button class="btn-small" id="presenterBtn">🎬 Presenter mode</button></p>
+    <p class="section-hint" style="margin:0 0 12px;">Tick the panels you want visible. Your choice is saved, so the layout stays the way you set it.</p>
+    <div class="lay-toggles" id="layoutToggles"></div>
+  </section>
 
   <div class="studio-grid">
     <!-- Live session -->
@@ -710,78 +741,64 @@
     return buf;
   }
 
-  // ---------- Focus Sound engine (noise + uploaded files) ----------
-  var musicEl = null, noiseSrc = null, noiseGain = null, soundKind = null, soundPlaying = false;
+  // ---------- Focus Sound engine — every sound is synthesized with Web Audio,
+  //            so all of them play on every platform (iPhone too) with no files. ----------
+  var soundNodes = [], soundGain = null, soundPlaying = false;
   var SOUND_OPTIONS = [
-    { id: "noise:brown", name: "Brown Noise (built-in)" },
-    { id: "noise:pink", name: "Pink Noise (built-in)" },
-    { id: "noise:white", name: "White Noise (built-in)" }
+    { id: "brown", name: "Brown Noise" },
+    { id: "pink", name: "Pink Noise" },
+    { id: "white", name: "White Noise" },
+    { id: "rain", name: "Rain" },
+    { id: "ocean", name: "Ocean Waves" },
+    { id: "cafe", name: "Cafe Hum" },
+    { id: "deep", name: "Deep Focus" },
+    { id: "reset", name: "Break Reset" }
   ];
-  for (var fi = 0; fi < focusTracks.length; fi++) SOUND_OPTIONS.push({ id: "file:" + fi, name: focusTracks[fi].name + " (file)" });
-
   function selectedSound() {
-    var s = load(STORE.soundSel, "noise:brown");
-    var ok = false; for (var i = 0; i < SOUND_OPTIONS.length; i++) if (SOUND_OPTIONS[i].id === s) ok = true;
-    return ok ? s : "noise:brown";
+    var s = load(STORE.soundSel, "brown");
+    for (var i = 0; i < SOUND_OPTIONS.length; i++) if (SOUND_OPTIONS[i].id === s) return s;
+    return "brown"; // also migrates any old "noise:*"/"file:*" values
   }
   function selectedSoundName() { var s = selectedSound(); for (var i = 0; i < SOUND_OPTIONS.length; i++) if (SOUND_OPTIONS[i].id === s) return SOUND_OPTIONS[i].name; return "—"; }
-  function ensureMusicEl() {
-    if (!musicEl) {
-      musicEl = new Audio(); musicEl.preload = "none"; musicEl.loop = state.musicLoop;
-      musicEl.volume = state.volume; musicEl.muted = state.musicMuted;
-      musicEl.addEventListener("error", function () { if (soundKind === "file") { soundPlaying = false; setMusicStatus("File missing — add it to /music.", "warn"); updateMusicBtn(); } });
-    }
+
+  function stopSoundInternal() {
+    soundNodes.forEach(function (n) { try { if (n.stop) n.stop(); } catch (e) {} try { if (n.disconnect) n.disconnect(); } catch (e) {} });
+    soundNodes = [];
+    if (soundGain) { try { soundGain.disconnect(); } catch (e) {} soundGain = null; }
   }
-  function stopAllSound() {
-    if (noiseSrc) { try { noiseSrc.stop(); } catch (e) {} try { noiseSrc.disconnect(); } catch (e) {} noiseSrc = null; }
-    if (musicEl) { try { musicEl.pause(); } catch (e) {} }
-    soundKind = null;
+  function buildSoundGraph(id, out) {
+    function noise(type) { var s = audioCtx.createBufferSource(); s.buffer = noiseBuffer(type); s.loop = true; s.start(); soundNodes.push(s); return s; }
+    function filt(node, type, freq, q) { var f = audioCtx.createBiquadFilter(); f.type = type; f.frequency.value = freq; if (q) f.Q.value = q; node.connect(f); return f; }
+    function osc(freq, type, gainVal) { var o = audioCtx.createOscillator(); o.type = type || "sine"; o.frequency.value = freq; var g = audioCtx.createGain(); g.gain.value = gainVal; o.connect(g); g.connect(out); o.start(); soundNodes.push(o); return o; }
+    if (id === "brown" || id === "pink" || id === "white") { noise(id).connect(out); return; }
+    if (id === "rain") { var n = noise("white"); var hp = filt(n, "highpass", 1100); var lp = filt(hp, "lowpass", 7800); lp.connect(out); return; }
+    if (id === "ocean") {
+      var nb = noise("brown"); var lo = filt(nb, "lowpass", 600);
+      var g = audioCtx.createGain(); g.gain.value = 0.6; lo.connect(g); g.connect(out);
+      var lfo = audioCtx.createOscillator(); lfo.frequency.value = 0.12; var lg = audioCtx.createGain(); lg.gain.value = 0.4; lfo.connect(lg); lg.connect(g.gain); lfo.start(); soundNodes.push(lfo); return;
+    }
+    if (id === "cafe") { var nc = noise("brown"); var lpc = filt(nc, "lowpass", 950, 0.7); var hpc = filt(lpc, "highpass", 160); hpc.connect(out); return; }
+    if (id === "deep") { var nd = noise("brown"); var lpd = filt(nd, "lowpass", 220); lpd.connect(out); osc(68, "sine", 0.16); return; }
+    if (id === "reset") { osc(220, "sine", 0.05); osc(277.18, "sine", 0.05); osc(329.63, "sine", 0.045); return; }
+    noise("brown").connect(out);
   }
   function musicPlay() {
     ensureAudio();
-    var sel = selectedSound();
-    if (sel.indexOf("noise:") === 0) {
-      if (!audioCtx) { setMusicStatus("Audio not supported here.", "warn"); return; }
-      stopAllSound();
-      var type = sel.split(":")[1];
-      noiseSrc = audioCtx.createBufferSource(); noiseSrc.buffer = noiseBuffer(type); noiseSrc.loop = true;
-      noiseGain = audioCtx.createGain(); noiseGain.gain.value = state.musicMuted ? 0 : state.volume;
-      noiseSrc.connect(noiseGain); noiseGain.connect(audioCtx.destination); noiseSrc.start();
-      soundKind = "noise"; soundPlaying = true; setMusicStatus(selectedSoundName() + " playing", "ok");
-    } else {
-      var idx = parseInt(sel.split(":")[1], 10); var track = focusTracks[idx];
-      ensureMusicEl(); stopAllSound();
-      musicEl.src = track.file; musicEl.loop = state.musicLoop; musicEl.muted = state.musicMuted; musicEl.volume = state.volume;
-      soundKind = "file";
-      musicEl.play().then(function () { soundPlaying = true; setMusicStatus(track.name + " playing", "ok"); updateMusicBtn(); })
-        ["catch"](function () { soundPlaying = false; setMusicStatus("“" + track.name + "” file missing — add it to /music.", "warn"); updateMusicBtn(); });
-    }
-    updateMusicBtn();
+    if (!audioCtx) { setMusicStatus("Audio not supported here.", "warn"); return; }
+    stopSoundInternal();
+    soundGain = audioCtx.createGain(); soundGain.gain.value = state.musicMuted ? 0 : state.volume; soundGain.connect(audioCtx.destination);
+    buildSoundGraph(selectedSound(), soundGain);
+    soundPlaying = true; setMusicStatus(selectedSoundName() + " playing", "ok"); updateMusicBtn();
   }
-  function musicPause() {
-    if (soundKind === "file" && musicEl) { musicEl.pause(); soundPlaying = false; }
-    else { stopAllSound(); soundPlaying = false; } // noise can't pause mid-buffer; it restarts on play
-    setMusicStatus("Paused", "");
-    updateMusicBtn();
-  }
-  function musicStop() { stopAllSound(); soundPlaying = false; setMusicStatus("Stopped", ""); updateMusicBtn(); }
+  function musicPause() { stopSoundInternal(); soundPlaying = false; setMusicStatus("Paused", ""); updateMusicBtn(); }
+  function musicStop() { stopSoundInternal(); soundPlaying = false; setMusicStatus("Stopped", ""); updateMusicBtn(); }
   function musicPlayPause() { if (soundPlaying) musicPause(); else musicPlay(); }
-  function musicTest() {
-    ensureAudio();
-    var sel = selectedSound();
-    if (sel.indexOf("noise:") === 0) { var wasPlaying = soundPlaying; musicPlay(); setTimeout(function () { if (!wasPlaying) musicStop(); setMusicStatus("Test done — audio works.", "ok"); }, 1400); }
-    else {
-      var idx = parseInt(sel.split(":")[1], 10), track = focusTracks[idx];
-      ensureMusicEl(); var probe = new Audio(); probe.src = track.file; probe.volume = state.musicMuted ? 0 : state.volume;
-      probe.play().then(function () { setMusicStatus(track.name + " plays ✓", "ok"); setTimeout(function () { try { probe.pause(); } catch (e) {} }, 1400); })
-        ["catch"](function () { setMusicStatus("“" + track.name + "” file missing.", "warn"); });
-    }
-  }
+  function musicTest() { var was = soundPlaying; musicPlay(); setTimeout(function () { if (!was) musicStop(); setMusicStatus("Test done — sound works.", "ok"); }, 1500); }
   function setMusicStatus(txt, cls) { var el = $("musicStatus"); el.textContent = txt; el.className = "music-status" + (cls ? " " + cls : ""); }
   function updateMusicBtn() { $("musicPlayBtn").textContent = soundPlaying ? "⏸ Pause" : "▶ Play"; }
   function updateMusicMuteBtn() { $("musicMuteBtn").textContent = state.musicMuted ? "🔇 Sound Off" : "🔊 Sound On"; }
-  function updateLoopBtn() { $("loopBtn").textContent = state.musicLoop ? "🔁 Loop On" : "➡ Loop Off"; $("loopBtn").classList.toggle("active", state.musicLoop); }
-  function applySoundVolume() { if (noiseGain) noiseGain.gain.value = state.musicMuted ? 0 : state.volume; if (musicEl) { musicEl.volume = state.volume; musicEl.muted = state.musicMuted; } }
+  function updateLoopBtn() { $("loopBtn").textContent = "🔁 Continuous"; $("loopBtn").classList.add("active"); }
+  function applySoundVolume() { if (soundGain) soundGain.gain.value = state.musicMuted ? 0 : state.volume; }
 
   function initSound() {
     var sel = $("trackSelect"); sel.innerHTML = "";
@@ -790,12 +807,12 @@
     $("currentTrackLabel").textContent = selectedSoundName();
     $("volumeSlider").value = state.volume;
     updateMusicBtn(); updateMusicMuteBtn(); updateLoopBtn();
-    sel.addEventListener("change", function () { save(STORE.soundSel, sel.value); $("currentTrackLabel").textContent = selectedSoundName(); if (soundPlaying) musicPlay(); });
+    sel.addEventListener("change", function () { save(STORE.soundSel, sel.value); $("currentTrackLabel").textContent = selectedSoundName(); if (soundPlaying) musicPlay(); if (state.isBreak || state.live) renderTimer(); });
     $("musicPlayBtn").addEventListener("click", musicPlayPause);
     $("musicStopBtn").addEventListener("click", musicStop);
     $("testSoundBtn").addEventListener("click", musicTest);
     $("musicMuteBtn").addEventListener("click", function () { state.musicMuted = !state.musicMuted; save(STORE.musicMuted, state.musicMuted); applySoundVolume(); updateMusicMuteBtn(); });
-    $("loopBtn").addEventListener("click", function () { state.musicLoop = !state.musicLoop; if (musicEl) musicEl.loop = state.musicLoop; save(STORE.musicLoop, state.musicLoop); updateLoopBtn(); });
+    $("loopBtn").addEventListener("click", function () { setMusicStatus("These ambient sounds loop continuously.", ""); });
     $("volumeSlider").addEventListener("input", function () { var v = parseFloat($("volumeSlider").value); state.volume = isNaN(v) ? 0.6 : v; save(STORE.volume, state.volume); applySoundVolume(); });
   }
 
@@ -888,10 +905,75 @@
 
   function periodComplete() {
     chime();
+    // Silent confetti + "Well done!" whenever a FOCUS block finishes.
+    var focusJustFinished = state.live ? (LIVE_SESSION[state.live.index].type === "focus") : !state.isBreak;
+    if (focusJustFinished) celebrate("🎉 Well done!");
     if (state.live) { advanceLive(); return; }
     var next = computeCycle({ isBreak: state.isBreak, completed: state.completed, round: state.round });
     if (state.isBreak) { advanceTaskForward(); state.round = next.round; switchTo(false, true); }
     else { state.completed = next.completed; save(STORE.completed, state.completed); $("longBreakNote").classList.toggle("show", next.showLong); switchTo(true, true); }
+  }
+
+  // ---------- Silent celebration (confetti, no sound) ----------
+  var confettiRAF = null;
+  function celebrate(msg) {
+    var banner = $("wellDone"); banner.textContent = msg; banner.classList.add("show");
+    setTimeout(function () { banner.classList.remove("show"); }, 2600);
+    confettiBurst();
+  }
+  function confettiBurst() {
+    var cv = $("confetti"); if (!cv) return;
+    var ctx = cv.getContext("2d");
+    cv.width = window.innerWidth; cv.height = window.innerHeight; cv.classList.add("show");
+    var colors = ["#b08573", "#c9a99a", "#9a6d5b", "#8fa394", "#f0c987", "#e8b4a0"];
+    var parts = [], N = 140;
+    for (var i = 0; i < N; i++) parts.push({
+      x: cv.width / 2 + (Math.random() - 0.5) * 120, y: cv.height * 0.28,
+      vx: (Math.random() - 0.5) * 9, vy: Math.random() * -9 - 3,
+      g: 0.22 + Math.random() * 0.15, s: 5 + Math.random() * 7,
+      rot: Math.random() * 6.28, vr: (Math.random() - 0.5) * 0.3,
+      c: colors[(Math.random() * colors.length) | 0]
+    });
+    var start = null;
+    if (confettiRAF) cancelAnimationFrame(confettiRAF);
+    function frame(ts) {
+      if (start === null) start = ts; var elapsed = ts - start;
+      ctx.clearRect(0, 0, cv.width, cv.height);
+      parts.forEach(function (p) {
+        p.vy += p.g; p.x += p.vx; p.y += p.vy; p.rot += p.vr;
+        ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot);
+        ctx.fillStyle = p.c; ctx.globalAlpha = Math.max(0, 1 - elapsed / 2600);
+        ctx.fillRect(-p.s / 2, -p.s / 2, p.s, p.s * 0.6); ctx.restore();
+      });
+      if (elapsed < 2600) confettiRAF = requestAnimationFrame(frame);
+      else { ctx.clearRect(0, 0, cv.width, cv.height); cv.classList.remove("show"); confettiRAF = null; }
+    }
+    confettiRAF = requestAnimationFrame(frame);
+  }
+
+  // ---------- Presenter (clean stage) mode ----------
+  function setPresenter(on) { document.body.classList.toggle("presenter", on); save("bdf_presenter", on); }
+  function initPresenter() {
+    if (load("bdf_presenter", false) === true) document.body.classList.add("presenter");
+    $("presenterBtn").addEventListener("click", function () { setPresenter(true); });
+    $("presenterExit").addEventListener("click", function () { setPresenter(false); });
+  }
+
+  // ---------- Saveable layout (which control panels are visible) ----------
+  function initLayout() {
+    var sections = Array.prototype.slice.call(document.querySelectorAll(".studio-grid > section"));
+    var saved = load("bdf_layout", {});
+    var panel = $("layoutToggles"); panel.innerHTML = "";
+    sections.forEach(function (sec, i) {
+      var labelEl = sec.querySelector(".section-label span");
+      var name = labelEl ? labelEl.textContent.trim() : ("Panel " + (i + 1));
+      var key = "sec_" + i, visible = saved[key] !== false;
+      sec.style.display = visible ? "" : "none";
+      var wrap = document.createElement("label");
+      var cb = document.createElement("input"); cb.type = "checkbox"; cb.checked = visible;
+      cb.addEventListener("change", function () { sec.style.display = cb.checked ? "" : "none"; saved[key] = cb.checked; save("bdf_layout", saved); });
+      wrap.appendChild(cb); wrap.appendChild(document.createTextNode(" " + name)); panel.appendChild(wrap);
+    });
   }
   function advanceTaskForward() { if (state.tasks.length > 0) { state.activeTask = (state.activeTask + 1) % state.tasks.length; save(STORE.activeTask, state.activeTask); renderTasks(); } }
 
@@ -1339,6 +1421,8 @@
     initRichToolbar();
     initVoiceButton("lbVoiceBtn", "lbVoiceHint");
     initDrawer();
+    initLayout();
+    initPresenter();
     initSound();
     initLiveRoomTimer();
     initEmoji();
