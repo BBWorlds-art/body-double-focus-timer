@@ -83,6 +83,26 @@
   @media (min-width: 900px) { .studio-grid { grid-template-columns: 1fr 1fr; align-items: start; } }
   .studio-divider { text-align: center; color: var(--text-soft); font-size: 0.72rem; letter-spacing: 2px; text-transform: uppercase; font-weight: 700; margin: 6px 0 -4px; opacity: 0.8; }
 
+  /* Camera hero: timer beside the media/advertisement */
+  .hero { display: grid; grid-template-columns: 1fr; gap: clamp(14px, 2.5vw, 22px); align-items: stretch; }
+  @media (min-width: 880px) { .hero { grid-template-columns: minmax(0, 1.6fr) minmax(260px, 1fr); } }
+  .hero > .card { height: 100%; }
+  .ad-card { display: flex; flex-direction: column; }
+  .ad-card .ad-stage { flex: 1 1 auto; min-height: 220px; }
+
+  /* Collapsible controls drawer */
+  .controls-toggle { width: 100%; background: rgba(255, 251, 245, 0.85); border-style: dashed; }
+  .controls-drawer { display: flex; flex-direction: column; gap: clamp(14px, 2.5vw, 22px); }
+  .controls-drawer.collapsed { display: none; }
+
+  /* Voice-typing (speech-to-text) button */
+  .voice-btn.is-rec { background: linear-gradient(135deg, #c46b59, #a23b2c); color: #fff8f2; border-color: transparent; animation: lrPulse 1s infinite; }
+  .voice-hint { font-size: 0.78rem; color: var(--text-soft); margin-left: 4px; }
+
+  /* Break-screen move prompt */
+  .move-banner { margin-top: 14px; text-align: center; font-size: clamp(1.1rem, 3vw, 1.5rem); font-weight: 800; color: var(--break-deep); }
+  .move-sub { text-align: center; color: var(--text-soft); margin-top: 4px; font-size: 1rem; }
+
   /* ---------- Timer card (camera hero) ---------- */
   .timer-card { text-align: center; position: relative; }
   .mode-badge {
@@ -255,13 +275,16 @@
 
 <div class="app">
 
-  <!-- Life CEO system navigation -->
-  <nav class="nav-placeholder" aria-label="Life CEO sections">
+  <!-- Life CEO system navigation (placeholder names are editable + saved) -->
+  <nav class="nav-placeholder" id="lifeNav" aria-label="Life CEO sections">
     <a class="nav-item active" href="index.html">Focus Room</a>
-    <span class="nav-item soon" aria-disabled="true" title="Coming later">Home Hub</span>
     <a class="nav-item" href="daily-visual-planner.html">Daily Dashboard</a>
-    <span class="nav-item soon" aria-disabled="true" title="Coming later">Seven Spheres</span>
-    <span class="nav-item soon" aria-disabled="true" title="Coming later">Guide</span>
+    <span class="nav-item soon" contenteditable="true" data-navkey="nav_home" title="Click to rename">Home Hub</span>
+    <span class="nav-item soon" contenteditable="true" data-navkey="nav_spheres" title="Click to rename">Seven Spheres</span>
+    <span class="nav-item soon" contenteditable="true" data-navkey="nav_resources" title="Click to rename">Resources</span>
+    <span class="nav-item soon" contenteditable="true" data-navkey="nav_guide" title="Click to rename">Guide</span>
+    <span class="nav-item soon" contenteditable="true" data-navkey="nav_extra1" title="Click to rename">Library</span>
+    <span class="nav-item soon" contenteditable="true" data-navkey="nav_extra2" title="Click to rename">Notes Hub</span>
   </nav>
 
   <header>
@@ -269,7 +292,8 @@
     <textarea id="messageField" class="message-field" rows="1" aria-label="Session message or goal" maxlength="240"></textarea>
   </header>
 
-  <!-- ============ CAMERA HERO: timer ============ -->
+  <!-- ============ CAMERA HERO: timer (left) + media (right) ============ -->
+  <div class="hero">
   <section class="card timer-card" id="timerCard" aria-live="polite">
     <span class="mode-badge" id="modeBadge">Focus</span>
     <div class="session-label" id="sessionLabel"></div>
@@ -309,6 +333,27 @@
     </div>
   </section>
 
+  <!-- media / advertisement, beside the timer -->
+  <section class="card ad-card">
+    <p class="section-label"><span>📣 Advertisement</span></p>
+    <div class="ad-stage" id="adStage">
+      <div class="ad-empty" id="adEmpty">No advertisement yet. Upload an image or a short video (max 60 seconds).</div>
+    </div>
+    <div class="music-row" style="margin-top:14px;">
+      <button id="adImageBtn">🖼️ Image</button>
+      <button id="adVideoBtn">🎬 Video ≤60s</button>
+      <button class="loop-btn" id="adLoopBtn">🔁 Loop On</button>
+      <button id="adMuteBtn">🔇 Muted</button>
+      <button class="btn-danger" id="adRemoveBtn">🗑️ Remove</button>
+    </div>
+    <input type="file" id="adImageInput" accept="image/*" style="display:none;" />
+    <input type="file" id="adVideoInput" accept="video/*" style="display:none;" />
+    <div class="ad-status" id="adStatus"></div>
+    <div class="lb-label" style="margin-top:16px;">Advertisement caption</div>
+    <div id="adCaption" class="ad-caption" contenteditable="true" data-rich data-store="bdf_ad_caption" aria-label="Advertisement caption"></div>
+  </section>
+  </div><!-- /hero -->
+
   <!-- ============ LIVE BOARD (wide, under timer) ============ -->
   <section class="card">
     <p class="section-label"><span>📋 Live Board</span></p>
@@ -322,6 +367,8 @@
       <span class="rt-color-label">Highlight</span>
       <input type="color" class="rt-color" id="rtBack" value="#ffe9a8" title="Highlight colour" aria-label="Highlight colour" />
       <button class="rt-btn" data-cmd="removeFormat" title="Clear formatting">Clear</button>
+      <button class="rt-btn voice-btn" id="lbVoiceBtn" title="Voice typing (Chrome/Edge)">🎤 Voice</button>
+      <span class="voice-hint" id="lbVoiceHint"></span>
     </div>
     <div class="lb-grid">
       <div class="lb-field">
@@ -341,28 +388,14 @@
         <div id="lbBreak" class="lb-input" contenteditable="true" data-rich data-store="bdf_lb_break" data-placeholder="Break reminder…" aria-label="Break Reminder"></div>
       </div>
     </div>
+    <div class="lb-field" style="margin-top:16px;">
+      <div class="lb-label">On-screen Note · share / flow / interact</div>
+      <div id="lbNote" class="lb-input" contenteditable="true" data-rich data-store="bdf_lb_note" data-placeholder="Write any note, instruction, or call-to-action to show on screen…" aria-label="On-screen note"></div>
+    </div>
   </section>
 
-  <!-- ============ ADVERTISEMENT / MEDIA PANEL ============ -->
-  <section class="card">
-    <p class="section-label"><span>📣 Advertisement</span></p>
-    <div class="ad-stage" id="adStage">
-      <div class="ad-empty" id="adEmpty">No advertisement yet. Upload an image or a short video (max 60 seconds).</div>
-    </div>
-    <div class="music-row" style="margin-top:14px;">
-      <button id="adImageBtn">🖼️ Upload image</button>
-      <button id="adVideoBtn">🎬 Upload video (≤60s)</button>
-      <button class="loop-btn" id="adLoopBtn">🔁 Loop On</button>
-      <button id="adMuteBtn">🔇 Muted</button>
-      <button class="btn-danger" id="adRemoveBtn">🗑️ Remove</button>
-    </div>
-    <input type="file" id="adImageInput" accept="image/*" style="display:none;" />
-    <input type="file" id="adVideoInput" accept="video/*" style="display:none;" />
-    <div class="ad-status" id="adStatus"></div>
-    <div class="lb-label" style="margin-top:16px;">Advertisement caption</div>
-    <div id="adCaption" class="ad-caption" contenteditable="true" data-rich data-store="bdf_ad_caption" aria-label="Advertisement caption"></div>
-  </section>
-
+  <button class="controls-toggle" id="controlsToggle" aria-expanded="true">⚙ Hide controls</button>
+  <div class="controls-drawer" id="controlsDrawer">
   <p class="studio-divider">Studio controls</p>
 
   <div class="studio-grid">
@@ -480,6 +513,7 @@
       <p class="section-hint">Keep it soft — the background sits behind the timer so it never competes with it.</p>
     </section>
   </div>
+  </div><!-- /controls-drawer -->
 
   <p class="footer-note">Everything saves on this device, in this browser. Nothing is uploaded. Work gently, switch tasks, come back softly.</p>
 </div>
@@ -563,7 +597,7 @@
   var STORE = {
     title: "bdf_title", message: "bdf_message", tasks: "bdf_tasks", activeTask: "bdf_activeTask",
     mode: "bdf_mode", completed: "bdf_completed", muted: "bdf_muted",
-    lbFocus: "bdf_lb_focus", lbCommunity: "bdf_lb_community", lbLink: "bdf_lb_link", lbBreak: "bdf_lb_break",
+    lbFocus: "bdf_lb_focus", lbCommunity: "bdf_lb_community", lbLink: "bdf_lb_link", lbBreak: "bdf_lb_break", lbNote: "bdf_lb_note",
     adCaption: "bdf_ad_caption", adLoop: "bdf_ad_loop", adMuted: "bdf_ad_muted",
     soundSel: "bdf_sound_sel", volume: "bdf_volume", musicMuted: "bdf_musicMuted", musicLoop: "bdf_musicLoop",
     cdOn: "bdf_cd_on", cdLen: "bdf_cd_len",
@@ -817,13 +851,27 @@
     else if (type === "break") { el.innerHTML = breakHTML(); el.classList.add("show"); }
     else { el.classList.remove("show"); el.innerHTML = ""; }
   }
+  var MOVES = [
+    { e: "🧘", t: "Roll your shoulders and neck slowly" },
+    { e: "🙆", t: "Reach both arms up and stretch tall" },
+    { e: "🚶", t: "Stand up and walk a few steps" },
+    { e: "👀", t: "Look 6 metres away for 20 seconds (20-20-20)" },
+    { e: "🌬️", t: "Take 3 slow, deep breaths" },
+    { e: "🤸", t: "Gentle side stretch, left then right" }
+  ];
+  function moveForBreak() {
+    var i = (state.live ? state.live.index : state.completed) % MOVES.length;
+    return MOVES[i];
+  }
   function breakHTML() {
-    return '<div class="block-msg-title">Break</div><ul class="block-msg-list">' +
-      '<li>🎵 Sound: ' + esc(selectedSoundName()) + '</li>' +
-      '<li>👀 ' + (lbHtml("brk") || "Rest your eyes") + '</li>' +
-      '<li>🧘 Stretch your shoulders, neck, and back</li>' +
+    var mv = moveForBreak();
+    return '<div class="move-banner">' + mv.e + ' Break — move with the room</div>' +
+      '<div class="move-sub">' + esc(mv.t) + '</div>' +
+      '<ul class="block-msg-list" style="margin-top:12px;">' +
+      '<li>🧘 ' + (lbHtml("brk") || "Stretch your shoulders, neck, and back") + '</li>' +
       '<li>💧 Drink some water</li>' +
-      '<li>Next focus starts soon</li></ul>';
+      '<li>🎵 Sound: ' + esc(selectedSoundName()) + '</li>' +
+      '<li>⏭️ Next focus starts soon</li></ul>';
   }
   function communityHTML() {
     return '<div class="block-msg-title">Community / Reset</div><ul class="block-msg-list">' +
@@ -947,41 +995,101 @@
   }
 
   // ---------- Live Board (rich text) ----------
-  function lbHtml(key) { var map = { focus: "lbFocus", community: "lbCommunity", link: "lbLink", brk: "lbBreak" }; var el = $(map[key]); return el ? el.innerHTML : ""; }
+  // Every contenteditable carrying [data-store] is auto-saved on input + blur,
+  // so styling and text persist on ALL fields the same way.
+  function lbHtml(key) { var map = { focus: "lbFocus", community: "lbCommunity", link: "lbLink", brk: "lbBreak", note: "lbNote" }; var el = $(map[key]); return el ? el.innerHTML : ""; }
+  function saveEditable(el) { var key = el && el.getAttribute("data-store"); if (key) save(key, el.innerHTML); if (state.isBreak || state.live) renderTimer(); }
   function initLiveBoard() {
     var fields = [
       { id: "lbFocus", store: STORE.lbFocus, def: LB_DEFAULTS.focus },
       { id: "lbCommunity", store: STORE.lbCommunity, def: LB_DEFAULTS.community },
       { id: "lbLink", store: STORE.lbLink, def: LB_DEFAULTS.link },
-      { id: "lbBreak", store: STORE.lbBreak, def: LB_DEFAULTS.brk }
+      { id: "lbBreak", store: STORE.lbBreak, def: LB_DEFAULTS.brk },
+      { id: "lbNote", store: STORE.lbNote, def: "" },
+      { id: "adCaption", store: STORE.adCaption, def: AD_CAPTION_DEFAULT }
     ];
     fields.forEach(function (f) {
-      var el = $(f.id); el.innerHTML = load(f.store, esc(f.def));
-      el.addEventListener("input", function () { save(f.store, el.innerHTML); if (state.isBreak || state.live) renderTimer(); });
+      var el = $(f.id); if (!el) return;
+      el.innerHTML = load(f.store, esc(f.def));
+      el.addEventListener("input", function () { saveEditable(el); });
+      el.addEventListener("blur", function () { saveEditable(el); });
     });
-    // Advertisement caption
-    var cap = $("adCaption"); cap.innerHTML = load(STORE.adCaption, esc(AD_CAPTION_DEFAULT));
-    cap.addEventListener("input", function () { save(STORE.adCaption, cap.innerHTML); });
   }
 
-  // ---------- Rich-text toolbar ----------
-  var lastEditable = null;
+  // ---------- Rich-text toolbar (with selection preservation, so colour + styling
+  //            apply to whichever box you last edited, and always save) ----------
+  var lastEditable = null, savedRange = null;
+  function rememberSelection() {
+    var sel = window.getSelection();
+    if (sel && sel.rangeCount && lastEditable && lastEditable.contains(sel.anchorNode)) savedRange = sel.getRangeAt(0).cloneRange();
+  }
+  function restoreSelection() {
+    if (!lastEditable) return;
+    lastEditable.focus();
+    if (savedRange) { var sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(savedRange); }
+  }
   function initRichToolbar() {
     document.addEventListener("focusin", function (e) { if (e.target && e.target.getAttribute && e.target.getAttribute("data-rich") !== null) lastEditable = e.target; });
+    document.addEventListener("selectionchange", rememberSelection);
     Array.prototype.forEach.call(document.querySelectorAll("#rtToolbar [data-cmd]"), function (b) {
-      b.addEventListener("mousedown", function (e) { e.preventDefault(); });
+      b.addEventListener("mousedown", function (e) { e.preventDefault(); });   // keep selection
       b.addEventListener("click", function () { applyCmd(b.getAttribute("data-cmd")); });
     });
+    // Colour inputs steal focus, so we restore the saved selection before applying.
+    $("rtFore").addEventListener("mousedown", rememberSelection);
+    $("rtBack").addEventListener("mousedown", rememberSelection);
     $("rtFore").addEventListener("input", function () { applyCmd("foreColor", $("rtFore").value); });
     $("rtBack").addEventListener("input", function () { applyCmd("hiliteColor", $("rtBack").value); });
   }
   function applyCmd(cmd, val) {
     if (!lastEditable) lastEditable = $("lbFocus");
-    lastEditable.focus();
+    restoreSelection();
+    try { document.execCommand("styleWithCSS", false, true); } catch (e) {}
     try { document.execCommand(cmd, false, val || null); } catch (e) {}
-    if (cmd === "hiliteColor" && lastEditable.innerHTML.indexOf("background") === -1) { try { document.execCommand("backColor", false, val); } catch (e) {} }
-    var key = lastEditable.getAttribute("data-store"); if (key) save(key, lastEditable.innerHTML);
-    if (state.isBreak || state.live) renderTimer();
+    if (cmd === "hiliteColor") { try { document.execCommand("backColor", false, val); } catch (e) {} }
+    saveEditable(lastEditable);
+    rememberSelection();
+  }
+
+  // ---------- Voice typing (Web Speech API; Chrome/Edge on https) ----------
+  var recog = null, recTarget = null;
+  function speechSupported() { return ("webkitSpeechRecognition" in window) || ("SpeechRecognition" in window); }
+  function initVoiceButton(btnId, hintId) {
+    var btn = $(btnId); if (!btn) return;
+    if (!speechSupported()) { btn.disabled = true; btn.style.opacity = "0.5"; if (hintId && $(hintId)) $(hintId).textContent = "Voice typing needs Chrome or Edge."; return; }
+    btn.addEventListener("click", function () {
+      if (recog) { try { recog.stop(); } catch (e) {} return; }
+      var target = lastEditable && lastEditable.getAttribute("data-rich") !== null ? lastEditable : $("lbFocus");
+      recTarget = target; target.focus();
+      var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      recog = new SR(); recog.interimResults = false; recog.continuous = false; recog.lang = navigator.language || "en-US";
+      btn.classList.add("is-rec"); if (hintId && $(hintId)) $(hintId).textContent = "Listening… speak now";
+      recog.onresult = function (e) {
+        var txt = ""; for (var i = e.resultIndex; i < e.results.length; i++) txt += e.results[i][0].transcript;
+        if (recTarget) { try { document.execCommand("insertText", false, txt + " "); } catch (er) { recTarget.innerHTML += " " + esc(txt); } saveEditable(recTarget); }
+      };
+      recog.onend = function () { btn.classList.remove("is-rec"); if (hintId && $(hintId)) $(hintId).textContent = ""; recog = null; };
+      recog.onerror = function () { btn.classList.remove("is-rec"); if (hintId && $(hintId)) $(hintId).textContent = "Couldn't hear — check mic permission."; recog = null; };
+      try { recog.start(); } catch (e) { recog = null; btn.classList.remove("is-rec"); }
+    });
+  }
+
+  // ---------- Editable navigation names (saved, shared across pages) ----------
+  function initNav() {
+    Array.prototype.forEach.call(document.querySelectorAll("#lifeNav [data-navkey]"), function (el) {
+      var key = el.getAttribute("data-navkey"); var saved = load(key, null);
+      if (saved) el.textContent = saved;
+      el.addEventListener("input", function () { save(key, el.textContent); });
+      el.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); el.blur(); } });
+    });
+  }
+
+  // ---------- Controls drawer ----------
+  function initDrawer() {
+    var open = load("bdf_controls_open", true) !== false;
+    function apply() { $("controlsDrawer").classList.toggle("collapsed", !open); $("controlsToggle").textContent = open ? "⚙ Hide controls" : "⚙ Show controls"; $("controlsToggle").setAttribute("aria-expanded", open ? "true" : "false"); }
+    apply();
+    $("controlsToggle").addEventListener("click", function () { open = !open; save("bdf_controls_open", open); apply(); });
   }
 
   // ---------- Blob storage (IndexedDB) for ad + background ----------
@@ -1226,8 +1334,11 @@
   // ---------- Init ----------
   function init() {
     initHeader();
+    initNav();
     initLiveBoard();
     initRichToolbar();
+    initVoiceButton("lbVoiceBtn", "lbVoiceHint");
+    initDrawer();
     initSound();
     initLiveRoomTimer();
     initEmoji();
