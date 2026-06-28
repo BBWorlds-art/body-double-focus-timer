@@ -66,7 +66,7 @@
     border-radius: var(--radius-sm); transition: background 0.2s;
   }
   .message-field {
-    font-size: clamp(0.95rem, 2.6vw, 1.1rem); color: var(--text-soft); text-align: center; width: 100%;
+    font-size: clamp(1rem, 2.7vw, 1.15rem); color: var(--text); font-weight: 600; text-align: center; width: 100%;
     border: none; background: transparent; outline: none; padding: 6px 10px; margin-top: 4px; border-radius: var(--radius-sm);
     resize: none; overflow: hidden; line-height: 1.5; font-family: inherit; transition: background 0.2s;
   }
@@ -250,10 +250,11 @@
   .emoji-small { min-height: 40px; padding: 7px 11px; font-size: 0.9rem; flex: 0 0 auto; }
 
   /* Big emoji/message stage (shown on screen) */
-  .emoji-stage { position: fixed; inset: 0; z-index: 60; display: none; align-items: center; justify-content: center; background: rgba(247, 239, 228, 0.92); backdrop-filter: blur(6px); padding: 20px; text-align: center; }
+  /* Emoji overlay floats OVER the live screen (transparent, non-blocking) */
+  .emoji-stage { position: fixed; inset: 0; z-index: 62; display: none; align-items: center; justify-content: center; background: transparent; padding: 20px; text-align: center; pointer-events: none; }
   .emoji-stage.show { display: flex; }
-  #emojiStageText { font-size: 22vmin; font-weight: 800; line-height: 1.1; max-width: 95%; word-break: break-word; }
-  .emoji-stage-close { position: fixed; top: 18px; right: 18px; }
+  #emojiStageText { font-size: 22vmin; font-weight: 800; line-height: 1.1; max-width: 95%; word-break: break-word; text-shadow: 0 4px 18px rgba(0,0,0,0.18); }
+  .emoji-stage-close { position: fixed; top: 18px; right: 18px; pointer-events: auto; z-index: 63; }
 
   /* Large speaker-timer overlay */
   .speaker-stage { position: fixed; inset: 0; z-index: 55; display: none; align-items: center; justify-content: center; flex-direction: column; gap: 20px; background: rgba(247, 239, 228, 0.95); padding: 20px; text-align: center; }
@@ -268,7 +269,7 @@
   .well-done.show { opacity: 1; transform: translateX(-50%) scale(1); }
 
   /* Presenter / clean stage mode */
-  .presenter-exit { position: fixed; top: 16px; right: 16px; z-index: 80; display: none; min-height: 44px; }
+  .presenter-exit { position: fixed; bottom: 72px; right: 14px; z-index: 81; display: none; min-height: 40px; padding: 8px 13px; font-size: 0.82rem; }
   body.presenter .presenter-exit { display: inline-flex; }
   body.presenter .nav-placeholder,
   body.presenter header,
@@ -285,7 +286,7 @@
 
   /* ---------- Bottom Studio Controls bar (accordion) ---------- */
   .studio-bar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 50; background: rgba(255, 251, 245, 0.97); border-top: 1px solid var(--card-border); box-shadow: 0 -8px 30px rgba(120, 90, 65, 0.16); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
-  .studio-panels { max-height: 48vh; overflow-y: auto; padding: 0 14px; }
+  .studio-panels { max-height: min(34vh, 280px); overflow-y: auto; padding: 0 14px; -webkit-overflow-scrolling: touch; }
   .studio-panel { display: none; padding: 14px 2px 6px; }
   .studio-panel.active { display: block; }
   .studio-panel > .card, .studio-panel #emojiBar { box-shadow: none !important; border: none !important; background: transparent !important; padding: 4px 0 !important; backdrop-filter: none !important; }
@@ -294,6 +295,10 @@
   .studio-tabs button { flex: 0 0 auto; min-height: 42px; padding: 8px 13px; font-size: 0.84rem; border-radius: 12px; }
   .studio-tabs button.active { background: linear-gradient(135deg, var(--accent), var(--accent-deep)); color: #fff8f2; border-color: transparent; }
   .studio-hint { font-size: 0.8rem; color: var(--text-soft); padding: 4px 2px 0; }
+  .timer-actions { gap: 8px; }
+  .timer-actions button { flex: 1 1 0; min-width: 0; text-align: center; }
+  .timer-actions button.active { background: linear-gradient(135deg, var(--accent), var(--accent-deep)); color: #fff8f2; border-color: transparent; }
+  .studio-tabs { position: sticky; bottom: 0; background: rgba(255, 251, 245, 0.97); }
 
   /* Advertisement title / caption / float */
   .ad-title { font-weight: 800; font-size: clamp(1.1rem, 2.6vw, 1.5rem); color: var(--accent-deep); text-align: center; outline: none; margin-bottom: 10px; }
@@ -302,6 +307,8 @@
   .ad-drag-handle { display: none; text-align: center; color: var(--text-soft); font-size: 0.8rem; cursor: move; padding: 6px; }
   .ad-card.floating { position: fixed; z-index: 45; width: 340px; max-width: 92vw; }
   .ad-card.floating .ad-drag-handle { display: block; }
+  .ad-card.ad-minimized .ad-stage, .ad-card.ad-minimized #adCaption, .ad-card.ad-minimized .ad-cap-label, .ad-card.ad-minimized .ad-status { display: none; }
+  .card-bg { position: absolute; inset: 0; border-radius: inherit; z-index: 0; pointer-events: none; background-size: cover; background-position: center; }
   .hero.ad-left .timer-card { order: 2; } .hero.ad-left .ad-card { order: 1; }
   @media (min-width: 880px) { .hero.ad-below { grid-template-columns: 1fr; } }
 
@@ -326,7 +333,7 @@
   /* Presenter mode: hide the studio bar unless explicitly shown */
   body.presenter .studio-bar { display: none; }
   body.presenter.show-controls .studio-bar { display: block; }
-  .presenter-controls-btn { position: fixed; bottom: 16px; right: 16px; z-index: 80; display: none; min-height: 46px; }
+  .presenter-controls-btn { position: fixed; bottom: 72px; right: 128px; z-index: 81; display: none; min-height: 40px; padding: 8px 13px; font-size: 0.82rem; }
   body.presenter .presenter-controls-btn { display: inline-flex; }
 
   .footer-note { text-align: center; color: var(--text-soft); font-size: 0.82rem; opacity: 0.75; }
@@ -441,6 +448,12 @@
         <button class="seg btn-small" data-pos="left">Left</button>
         <button class="seg btn-small" data-pos="below">Below</button>
         <button class="seg btn-small" data-pos="float">Float</button>
+        <button class="seg btn-small" data-pos="hidden">Hidden</button>
+      </div>
+      <div class="music-row" style="margin-top:10px;">
+        <button id="adFullscreenBtn">⛶ Fullscreen preview</button>
+        <button class="toggle" id="adMinBtn">➖ Minimize</button>
+        <button id="adResetLayoutBtn">↺ Reset ad layout</button>
       </div>
     </div>
   </section>
@@ -481,7 +494,7 @@
       </div>
     </div>
     <div class="lb-field" style="margin-top:16px;">
-      <div class="lb-label">On-screen Note · share / flow / interact</div>
+      <div class="lb-label">On-screen Note · Share · Flow · Interact</div>
       <div id="lbNote" class="lb-input" contenteditable="true" data-rich data-store="bdf_lb_note" data-placeholder="Write any note, instruction, or call-to-action to show on screen…" aria-label="On-screen note"></div>
     </div>
   </section>
@@ -499,7 +512,7 @@
   <div class="studio-grid">
     <!-- Live session -->
     <section class="card" id="secLiveSession">
-      <p class="section-label"><span>🔴 TikTok Live Session</span></p>
+      <p class="section-label"><span>🔴 <span id="liveSessionTitle" contenteditable="true" data-navkey="bdf_live_title" title="Click to rename">Focus Live Session</span></span></p>
       <div class="btn-grid">
         <button class="btn-primary btn-live" id="liveStartBtn">▶ Start 2-Hour Live Session</button>
         <button id="skipBlockBtn">Skip Block</button>
@@ -556,9 +569,13 @@
     <!-- Controls -->
     <section class="card" id="secControls">
       <p class="section-label"><span>🎛️ Controls</span></p>
-      <div class="btn-grid controls">
-        <button class="btn-primary" id="startPauseBtn">Start</button>
-        <button id="resetTimerBtn">Reset Timer</button>
+      <div class="btn-grid timer-actions">
+        <button class="btn-primary" id="startBtn">▶ Start</button>
+        <button id="pauseBtn">⏸ Pause</button>
+        <button id="resetTimerBtn">↺ Reset</button>
+        <button id="stopBtn">⏹ Stop</button>
+      </div>
+      <div class="btn-grid" style="margin-top:10px;">
         <button id="skipBreakBtn">Skip to Break</button>
         <button id="skipFocusBtn">Skip to Focus</button>
         <button id="muteBtn">🔊 Sound On</button>
@@ -582,7 +599,7 @@
       <div class="music-row">
         <button class="btn-primary" id="musicPlayBtn">▶ Play</button>
         <button id="musicStopBtn">⏹ Stop</button>
-        <button id="testSoundBtn">🎚️ Test</button>
+        <button id="testSoundBtn">🎧 Test Sound</button>
       </div>
       <div class="music-row" style="margin-top:10px;">
         <button id="musicMuteBtn">🔊 Sound On</button>
@@ -689,48 +706,80 @@
     <div class="studio-panel" id="pnl-camera">
       <p class="section-label"><span>📷 Camera</span></p>
       <div class="music-row">
-        <button class="btn-primary" id="camStartBtn">Open camera</button>
-        <button id="camSwitchBtn">🔄 Front / Back</button>
-        <button id="camToggleBtn">🙈 Hide</button>
-        <button class="toggle" id="camMirrorBtn">🪞 Mirror</button>
+        <button class="btn-primary" id="camStartBtn">📷 Open Camera</button>
+        <button id="camToggleBtn">⏹ Close Camera</button>
+      </div>
+      <div class="seg-row" id="camFacingRow" style="margin-top:8px;">
+        <button class="seg btn-small" data-facing="user">🤳 Front</button>
+        <button class="seg btn-small" data-facing="environment">📸 Back</button>
+        <button class="seg btn-small toggle" id="camMirrorBtn">🪞 Mirror</button>
       </div>
       <div class="bg-row"><label for="camBright">Brightness</label><input type="range" id="camBright" min="0.3" max="2" step="0.01" value="1" /></div>
       <div class="bg-row"><label for="camContrast">Contrast</label><input type="range" id="camContrast" min="0.3" max="2" step="0.01" value="1" /></div>
-      <div class="bg-row"><label for="camSat">Saturation</label><input type="range" id="camSat" min="0" max="2" step="0.01" value="1" /></div>
-      <div class="bg-row"><label for="camBlur">Soft blur</label><input type="range" id="camBlur" min="0" max="6" step="0.1" value="0" /></div>
-      <div class="music-row" style="margin-top:8px;">
-        <button class="toggle" id="camWarmBtn">🌅 Warm filter</button>
-        <button id="camResetBtn">Reset style</button>
-      </div>
+      <div class="bg-row"><label for="camWarm">Warmth</label><input type="range" id="camWarm" min="0" max="1" step="0.01" value="0" /></div>
+      <div class="bg-row"><label for="camSmooth">Soft skin</label><input type="range" id="camSmooth" min="0" max="3" step="0.1" value="0" /></div>
+      <div class="music-row" style="margin-top:8px;"><button id="camResetBtn">↺ Reset camera settings</button></div>
       <div class="music-status" id="camStatus"></div>
-      <p class="studio-hint">Your camera never leaves your device. Drag the window by its title bar; drag the corner to resize. Position, size, mirror, and style are saved.</p>
+      <p class="studio-hint">Your camera never leaves your device. Drag the window by its title bar; drag the corner to resize. Front/back, mirror and look are saved. (Back camera works mainly on phones.)</p>
     </div>
-    <div class="studio-panel" id="pnl-background"></div>
+    <div class="studio-panel" id="pnl-background">
+      <p class="section-label"><span>🖼️ Card Backgrounds</span></p>
+      <div class="bg-row"><label for="cardBgTarget">Apply to</label>
+        <select id="cardBgTarget" class="music-select" style="margin:0; flex:1 1 auto; min-height:44px;">
+          <option value="timerCard">Timer card</option>
+          <option value="lbCard">Live Board</option>
+          <option value="adCard">Advertisement</option>
+        </select>
+      </div>
+      <div class="music-row" style="margin-top:8px;">
+        <button id="cardBgImageBtn">🖼️ Image</button>
+        <button class="btn-danger" id="cardBgRemoveBtn">🗑️ Remove</button>
+        <button id="cardBgResetBtn">↺ Reset</button>
+      </div>
+      <input type="file" id="cardBgInput" accept="image/*" style="display:none;" />
+      <div class="bg-row"><label for="cardBgColor">Colour</label><input type="color" class="color-input" id="cardBgColor" value="#fffbf5" /></div>
+      <div class="bg-row"><label for="cardBgOpacity">Opacity</label><input type="range" id="cardBgOpacity" min="0" max="1" step="0.01" value="1" /></div>
+      <div class="bg-row"><label for="cardBgBlur">Blur</label><input type="range" id="cardBgBlur" min="0" max="14" step="0.5" value="0" /></div>
+      <p class="studio-hint" style="margin-bottom:8px;">Soft backgrounds for each on-screen card. Kept light so the timer text stays clear.</p>
+    </div>
     <div class="studio-panel" id="pnl-textstyle">
-      <p class="section-label"><span>🅰️ Text Style</span></p>
+      <p class="section-label"><span>🅰️ Text</span></p>
       <div class="fontstyle-row">
         <button class="btn-small" data-font="title">Title</button>
         <button class="btn-small" data-font="subtitle">Subtitle</button>
         <button class="btn-small" data-font="body">Body</button>
       </div>
-      <div class="music-row" style="margin-bottom:8px;"><button id="rtUndo">↶ Undo</button><button id="rtRedo">↷ Redo</button></div>
+      <div class="music-row" style="margin-bottom:8px;">
+        <button id="rtUndo">↶ Undo</button>
+        <button id="rtRedo">↷ Redo</button>
+        <button id="rtClear">🧹 Clear text</button>
+        <button id="rtSave">💾 Save text</button>
+      </div>
+      <p class="studio-hint">Formatting (bold, italic, underline, bullets, colour, highlight, voice) is on the Live Board toolbar; these apply to the box you last edited.</p>
     </div>
-    <div class="studio-panel" id="pnl-colours">
-      <p class="section-label"><span>🎨 Colours</span></p>
+    <div class="studio-panel" id="pnl-colours" style="display:none;">
       <div class="palette-row" id="paletteRow"></div>
     </div>
-    <div class="studio-panel" id="pnl-emoji"></div>
+    <div class="studio-panel" id="pnl-emoji">
+      <div class="music-row" style="margin-bottom:8px;">
+        <button class="btn-primary" id="celebrateBtn">🎉 Celebrate</button>
+        <button class="toggle" id="celebSoundBtn">🔔 Sound on</button>
+      </div>
+    </div>
     <div class="studio-panel" id="pnl-music"></div>
     <div class="studio-panel" id="pnl-savereset">
       <p class="section-label"><span>💾 Save / Reset</span></p>
       <div class="music-row">
-        <button id="sr-fullscreen">⛶ Full Screen</button>
-        <button id="sr-savelayout">💾 Save layout</button>
+        <button class="btn-primary" id="sr-savepreset">💾 Save layout preset</button>
+        <button id="sr-loadpreset">📂 Load preset</button>
+        <button id="sr-resetlayout">↺ Reset layout</button>
       </div>
       <div class="music-row" style="margin-top:8px;">
+        <button id="sr-fullscreen">⛶ Full Screen</button>
+        <button id="sr-savelayout">💾 Save now</button>
         <button class="btn-danger" id="sr-resetsession">↩ Reset full session</button>
       </div>
-      <p class="studio-hint">Everything saves automatically on this device. Nothing is uploaded.</p>
+      <p class="studio-hint">Save a layout preset to keep your exact studio setup, then Load it any time. Everything saves on this device; nothing is uploaded.</p>
     </div>
   </div>
   <div class="studio-tabs" id="studioTabs">
@@ -740,10 +789,9 @@
     <button data-tab="ad">📣 Advertisement</button>
     <button data-tab="camera">📷 Camera</button>
     <button data-tab="background">🎨 Background</button>
-    <button data-tab="textstyle">🅰️ Text Style</button>
-    <button data-tab="colours">🎨 Colours</button>
-    <button data-tab="emoji">😊 Emoji Bar</button>
+    <button data-tab="emoji">😊 Emoji</button>
     <button data-tab="music">🎧 Music</button>
+    <button data-tab="textstyle">🅰️ Text</button>
     <button data-tab="savereset">💾 Save / Reset</button>
   </div>
 </div>
@@ -1075,26 +1123,32 @@
     else { state.completed = next.completed; save(STORE.completed, state.completed); $("longBreakNote").classList.toggle("show", next.showLong); switchTo(true, true); }
   }
 
-  // ---------- Silent celebration (confetti, no sound) ----------
+  // ---------- Celebration (confetti/flowers/sparkles; sound optional) ----------
   var confettiRAF = null;
-  function celebrate(msg) {
+  function celebrate(msg, playSound) {
     var banner = $("wellDone"); banner.textContent = msg; banner.classList.add("show");
     setTimeout(function () { banner.classList.remove("show"); }, 2600);
     confettiBurst();
+    if (playSound && load("bdf_celeb_sound", true) !== false) celebrationSound();
   }
   function confettiBurst() {
     var cv = $("confetti"); if (!cv) return;
     var ctx = cv.getContext("2d");
     cv.width = window.innerWidth; cv.height = window.innerHeight; cv.classList.add("show");
     var colors = ["#b08573", "#c9a99a", "#9a6d5b", "#8fa394", "#f0c987", "#e8b4a0"];
-    var parts = [], N = 140;
-    for (var i = 0; i < N; i++) parts.push({
-      x: cv.width / 2 + (Math.random() - 0.5) * 120, y: cv.height * 0.28,
-      vx: (Math.random() - 0.5) * 9, vy: Math.random() * -9 - 3,
-      g: 0.22 + Math.random() * 0.15, s: 5 + Math.random() * 7,
-      rot: Math.random() * 6.28, vr: (Math.random() - 0.5) * 0.3,
-      c: colors[(Math.random() * colors.length) | 0]
-    });
+    var glyphs = ["🌸", "✨", "🎉", "🌟", "💛"];
+    var parts = [], N = 150;
+    for (var i = 0; i < N; i++) {
+      var useGlyph = Math.random() < 0.32;
+      parts.push({
+        x: cv.width / 2 + (Math.random() - 0.5) * 140, y: cv.height * 0.28,
+        vx: (Math.random() - 0.5) * 9, vy: Math.random() * -9 - 3,
+        g: 0.22 + Math.random() * 0.15, s: 5 + Math.random() * 7,
+        rot: Math.random() * 6.28, vr: (Math.random() - 0.5) * 0.3,
+        c: colors[(Math.random() * colors.length) | 0],
+        glyph: useGlyph ? glyphs[(Math.random() * glyphs.length) | 0] : null
+      });
+    }
     var start = null;
     if (confettiRAF) cancelAnimationFrame(confettiRAF);
     function frame(ts) {
@@ -1103,8 +1157,10 @@
       parts.forEach(function (p) {
         p.vy += p.g; p.x += p.vx; p.y += p.vy; p.rot += p.vr;
         ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot);
-        ctx.fillStyle = p.c; ctx.globalAlpha = Math.max(0, 1 - elapsed / 2600);
-        ctx.fillRect(-p.s / 2, -p.s / 2, p.s, p.s * 0.6); ctx.restore();
+        ctx.globalAlpha = Math.max(0, 1 - elapsed / 2600);
+        if (p.glyph) { ctx.font = (p.s * 2.4) + "px serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(p.glyph, 0, 0); }
+        else { ctx.fillStyle = p.c; ctx.fillRect(-p.s / 2, -p.s / 2, p.s, p.s * 0.6); }
+        ctx.restore();
       });
       if (elapsed < 2600) confettiRAF = requestAnimationFrame(frame);
       else { ctx.clearRect(0, 0, cv.width, cv.height); cv.classList.remove("show"); confettiRAF = null; }
@@ -1147,6 +1203,9 @@
     $("sr-savelayout").addEventListener("click", function () { save("bdf_layout", load("bdf_layout", {})); flash("Saved."); });
     $("sr-fullscreen").addEventListener("click", toggleFullscreen);
     $("sr-resetsession").addEventListener("click", resetSession);
+    $("sr-savepreset").addEventListener("click", savePreset);
+    $("sr-loadpreset").addEventListener("click", loadPreset);
+    $("sr-resetlayout").addEventListener("click", resetLayoutAll);
   }
   function flash(msg) { var el = $("camStatus"); if (el) { el.textContent = msg; setTimeout(function () { if (el.textContent === msg) el.textContent = ""; }, 1800); } }
 
@@ -1156,8 +1215,8 @@
     moveInto("pnl-layout", ["secLayout"]);
     moveInto("pnl-timer", ["secLiveSession", "secLiveRoom", "secModes", "secControls", "secTasks"]);
     moveInto("pnl-ad", ["adControls"]);
-    moveInto("pnl-colours", ["colourRows"]);          // before background, so it isn't carried along
-    moveInto("pnl-background", ["secBackground"]);
+    moveInto("pnl-background", ["secBackground"]);    // colourRows rides along inside it
+    var pr = $("paletteRow"); if (pr && $("pnl-background")) { var pl = document.createElement("div"); pl.className = "lb-label"; pl.style.margin = "6px 0 6px"; pl.textContent = "Colour palettes"; $("pnl-background").appendChild(pl); $("pnl-background").appendChild(pr); }
     moveInto("pnl-textstyle", ["rtToolbar"]);
     moveInto("pnl-music", ["secSound"]);
     var eb = $("emojiBar"); if (eb) { eb.classList.add("in-bar"); $("pnl-emoji").appendChild(eb); }
@@ -1198,14 +1257,17 @@
   }
 
   // ---------- Camera preview ----------
-  var camStream = null, camFacing = "user";
-  var camState = load("bdf_cam", { x: null, y: null, w: 240, mirror: false, bright: 1, contrast: 1, sat: 1, blur: 0, warm: false });
+  var camStream = null;
+  var camState = load("bdf_cam", { x: null, y: null, w: 240, facing: "user", mirror: false, bright: 1, contrast: 1, warm: 0, smooth: 0 });
+  if (typeof camState.warm !== "number") camState.warm = 0;
+  if (typeof camState.smooth !== "number") camState.smooth = 0;
+  if (!camState.facing) camState.facing = "user";
   function saveCam() { save("bdf_cam", camState); }
   function applyCamStyle() {
     var v = $("camVideo");
-    var f = "brightness(" + camState.bright + ") contrast(" + camState.contrast + ") saturate(" + camState.sat + ")";
-    if (camState.warm) f += " sepia(0.4)";
-    if (camState.blur > 0) f += " blur(" + camState.blur + "px)";
+    var f = "brightness(" + camState.bright + ") contrast(" + camState.contrast + ")";
+    if (camState.warm > 0) f += " sepia(" + (camState.warm * 0.5) + ") saturate(" + (1 + camState.warm * 0.35) + ")";
+    if (camState.smooth > 0) f += " blur(" + (camState.smooth * 0.5) + "px) brightness(" + (1 + camState.smooth * 0.03) + ")";
     v.style.filter = f; v.style.transform = camState.mirror ? "scaleX(-1)" : "none";
   }
   function applyCamLayout() {
@@ -1215,64 +1277,148 @@
     if (camState.y != null) { w.style.top = camState.y + "px"; w.style.bottom = "auto"; } else { w.style.bottom = "92px"; }
   }
   function camMessage(t) { var m = $("camMsg"); m.textContent = t || ""; m.classList.toggle("show", !!t); $("camVideo").style.display = t ? "none" : ""; }
+  function camOpen() { return $("cameraWin").classList.contains("show") && !!camStream; }
+  function updateFacingButtons() { Array.prototype.forEach.call($("camFacingRow").children, function (b) { var f = b.getAttribute("data-facing"); if (f) b.classList.toggle("active", f === camState.facing); }); }
   function startCamera() {
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { $("cameraWin").classList.add("show"); camMessage("Camera needs a secure https page (e.g. GitHub Pages) and a supported browser."); return; }
     stopCameraStream();
-    navigator.mediaDevices.getUserMedia({ video: { facingMode: camFacing }, audio: false }).then(function (stream) {
-      camStream = stream; $("camVideo").srcObject = stream; $("cameraWin").classList.add("show"); camMessage(""); $("camStatus").textContent = "Camera on."; $("camToggleBtn").textContent = "🙈 Hide";
+    var video = (camState.facing === "environment") ? { facingMode: { exact: "environment" } } : { facingMode: "user" };
+    navigator.mediaDevices.getUserMedia({ video: video, audio: false }).then(function (stream) {
+      camStream = stream; $("camVideo").srcObject = stream; $("cameraWin").classList.add("show"); camMessage(""); applyCamStyle();
+      $("camStatus").textContent = (camState.facing === "environment" ? "Back" : "Front") + " camera on."; $("camStartBtn").classList.add("active"); $("camToggleBtn").classList.remove("active");
     })["catch"](function (err) {
+      if (camState.facing === "environment" && err && (err.name === "OverconstrainedError" || err.name === "NotFoundError" || err.name === "NotReadableError")) {
+        $("camStatus").textContent = "No back camera on this device — switched to front."; camState.facing = "user"; updateFacingButtons(); saveCam(); startCamera(); return;
+      }
       $("cameraWin").classList.add("show");
-      var msg = (err && err.name === "NotAllowedError") ? "Camera permission denied. Allow camera access in your browser settings, then tap Open camera again." : "Could not open camera (" + (err && err.name || "error") + "). On iPhone, use Safari over https.";
+      var msg = (err && err.name === "NotAllowedError") ? "Camera permission denied. Allow camera access in your browser, then tap Open Camera again." : "Could not open camera (" + (err && err.name || "error") + "). On iPhone use Safari over https.";
       camMessage(msg); $("camStatus").textContent = msg;
     });
   }
   function stopCameraStream() { if (camStream) { camStream.getTracks().forEach(function (t) { t.stop(); }); camStream = null; } var v = $("camVideo"); if (v) v.srcObject = null; }
-  function hideCamera() { stopCameraStream(); $("cameraWin").classList.remove("show"); $("camToggleBtn").textContent = "🙉 Show"; $("camStatus").textContent = ""; }
+  function closeCamera() { stopCameraStream(); $("cameraWin").classList.remove("show"); $("camStatus").textContent = "Camera closed."; $("camStartBtn").classList.remove("active"); $("camToggleBtn").classList.add("active"); }
   function initCamera() {
-    applyCamLayout(); applyCamStyle();
-    $("camBright").value = camState.bright; $("camContrast").value = camState.contrast; $("camSat").value = camState.sat; $("camBlur").value = camState.blur;
-    $("camMirrorBtn").classList.toggle("toggle-on", camState.mirror); $("camWarmBtn").classList.toggle("toggle-on", camState.warm);
+    applyCamLayout(); applyCamStyle(); updateFacingButtons();
+    $("camBright").value = camState.bright; $("camContrast").value = camState.contrast; $("camWarm").value = camState.warm; $("camSmooth").value = camState.smooth;
+    $("camMirrorBtn").classList.toggle("toggle-on", camState.mirror); $("camToggleBtn").classList.add("active");
     $("camStartBtn").addEventListener("click", startCamera);
-    $("camToggleBtn").addEventListener("click", function () { if ($("cameraWin").classList.contains("show") && camStream) hideCamera(); else startCamera(); });
-    $("camHideBtn").addEventListener("click", hideCamera);
-    $("camSwitchBtn").addEventListener("click", function () { camFacing = (camFacing === "user") ? "environment" : "user"; if ($("cameraWin").classList.contains("show")) startCamera(); $("camStatus").textContent = camFacing === "user" ? "Front camera" : "Back camera"; });
+    $("camToggleBtn").addEventListener("click", closeCamera);
+    $("camHideBtn").addEventListener("click", closeCamera);
+    Array.prototype.forEach.call($("camFacingRow").children, function (b) {
+      var f = b.getAttribute("data-facing"); if (!f) return;
+      b.addEventListener("click", function () { camState.facing = f; updateFacingButtons(); saveCam(); if (camOpen() || $("cameraWin").classList.contains("show")) startCamera(); });
+    });
     $("camMirrorBtn").addEventListener("click", function () { camState.mirror = !camState.mirror; $("camMirrorBtn").classList.toggle("toggle-on", camState.mirror); applyCamStyle(); saveCam(); });
-    $("camWarmBtn").addEventListener("click", function () { camState.warm = !camState.warm; $("camWarmBtn").classList.toggle("toggle-on", camState.warm); applyCamStyle(); saveCam(); });
     $("camBright").addEventListener("input", function () { camState.bright = parseFloat(this.value); applyCamStyle(); saveCam(); });
     $("camContrast").addEventListener("input", function () { camState.contrast = parseFloat(this.value); applyCamStyle(); saveCam(); });
-    $("camSat").addEventListener("input", function () { camState.sat = parseFloat(this.value); applyCamStyle(); saveCam(); });
-    $("camBlur").addEventListener("input", function () { camState.blur = parseFloat(this.value); applyCamStyle(); saveCam(); });
+    $("camWarm").addEventListener("input", function () { camState.warm = parseFloat(this.value); applyCamStyle(); saveCam(); });
+    $("camSmooth").addEventListener("input", function () { camState.smooth = parseFloat(this.value); applyCamStyle(); saveCam(); });
     $("camResetBtn").addEventListener("click", function () {
-      camState.bright = 1; camState.contrast = 1; camState.sat = 1; camState.blur = 0; camState.warm = false; camState.mirror = false;
-      $("camBright").value = 1; $("camContrast").value = 1; $("camSat").value = 1; $("camBlur").value = 0;
-      $("camWarmBtn").classList.remove("toggle-on"); $("camMirrorBtn").classList.remove("toggle-on");
-      applyCamStyle(); saveCam(); $("camStatus").textContent = "Camera style reset.";
+      camState.bright = 1; camState.contrast = 1; camState.warm = 0; camState.smooth = 0; camState.mirror = false;
+      $("camBright").value = 1; $("camContrast").value = 1; $("camWarm").value = 0; $("camSmooth").value = 0;
+      $("camMirrorBtn").classList.remove("toggle-on"); applyCamStyle(); saveCam(); $("camStatus").textContent = "Camera settings reset.";
     });
     makeDraggable($("camHead"), $("cameraWin"), function (x, y) { camState.x = x; camState.y = y; saveCam(); });
     makeResizable($("camResize"), $("cameraWin"), function (w) { camState.w = Math.round(w); saveCam(); });
   }
 
   // ---------- Advertisement layout ----------
-  var adState = load("bdf_adlayout", { aspect: "", size: 100, pos: "right", fx: null, fy: null });
+  var adState = load("bdf_adlayout", { aspect: "", size: 100, pos: "right", fx: null, fy: null, min: false });
   function applyAdLayout() {
     var hero = document.querySelector(".hero"), card = $("adCard"), stage = $("adStage");
     stage.style.aspectRatio = (adState.aspect && adState.aspect !== "custom") ? adState.aspect : "";
     stage.style.maxWidth = adState.size + "%"; stage.style.marginLeft = "auto"; stage.style.marginRight = "auto";
-    hero.classList.remove("ad-left", "ad-below"); card.classList.remove("floating");
+    hero.classList.remove("ad-left", "ad-below"); card.classList.remove("floating", "ad-minimized");
     card.style.left = card.style.top = card.style.width = card.style.right = "";
+    card.style.display = (adState.pos === "hidden") ? "none" : "";
     if (adState.pos === "left") hero.classList.add("ad-left");
     else if (adState.pos === "below") hero.classList.add("ad-below");
     else if (adState.pos === "float") { card.classList.add("floating"); if (adState.fx != null) { card.style.left = adState.fx + "px"; card.style.top = adState.fy + "px"; } else { card.style.right = "16px"; card.style.top = "84px"; } }
+    if (adState.min) card.classList.add("ad-minimized");
     Array.prototype.forEach.call($("adAspectRow").children, function (b) { b.classList.toggle("active", b.getAttribute("data-aspect") === adState.aspect); });
     Array.prototype.forEach.call($("adPosRow").children, function (b) { b.classList.toggle("active", b.getAttribute("data-pos") === adState.pos); });
-    $("adSize").value = adState.size;
+    $("adSize").value = adState.size; $("adMinBtn").classList.toggle("toggle-on", adState.min);
+  }
+  function adFullscreen() {
+    var el = $("adStage");
+    if (el.requestFullscreen) el.requestFullscreen(); else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+    else { $("adStatus").textContent = "Fullscreen not supported here."; }
   }
   function initAdLayout() {
     Array.prototype.forEach.call($("adAspectRow").children, function (b) { b.addEventListener("click", function () { adState.aspect = b.getAttribute("data-aspect"); save("bdf_adlayout", adState); applyAdLayout(); }); });
     Array.prototype.forEach.call($("adPosRow").children, function (b) { b.addEventListener("click", function () { adState.pos = b.getAttribute("data-pos"); save("bdf_adlayout", adState); applyAdLayout(); }); });
     $("adSize").addEventListener("input", function () { adState.size = parseInt($("adSize").value, 10); save("bdf_adlayout", adState); applyAdLayout(); });
+    $("adFullscreenBtn").addEventListener("click", adFullscreen);
+    $("adMinBtn").addEventListener("click", function () { adState.min = !adState.min; save("bdf_adlayout", adState); applyAdLayout(); });
+    $("adResetLayoutBtn").addEventListener("click", function () { adState = { aspect: "", size: 100, pos: "right", fx: null, fy: null, min: false }; save("bdf_adlayout", adState); applyAdLayout(); });
     makeDraggable($("adDragHandle"), $("adCard"), function (x, y) { adState.fx = x; adState.fy = y; save("bdf_adlayout", adState); });
     applyAdLayout();
+  }
+
+  // ---------- Per-card backgrounds ----------
+  var CARD_TARGETS = { timerCard: "Timer card", lbCard: "Live Board", adCard: "Advertisement" };
+  function cardBgKey(t) { return "bdf_cardbg_" + t; }
+  function ensureCardBgLayer(t) {
+    var card = $(t); if (!card) return null;
+    card.style.position = "relative";
+    var layer = null, kids = card.children, i;
+    for (i = 0; i < kids.length; i++) if (kids[i].className === "card-bg") layer = kids[i];
+    if (!layer) {
+      layer = document.createElement("div"); layer.className = "card-bg";
+      card.insertBefore(layer, card.firstChild);
+      for (i = 0; i < card.children.length; i++) { var c = card.children[i]; if (c !== layer && !c.style.zIndex) { c.style.position = c.style.position || "relative"; c.style.zIndex = "1"; } }
+    }
+    return layer;
+  }
+  function applyCardBg(t) {
+    var s = load(cardBgKey(t), { color: "", opacity: 1, blur: 0 });
+    var layer = ensureCardBgLayer(t); if (!layer) return;
+    layer.style.opacity = (s.opacity == null ? 1 : s.opacity);
+    layer.style.filter = "blur(" + (s.blur || 0) + "px)";
+    layer.style.backgroundColor = s.color || "transparent";
+    getBlob("cardbg_" + t, function (rec) {
+      if (rec) { if (layer._url) URL.revokeObjectURL(layer._url); layer._url = URL.createObjectURL(rec.blob); layer.style.backgroundImage = "url(" + layer._url + ")"; }
+      else layer.style.backgroundImage = "";
+    });
+  }
+  function initCardBg() {
+    Object.keys(CARD_TARGETS).forEach(applyCardBg);
+    var sel = $("cardBgTarget");
+    function loadInputs() { var s = load(cardBgKey(sel.value), { color: "", opacity: 1, blur: 0 }); $("cardBgColor").value = s.color || "#fffbf5"; $("cardBgOpacity").value = (s.opacity == null ? 1 : s.opacity); $("cardBgBlur").value = s.blur || 0; }
+    function saveInputs() { var s = load(cardBgKey(sel.value), {}); s.color = $("cardBgColor").value; s.opacity = parseFloat($("cardBgOpacity").value); s.blur = parseFloat($("cardBgBlur").value); save(cardBgKey(sel.value), s); applyCardBg(sel.value); }
+    loadInputs();
+    sel.addEventListener("change", loadInputs);
+    $("cardBgColor").addEventListener("input", saveInputs);
+    $("cardBgOpacity").addEventListener("input", saveInputs);
+    $("cardBgBlur").addEventListener("input", saveInputs);
+    $("cardBgImageBtn").addEventListener("click", function () { $("cardBgInput").click(); });
+    $("cardBgInput").addEventListener("change", function (e) { var f = e.target.files[0]; e.target.value = ""; if (!f) return; putBlob({ id: "cardbg_" + sel.value, blob: f }, function () { applyCardBg(sel.value); }); });
+    $("cardBgRemoveBtn").addEventListener("click", function () { delBlob("cardbg_" + sel.value, function () { applyCardBg(sel.value); }); });
+    $("cardBgResetBtn").addEventListener("click", function () { save(cardBgKey(sel.value), { color: "", opacity: 1, blur: 0 }); delBlob("cardbg_" + sel.value, function () { loadInputs(); applyCardBg(sel.value); }); });
+  }
+
+  // ---------- Celebration (confetti/flowers/sparkles + optional sound) ----------
+  function celebrationSound() { ensureAudio(); if (!audioCtx) return; [523.25, 659.25, 783.99, 1046.5].forEach(function (f, i) { setTimeout(function () { tone(f, 0.32, 0.16); }, i * 110); }); }
+  function initCelebrate() {
+    var soundOn = load("bdf_celeb_sound", true) !== false;
+    function updBtn() { $("celebSoundBtn").classList.toggle("toggle-on", soundOn); $("celebSoundBtn").textContent = soundOn ? "🔔 Sound on" : "🔕 Sound off"; }
+    updBtn();
+    $("celebSoundBtn").addEventListener("click", function () { soundOn = !soundOn; save("bdf_celeb_sound", soundOn); updBtn(); });
+    $("celebrateBtn").addEventListener("click", function () { celebrate("🎉 Well done!", true); });
+  }
+
+  // ---------- Layout presets (save / load / reset) ----------
+  var PRESET_KEYS = ["bdf_layout", "bdf_adlayout", "bdf_cam", "bdf_bg_opacity", "bdf_bg_blur", "bdf_bg_theme", "bdf_bg_accent",
+    "bdf_cardbg_timerCard", "bdf_cardbg_lbCard", "bdf_cardbg_adCard", "bdf_lb_show", "bdf_controls_open"];
+  function savePreset() { var snap = {}; PRESET_KEYS.forEach(function (k) { var v = localStorage.getItem(k); if (v !== null) snap[k] = v; }); save("bdf_preset", snap); flash("Layout preset saved."); }
+  function loadPreset() {
+    var snap = load("bdf_preset", null); if (!snap) { flash("No saved preset yet."); return; }
+    Object.keys(snap).forEach(function (k) { try { localStorage.setItem(k, snap[k]); } catch (e) {} });
+    location.reload();
+  }
+  function resetLayoutAll() {
+    ["bdf_layout", "bdf_adlayout", "bdf_cardbg_timerCard", "bdf_cardbg_lbCard", "bdf_cardbg_adCard", "bdf_bg_theme", "bdf_bg_accent"].forEach(function (k) { try { localStorage.removeItem(k); } catch (e) {} });
+    location.reload();
   }
 
   // ---------- Colour palettes + font styles + undo/redo ----------
@@ -1308,6 +1454,10 @@
     $("rtRedo").addEventListener("mousedown", function (e) { e.preventDefault(); });
     $("rtUndo").addEventListener("click", function () { ur("undo"); });
     $("rtRedo").addEventListener("click", function () { ur("redo"); });
+    $("rtClear").addEventListener("mousedown", function (e) { e.preventDefault(); });
+    $("rtSave").addEventListener("mousedown", function (e) { e.preventDefault(); });
+    $("rtClear").addEventListener("click", function () { if (lastEditable) { lastEditable.innerHTML = ""; saveEditable(lastEditable); } });
+    $("rtSave").addEventListener("click", function () { if (lastEditable) saveEditable(lastEditable); flash("Text saved."); });
   }
   function advanceTaskForward() { if (state.tasks.length > 0) { state.activeTask = (state.activeTask + 1) % state.tasks.length; save(STORE.activeTask, state.activeTask); renderTasks(); } }
 
@@ -1353,7 +1503,19 @@
   function advanceLive() { if (!state.live) return; if (state.live.index >= LIVE_SESSION.length - 1) { endLiveSession(); return; } state.live.index += 1; applyLiveBlock(true); }
   function skipLiveBlock() { if (!state.live) return; ensureAudio(); cancelCountdown(); if (state.live.index >= LIVE_SESSION.length - 1) { endLiveSession(); return; } state.live.index += 1; applyLiveBlock(state.running || true); }
   function endLiveSession() { state.live = null; state.isBreak = false; state.running = false; state.remaining = periodTotal(); updateStartBtn(); renderTimer(); }
-  function updateStartBtn() { $("startPauseBtn").textContent = state.running ? "Pause" : "Start"; }
+  function updateStartBtn() {
+    var sb = $("startBtn"), pb = $("pauseBtn");
+    if (sb) sb.classList.toggle("active", state.running);
+    if (pb) pb.classList.toggle("active", !state.running && state.remaining < periodTotal());
+  }
+  function stopTimer() {
+    cancelCountdown();
+    if (state.live) endLiveSession();
+    state.running = false;
+    state.remaining = periodTotal();
+    stopTicker();
+    updateStartBtn(); renderTimer();
+  }
 
   // ---------- Controls ----------
   function startTimer() {
@@ -1713,6 +1875,7 @@
     t.style.padding = emojiHighlightOn ? "0.2em 0.4em" : "0";
     t.style.borderRadius = "20px";
     stage.classList.add("show"); stage.setAttribute("aria-hidden", "false");
+    if (/[🎉🎊🥳🎆🏆👏🌸✨]/.test(content)) celebrate(content, true);
   }
   function initEmoji() {
     renderEmojiCats(); renderEmojiItems();
@@ -1766,13 +1929,17 @@
     initAdLayout();
     initPalettes();
     initTextExtras();
+    initCelebrate();
     setMode(state.modeKey);
     state.remaining = periodTotal();
     renderTasks(); updateMuteBtn(); updateStartBtn(); renderTimer(); startTicker();
 
-    initBlobDB(function () { initAd(); initBg(); });
+    initBlobDB(function () { initAd(); initBg(); initCardBg(); });
 
-    $("startPauseBtn").addEventListener("click", toggleStartPause);
+    $("startBtn").addEventListener("click", startTimer);
+    $("pauseBtn").addEventListener("click", pauseTimer);
+    $("stopBtn").addEventListener("click", stopTimer);
+    (function () { var t = $("liveSessionTitle"); if (t) { var k = t.getAttribute("data-navkey"); var s = load(k, null); if (s) t.textContent = s; t.addEventListener("input", function () { save(k, t.textContent); }); t.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); t.blur(); } }); } })();
     $("resetTimerBtn").addEventListener("click", resetTimer);
     $("resetSessionBtn").addEventListener("click", resetSession);
     $("skipBreakBtn").addEventListener("click", skipToBreak);
