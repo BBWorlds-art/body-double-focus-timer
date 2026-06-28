@@ -283,6 +283,52 @@
   .lay-toggles label { display: inline-flex; align-items: center; gap: 6px; font-size: 0.92rem; font-weight: 600; color: var(--text); }
   .lay-toggles input { width: 18px; height: 18px; accent-color: var(--accent); }
 
+  /* ---------- Bottom Studio Controls bar (accordion) ---------- */
+  .studio-bar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 50; background: rgba(255, 251, 245, 0.97); border-top: 1px solid var(--card-border); box-shadow: 0 -8px 30px rgba(120, 90, 65, 0.16); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
+  .studio-panels { max-height: 48vh; overflow-y: auto; padding: 0 14px; }
+  .studio-panel { display: none; padding: 14px 2px 6px; }
+  .studio-panel.active { display: block; }
+  .studio-panel > .card, .studio-panel #emojiBar { box-shadow: none !important; border: none !important; background: transparent !important; padding: 4px 0 !important; backdrop-filter: none !important; }
+  .studio-panel .section-label { margin-bottom: 10px; }
+  .studio-tabs { display: flex; gap: 6px; overflow-x: auto; padding: 8px 10px; border-top: 1px solid var(--card-border); }
+  .studio-tabs button { flex: 0 0 auto; min-height: 42px; padding: 8px 13px; font-size: 0.84rem; border-radius: 12px; }
+  .studio-tabs button.active { background: linear-gradient(135deg, var(--accent), var(--accent-deep)); color: #fff8f2; border-color: transparent; }
+  .studio-hint { font-size: 0.8rem; color: var(--text-soft); padding: 4px 2px 0; }
+
+  /* Advertisement title / caption / float */
+  .ad-title { font-weight: 800; font-size: clamp(1.1rem, 2.6vw, 1.5rem); color: var(--accent-deep); text-align: center; outline: none; margin-bottom: 10px; }
+  .ad-title:empty:before { content: attr(data-placeholder); color: var(--text-soft); opacity: 0.7; }
+  .ad-cap-label { font-size: 0.72rem; letter-spacing: 1.4px; text-transform: uppercase; color: var(--text-soft); font-weight: 700; margin: 14px 0 5px; }
+  .ad-drag-handle { display: none; text-align: center; color: var(--text-soft); font-size: 0.8rem; cursor: move; padding: 6px; }
+  .ad-card.floating { position: fixed; z-index: 45; width: 340px; max-width: 92vw; }
+  .ad-card.floating .ad-drag-handle { display: block; }
+  .hero.ad-left .timer-card { order: 2; } .hero.ad-left .ad-card { order: 1; }
+  @media (min-width: 880px) { .hero.ad-below { grid-template-columns: 1fr; } }
+
+  /* Camera preview window */
+  .cam-win { position: fixed; z-index: 60; width: 240px; background: #111; border-radius: 14px; overflow: hidden; box-shadow: var(--shadow); border: 2px solid var(--card-border); display: none; }
+  .cam-win.show { display: block; }
+  .cam-head { display: flex; justify-content: space-between; align-items: center; gap: 6px; padding: 5px 9px; background: rgba(0,0,0,0.55); color: #fff; font-size: 0.78rem; cursor: move; touch-action: none; }
+  .cam-head button { min-height: 0; padding: 2px 8px; background: transparent; color: #fff; border: none; font-size: 0.95rem; flex: 0 0 auto; }
+  .cam-video { width: 100%; display: block; background: #000; }
+  .cam-win.video-hidden .cam-video { display: none; }
+  .cam-win.video-hidden .cam-msg.placeholder { display: block; }
+  .cam-msg { padding: 16px; color: #ffe9e0; font-size: 0.85rem; line-height: 1.4; display: none; }
+  .cam-msg.show { display: block; }
+  .cam-resize { position: absolute; right: 0; bottom: 0; width: 20px; height: 20px; cursor: nwse-resize; background: rgba(255,255,255,0.55); border-top-left-radius: 9px; touch-action: none; }
+
+  /* Colour palettes + font styles */
+  .palette-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 10px; }
+  .palette { display: inline-flex; gap: 3px; align-items: center; padding: 7px 9px; border-radius: 12px; cursor: pointer; border: 1px solid var(--card-border); background: rgba(255,251,245,0.75); font-size: 0.8rem; font-weight: 700; }
+  .palette i { width: 14px; height: 14px; border-radius: 50%; display: inline-block; }
+  .fontstyle-row { display: flex; gap: 8px; flex-wrap: wrap; margin: 6px 0 4px; }
+
+  /* Presenter mode: hide the studio bar unless explicitly shown */
+  body.presenter .studio-bar { display: none; }
+  body.presenter.show-controls .studio-bar { display: block; }
+  .presenter-controls-btn { position: fixed; bottom: 16px; right: 16px; z-index: 80; display: none; min-height: 46px; }
+  body.presenter .presenter-controls-btn { display: inline-flex; }
+
   .footer-note { text-align: center; color: var(--text-soft); font-size: 0.82rem; opacity: 0.75; }
 
   @media (max-width: 480px) {
@@ -359,28 +405,49 @@
   </section>
 
   <!-- media / advertisement, beside the timer -->
-  <section class="card ad-card">
-    <p class="section-label"><span>📣 Advertisement</span></p>
+  <section class="card ad-card" id="adCard">
+    <div id="adTitle" class="ad-title" contenteditable="true" data-rich data-store="bdf_ad_title" data-placeholder="Advertisement title…" aria-label="Advertisement title">Advertisement</div>
     <div class="ad-stage" id="adStage">
       <div class="ad-empty" id="adEmpty">No advertisement yet. Upload an image or a short video (max 60 seconds).</div>
     </div>
-    <div class="music-row" style="margin-top:14px;">
-      <button id="adImageBtn">🖼️ Image</button>
-      <button id="adVideoBtn">🎬 Video ≤60s</button>
-      <button class="loop-btn" id="adLoopBtn">🔁 Loop On</button>
-      <button id="adMuteBtn">🔇 Muted</button>
-      <button class="btn-danger" id="adRemoveBtn">🗑️ Remove</button>
-    </div>
-    <input type="file" id="adImageInput" accept="image/*" style="display:none;" />
-    <input type="file" id="adVideoInput" accept="video/*" style="display:none;" />
     <div class="ad-status" id="adStatus"></div>
-    <div class="lb-label" style="margin-top:16px;">Advertisement caption</div>
+    <div class="ad-cap-label">Caption</div>
     <div id="adCaption" class="ad-caption" contenteditable="true" data-rich data-store="bdf_ad_caption" aria-label="Advertisement caption"></div>
+    <div class="ad-drag-handle" id="adDragHandle" title="Drag to move (Float position)">⠿ drag</div>
+
+    <!-- moved into Studio Controls › Advertisement -->
+    <div id="adControls">
+      <div class="music-row">
+        <button id="adImageBtn">🖼️ Image</button>
+        <button id="adVideoBtn">🎬 Video ≤60s</button>
+        <button class="loop-btn" id="adLoopBtn">🔁 Loop On</button>
+        <button id="adMuteBtn">🔇 Muted</button>
+        <button class="btn-danger" id="adRemoveBtn">🗑️ Remove</button>
+      </div>
+      <input type="file" id="adImageInput" accept="image/*" style="display:none;" />
+      <input type="file" id="adVideoInput" accept="video/*" style="display:none;" />
+      <div class="lb-label" style="margin-top:12px;">Aspect ratio</div>
+      <div class="seg-row" id="adAspectRow">
+        <button class="seg btn-small" data-aspect="1/1">1:1</button>
+        <button class="seg btn-small" data-aspect="4/5">4:5</button>
+        <button class="seg btn-small" data-aspect="9/16">9:16</button>
+        <button class="seg btn-small" data-aspect="16/9">16:9</button>
+        <button class="seg btn-small" data-aspect="custom">Custom</button>
+      </div>
+      <div class="bg-row"><label for="adSize">Panel size</label><input type="range" id="adSize" min="40" max="100" step="1" value="100" /></div>
+      <div class="lb-label" style="margin-top:8px;">Position</div>
+      <div class="seg-row" id="adPosRow">
+        <button class="seg btn-small" data-pos="right">Right</button>
+        <button class="seg btn-small" data-pos="left">Left</button>
+        <button class="seg btn-small" data-pos="below">Below</button>
+        <button class="seg btn-small" data-pos="float">Float</button>
+      </div>
+    </div>
   </section>
   </div><!-- /hero -->
 
   <!-- ============ LIVE BOARD (wide, under timer) ============ -->
-  <section class="card">
+  <section class="card" id="lbCard">
     <p class="section-label"><span>📋 Live Board</span></p>
     <div class="rt-toolbar" id="rtToolbar" role="toolbar" aria-label="Text styling">
       <button class="rt-btn" data-cmd="bold" title="Bold"><b>B</b></button>
@@ -423,7 +490,7 @@
   <div class="controls-drawer" id="controlsDrawer">
   <p class="studio-divider">Studio controls</p>
 
-  <section class="card layout-card">
+  <section class="card layout-card" id="secLayout">
     <p class="section-label"><span>🧩 Layout &amp; Presenter</span><button class="btn-small" id="presenterBtn">🎬 Presenter mode</button></p>
     <p class="section-hint" style="margin:0 0 12px;">Tick the panels you want visible. Your choice is saved, so the layout stays the way you set it.</p>
     <div class="lay-toggles" id="layoutToggles"></div>
@@ -431,7 +498,7 @@
 
   <div class="studio-grid">
     <!-- Live session -->
-    <section class="card">
+    <section class="card" id="secLiveSession">
       <p class="section-label"><span>🔴 TikTok Live Session</span></p>
       <div class="btn-grid">
         <button class="btn-primary btn-live" id="liveStartBtn">▶ Start 2-Hour Live Session</button>
@@ -450,7 +517,7 @@
     </section>
 
     <!-- Live Room Timer -->
-    <section class="card">
+    <section class="card" id="secLiveRoom">
       <p class="section-label"><span>🎙️ Live Room Timer</span><button class="btn-small" id="lrBigBtn">⛶ Big</button></p>
       <div class="seg-row" id="lrModeRow">
         <button class="seg" data-lrmode="countdown">Countdown</button>
@@ -477,7 +544,7 @@
     </section>
 
     <!-- Modes -->
-    <section class="card">
+    <section class="card" id="secModes">
       <p class="section-label"><span>⏱️ Timer mode</span></p>
       <div class="btn-grid mode-btns" id="modeBtns" role="group" aria-label="Timer mode">
         <button data-focus="25" data-break="5">25 / 5</button>
@@ -487,7 +554,7 @@
     </section>
 
     <!-- Controls -->
-    <section class="card">
+    <section class="card" id="secControls">
       <p class="section-label"><span>🎛️ Controls</span></p>
       <div class="btn-grid controls">
         <button class="btn-primary" id="startPauseBtn">Start</button>
@@ -501,14 +568,14 @@
     </section>
 
     <!-- Tasks -->
-    <section class="card">
+    <section class="card" id="secTasks">
       <p class="section-label"><span>✅ Tasks</span></p>
       <div class="task-list" id="taskList"></div>
       <button class="add-task-btn" id="addTaskBtn">+ Add task</button>
     </section>
 
     <!-- Focus Music / Sound -->
-    <section class="card">
+    <section class="card" id="secSound">
       <p class="section-label"><span>🎧 Focus Sound</span></p>
       <div class="music-current">Selected: <span id="currentTrackLabel">—</span></div>
       <select class="music-select" id="trackSelect" aria-label="Select focus sound"></select>
@@ -530,8 +597,8 @@
     </section>
 
     <!-- Background customization -->
-    <section class="card">
-      <p class="section-label"><span>🎨 Background &amp; Colours</span></p>
+    <section class="card" id="secBackground">
+      <p class="section-label"><span>🎨 Background</span></p>
       <div class="music-row">
         <button id="bgUploadBtn">🖼️ Upload background</button>
         <button class="btn-danger" id="bgRemoveBtn">🗑️ Remove</button>
@@ -539,8 +606,10 @@
       <input type="file" id="bgInput" accept="image/*" style="display:none;" />
       <div class="bg-row"><label for="bgOpacity">Opacity</label><input type="range" id="bgOpacity" min="0" max="1" step="0.01" value="0.5" /></div>
       <div class="bg-row"><label for="bgBlur">Blur</label><input type="range" id="bgBlur" min="0" max="20" step="0.5" value="0" /></div>
-      <div class="bg-row"><label for="themeColor">Theme colour</label><input type="color" class="color-input" id="themeColor" value="#efe2d2" /><button class="btn-small" id="themeColorReset">Reset</button></div>
-      <div class="bg-row"><label for="accentColor">Accent colour</label><input type="color" class="color-input" id="accentColor" value="#b08573" /><button class="btn-small" id="accentColorReset">Reset</button></div>
+      <div id="colourRows">
+        <div class="bg-row"><label for="themeColor">Theme colour</label><input type="color" class="color-input" id="themeColor" value="#efe2d2" /><button class="btn-small" id="themeColorReset">Reset</button></div>
+        <div class="bg-row"><label for="accentColor">Accent colour</label><input type="color" class="color-input" id="accentColor" value="#b08573" /><button class="btn-small" id="accentColorReset">Reset</button></div>
+      </div>
       <p class="section-hint">Keep it soft — the background sits behind the timer so it never competes with it.</p>
     </section>
   </div>
@@ -587,6 +656,98 @@
   </div>
 </div>
 
+<!-- Floating camera preview window -->
+<div class="cam-win" id="cameraWin">
+  <div class="cam-head" id="camHead"><span>📷 Camera</span><button id="camHideBtn" title="Hide video">–</button></div>
+  <video class="cam-video" id="camVideo" autoplay playsinline muted></video>
+  <div class="cam-msg" id="camMsg"></div>
+  <div class="cam-resize" id="camResize" title="Resize"></div>
+</div>
+
+<!-- Presenter mode: reveal controls -->
+<button class="btn-primary presenter-controls-btn" id="presenterControlsBtn">⚙ Controls</button>
+
+<!-- ============ Bottom Studio Controls bar ============ -->
+<div class="studio-bar" id="studioBar">
+  <div class="studio-panels" id="studioPanels">
+    <div class="studio-panel" id="pnl-layout">
+      <div class="music-row" style="margin-bottom:10px;">
+        <button id="saveLayoutBtn">💾 Save layout preset</button>
+        <button class="btn-danger" id="resetLayoutBtn">↩ Reset layout</button>
+      </div>
+    </div>
+    <div class="studio-panel" id="pnl-timer"></div>
+    <div class="studio-panel" id="pnl-liveboard">
+      <p class="section-label"><span>📋 Live Board</span></p>
+      <div class="music-row"><button class="toggle" id="lbShowToggle">Show on screen</button></div>
+      <p class="studio-hint">Edit the Live Board text right on the screen. Use Text Style for formatting and voice typing.</p>
+    </div>
+    <div class="studio-panel" id="pnl-ad">
+      <p class="section-label"><span>📣 Advertisement</span></p>
+      <p class="studio-hint" style="margin-bottom:10px;">Title and caption are edited on screen; layout tools are here.</p>
+    </div>
+    <div class="studio-panel" id="pnl-camera">
+      <p class="section-label"><span>📷 Camera</span></p>
+      <div class="music-row">
+        <button class="btn-primary" id="camStartBtn">Open camera</button>
+        <button id="camSwitchBtn">🔄 Front / Back</button>
+        <button id="camToggleBtn">🙈 Hide</button>
+        <button class="toggle" id="camMirrorBtn">🪞 Mirror</button>
+      </div>
+      <div class="bg-row"><label for="camBright">Brightness</label><input type="range" id="camBright" min="0.3" max="2" step="0.01" value="1" /></div>
+      <div class="bg-row"><label for="camContrast">Contrast</label><input type="range" id="camContrast" min="0.3" max="2" step="0.01" value="1" /></div>
+      <div class="bg-row"><label for="camSat">Saturation</label><input type="range" id="camSat" min="0" max="2" step="0.01" value="1" /></div>
+      <div class="bg-row"><label for="camBlur">Soft blur</label><input type="range" id="camBlur" min="0" max="6" step="0.1" value="0" /></div>
+      <div class="music-row" style="margin-top:8px;">
+        <button class="toggle" id="camWarmBtn">🌅 Warm filter</button>
+        <button id="camResetBtn">Reset style</button>
+      </div>
+      <div class="music-status" id="camStatus"></div>
+      <p class="studio-hint">Your camera never leaves your device. Drag the window by its title bar; drag the corner to resize. Position, size, mirror, and style are saved.</p>
+    </div>
+    <div class="studio-panel" id="pnl-background"></div>
+    <div class="studio-panel" id="pnl-textstyle">
+      <p class="section-label"><span>🅰️ Text Style</span></p>
+      <div class="fontstyle-row">
+        <button class="btn-small" data-font="title">Title</button>
+        <button class="btn-small" data-font="subtitle">Subtitle</button>
+        <button class="btn-small" data-font="body">Body</button>
+      </div>
+      <div class="music-row" style="margin-bottom:8px;"><button id="rtUndo">↶ Undo</button><button id="rtRedo">↷ Redo</button></div>
+    </div>
+    <div class="studio-panel" id="pnl-colours">
+      <p class="section-label"><span>🎨 Colours</span></p>
+      <div class="palette-row" id="paletteRow"></div>
+    </div>
+    <div class="studio-panel" id="pnl-emoji"></div>
+    <div class="studio-panel" id="pnl-music"></div>
+    <div class="studio-panel" id="pnl-savereset">
+      <p class="section-label"><span>💾 Save / Reset</span></p>
+      <div class="music-row">
+        <button id="sr-fullscreen">⛶ Full Screen</button>
+        <button id="sr-savelayout">💾 Save layout</button>
+      </div>
+      <div class="music-row" style="margin-top:8px;">
+        <button class="btn-danger" id="sr-resetsession">↩ Reset full session</button>
+      </div>
+      <p class="studio-hint">Everything saves automatically on this device. Nothing is uploaded.</p>
+    </div>
+  </div>
+  <div class="studio-tabs" id="studioTabs">
+    <button data-tab="layout">🧩 Layout</button>
+    <button data-tab="timer">⏱️ Timer</button>
+    <button data-tab="liveboard">📋 Live Board</button>
+    <button data-tab="ad">📣 Advertisement</button>
+    <button data-tab="camera">📷 Camera</button>
+    <button data-tab="background">🎨 Background</button>
+    <button data-tab="textstyle">🅰️ Text Style</button>
+    <button data-tab="colours">🎨 Colours</button>
+    <button data-tab="emoji">😊 Emoji Bar</button>
+    <button data-tab="music">🎧 Music</button>
+    <button data-tab="savereset">💾 Save / Reset</button>
+  </div>
+</div>
+
 <script>
 (function () {
   "use strict";
@@ -629,7 +790,7 @@
     title: "bdf_title", message: "bdf_message", tasks: "bdf_tasks", activeTask: "bdf_activeTask",
     mode: "bdf_mode", completed: "bdf_completed", muted: "bdf_muted",
     lbFocus: "bdf_lb_focus", lbCommunity: "bdf_lb_community", lbLink: "bdf_lb_link", lbBreak: "bdf_lb_break", lbNote: "bdf_lb_note",
-    adCaption: "bdf_ad_caption", adLoop: "bdf_ad_loop", adMuted: "bdf_ad_muted",
+    adCaption: "bdf_ad_caption", adTitle: "bdf_ad_title", adLoop: "bdf_ad_loop", adMuted: "bdf_ad_muted",
     soundSel: "bdf_sound_sel", volume: "bdf_volume", musicMuted: "bdf_musicMuted", musicLoop: "bdf_musicLoop",
     cdOn: "bdf_cd_on", cdLen: "bdf_cd_len",
     bgOpacity: "bdf_bg_opacity", bgBlur: "bdf_bg_blur", bgTheme: "bdf_bg_theme", bgAccent: "bdf_bg_accent",
@@ -952,28 +1113,201 @@
   }
 
   // ---------- Presenter (clean stage) mode ----------
-  function setPresenter(on) { document.body.classList.toggle("presenter", on); save("bdf_presenter", on); }
+  function setPresenter(on) { document.body.classList.toggle("presenter", on); if (!on) document.body.classList.remove("show-controls"); save("bdf_presenter", on); }
   function initPresenter() {
     if (load("bdf_presenter", false) === true) document.body.classList.add("presenter");
     $("presenterBtn").addEventListener("click", function () { setPresenter(true); });
     $("presenterExit").addEventListener("click", function () { setPresenter(false); });
+    $("presenterControlsBtn").addEventListener("click", function () { document.body.classList.toggle("show-controls"); });
   }
 
-  // ---------- Saveable layout (which control panels are visible) ----------
+  // ---------- Saveable layout (show/hide control sections) ----------
+  var LAYOUT_SECTIONS = [
+    { id: "secLiveSession", label: "Live Session" }, { id: "secLiveRoom", label: "Live Room Timer" },
+    { id: "secModes", label: "Timer Mode" }, { id: "secControls", label: "Controls" },
+    { id: "secTasks", label: "Tasks" }, { id: "secSound", label: "Sound" }, { id: "secBackground", label: "Background" }
+  ];
+  function applyLayoutVisibility() {
+    var saved = load("bdf_layout", {});
+    LAYOUT_SECTIONS.forEach(function (s) { var el = $(s.id); if (el) el.style.display = (saved[s.id] !== false) ? "" : "none"; });
+  }
   function initLayout() {
-    var sections = Array.prototype.slice.call(document.querySelectorAll(".studio-grid > section"));
     var saved = load("bdf_layout", {});
     var panel = $("layoutToggles"); panel.innerHTML = "";
-    sections.forEach(function (sec, i) {
-      var labelEl = sec.querySelector(".section-label span");
-      var name = labelEl ? labelEl.textContent.trim() : ("Panel " + (i + 1));
-      var key = "sec_" + i, visible = saved[key] !== false;
-      sec.style.display = visible ? "" : "none";
+    LAYOUT_SECTIONS.forEach(function (s) {
+      var el = $(s.id); if (!el) return;
+      var visible = saved[s.id] !== false; el.style.display = visible ? "" : "none";
       var wrap = document.createElement("label");
       var cb = document.createElement("input"); cb.type = "checkbox"; cb.checked = visible;
-      cb.addEventListener("change", function () { sec.style.display = cb.checked ? "" : "none"; saved[key] = cb.checked; save("bdf_layout", saved); });
-      wrap.appendChild(cb); wrap.appendChild(document.createTextNode(" " + name)); panel.appendChild(wrap);
+      cb.addEventListener("change", function () { el.style.display = cb.checked ? "" : "none"; saved[s.id] = cb.checked; save("bdf_layout", saved); });
+      wrap.appendChild(cb); wrap.appendChild(document.createTextNode(" " + s.label)); panel.appendChild(wrap);
     });
+    $("saveLayoutBtn").addEventListener("click", function () { save("bdf_layout", saved); flash("Layout saved."); });
+    $("resetLayoutBtn").addEventListener("click", function () { saved = {}; save("bdf_layout", {}); LAYOUT_SECTIONS.forEach(function (s) { var el = $(s.id); if (el) el.style.display = ""; }); initLayout(); flash("Layout reset."); });
+    $("sr-savelayout").addEventListener("click", function () { save("bdf_layout", load("bdf_layout", {})); flash("Saved."); });
+    $("sr-fullscreen").addEventListener("click", toggleFullscreen);
+    $("sr-resetsession").addEventListener("click", resetSession);
+  }
+  function flash(msg) { var el = $("camStatus"); if (el) { el.textContent = msg; setTimeout(function () { if (el.textContent === msg) el.textContent = ""; }, 1800); } }
+
+  // ---------- Bottom Studio Controls bar (move existing controls in; accordion) ----------
+  function buildStudioBar() {
+    function moveInto(panelId, ids) { var p = $(panelId); if (!p) return; ids.forEach(function (id) { var el = $(id); if (el) p.appendChild(el); }); }
+    moveInto("pnl-layout", ["secLayout"]);
+    moveInto("pnl-timer", ["secLiveSession", "secLiveRoom", "secModes", "secControls", "secTasks"]);
+    moveInto("pnl-ad", ["adControls"]);
+    moveInto("pnl-colours", ["colourRows"]);          // before background, so it isn't carried along
+    moveInto("pnl-background", ["secBackground"]);
+    moveInto("pnl-textstyle", ["rtToolbar"]);
+    moveInto("pnl-music", ["secSound"]);
+    var eb = $("emojiBar"); if (eb) { eb.classList.add("in-bar"); $("pnl-emoji").appendChild(eb); }
+    if ($("controlsToggle")) $("controlsToggle").style.display = "none";
+    if ($("controlsDrawer")) $("controlsDrawer").style.display = "none";
+    Array.prototype.forEach.call($("studioTabs").children, function (tab) {
+      tab.addEventListener("click", function () {
+        var name = tab.getAttribute("data-tab"), panel = $("pnl-" + name), already = panel.classList.contains("active");
+        Array.prototype.forEach.call($("studioPanels").children, function (p) { p.classList.remove("active"); });
+        Array.prototype.forEach.call($("studioTabs").children, function (t) { t.classList.remove("active"); });
+        if (!already) { panel.classList.add("active"); tab.classList.add("active"); }
+      });
+    });
+    // Live Board show/hide on stage
+    var lbShown = load("bdf_lb_show", true) !== false;
+    function applyLbShow() { $("lbCard").style.display = lbShown ? "" : "none"; $("lbShowToggle").classList.toggle("toggle-on", lbShown); $("lbShowToggle").textContent = lbShown ? "Showing on screen" : "Hidden from screen"; }
+    applyLbShow();
+    $("lbShowToggle").addEventListener("click", function () { lbShown = !lbShown; save("bdf_lb_show", lbShown); applyLbShow(); });
+  }
+
+  // ---------- Drag / resize helpers (camera + floating ad) ----------
+  function pointOf(e) { if (e.touches && e.touches[0]) return { x: e.touches[0].clientX, y: e.touches[0].clientY }; return { x: e.clientX, y: e.clientY }; }
+  function makeDraggable(handle, target, onEnd) {
+    var sx, sy, ox, oy, drag = false;
+    function down(e) { drag = true; var p = pointOf(e); sx = p.x; sy = p.y; var r = target.getBoundingClientRect(); ox = r.left; oy = r.top; target.style.right = "auto"; target.style.bottom = "auto"; if (e.cancelable) e.preventDefault(); }
+    function move(e) { if (!drag) return; var p = pointOf(e); target.style.left = Math.max(0, ox + (p.x - sx)) + "px"; target.style.top = Math.max(0, oy + (p.y - sy)) + "px"; if (e.cancelable) e.preventDefault(); }
+    function up() { if (!drag) return; drag = false; var r = target.getBoundingClientRect(); if (onEnd) onEnd(r.left, r.top); }
+    handle.addEventListener("mousedown", down); document.addEventListener("mousemove", move); document.addEventListener("mouseup", up);
+    handle.addEventListener("touchstart", down, { passive: false }); document.addEventListener("touchmove", move, { passive: false }); document.addEventListener("touchend", up);
+  }
+  function makeResizable(handle, target, onEnd) {
+    var sx, sw, res = false;
+    function down(e) { res = true; sx = pointOf(e).x; sw = target.getBoundingClientRect().width; if (e.cancelable) e.preventDefault(); e.stopPropagation(); }
+    function move(e) { if (!res) return; var nw = Math.max(140, Math.min(window.innerWidth * 0.92, sw + (pointOf(e).x - sx))); target.style.width = nw + "px"; if (e.cancelable) e.preventDefault(); }
+    function up() { if (!res) return; res = false; if (onEnd) onEnd(target.getBoundingClientRect().width); }
+    handle.addEventListener("mousedown", down); document.addEventListener("mousemove", move); document.addEventListener("mouseup", up);
+    handle.addEventListener("touchstart", down, { passive: false }); document.addEventListener("touchmove", move, { passive: false }); document.addEventListener("touchend", up);
+  }
+
+  // ---------- Camera preview ----------
+  var camStream = null, camFacing = "user";
+  var camState = load("bdf_cam", { x: null, y: null, w: 240, mirror: false, bright: 1, contrast: 1, sat: 1, blur: 0, warm: false });
+  function saveCam() { save("bdf_cam", camState); }
+  function applyCamStyle() {
+    var v = $("camVideo");
+    var f = "brightness(" + camState.bright + ") contrast(" + camState.contrast + ") saturate(" + camState.sat + ")";
+    if (camState.warm) f += " sepia(0.4)";
+    if (camState.blur > 0) f += " blur(" + camState.blur + "px)";
+    v.style.filter = f; v.style.transform = camState.mirror ? "scaleX(-1)" : "none";
+  }
+  function applyCamLayout() {
+    var w = $("cameraWin");
+    w.style.width = (camState.w || 240) + "px";
+    if (camState.x != null) { w.style.left = camState.x + "px"; w.style.right = "auto"; } else { w.style.right = "16px"; }
+    if (camState.y != null) { w.style.top = camState.y + "px"; w.style.bottom = "auto"; } else { w.style.bottom = "92px"; }
+  }
+  function camMessage(t) { var m = $("camMsg"); m.textContent = t || ""; m.classList.toggle("show", !!t); $("camVideo").style.display = t ? "none" : ""; }
+  function startCamera() {
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { $("cameraWin").classList.add("show"); camMessage("Camera needs a secure https page (e.g. GitHub Pages) and a supported browser."); return; }
+    stopCameraStream();
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: camFacing }, audio: false }).then(function (stream) {
+      camStream = stream; $("camVideo").srcObject = stream; $("cameraWin").classList.add("show"); camMessage(""); $("camStatus").textContent = "Camera on."; $("camToggleBtn").textContent = "🙈 Hide";
+    })["catch"](function (err) {
+      $("cameraWin").classList.add("show");
+      var msg = (err && err.name === "NotAllowedError") ? "Camera permission denied. Allow camera access in your browser settings, then tap Open camera again." : "Could not open camera (" + (err && err.name || "error") + "). On iPhone, use Safari over https.";
+      camMessage(msg); $("camStatus").textContent = msg;
+    });
+  }
+  function stopCameraStream() { if (camStream) { camStream.getTracks().forEach(function (t) { t.stop(); }); camStream = null; } var v = $("camVideo"); if (v) v.srcObject = null; }
+  function hideCamera() { stopCameraStream(); $("cameraWin").classList.remove("show"); $("camToggleBtn").textContent = "🙉 Show"; $("camStatus").textContent = ""; }
+  function initCamera() {
+    applyCamLayout(); applyCamStyle();
+    $("camBright").value = camState.bright; $("camContrast").value = camState.contrast; $("camSat").value = camState.sat; $("camBlur").value = camState.blur;
+    $("camMirrorBtn").classList.toggle("toggle-on", camState.mirror); $("camWarmBtn").classList.toggle("toggle-on", camState.warm);
+    $("camStartBtn").addEventListener("click", startCamera);
+    $("camToggleBtn").addEventListener("click", function () { if ($("cameraWin").classList.contains("show") && camStream) hideCamera(); else startCamera(); });
+    $("camHideBtn").addEventListener("click", hideCamera);
+    $("camSwitchBtn").addEventListener("click", function () { camFacing = (camFacing === "user") ? "environment" : "user"; if ($("cameraWin").classList.contains("show")) startCamera(); $("camStatus").textContent = camFacing === "user" ? "Front camera" : "Back camera"; });
+    $("camMirrorBtn").addEventListener("click", function () { camState.mirror = !camState.mirror; $("camMirrorBtn").classList.toggle("toggle-on", camState.mirror); applyCamStyle(); saveCam(); });
+    $("camWarmBtn").addEventListener("click", function () { camState.warm = !camState.warm; $("camWarmBtn").classList.toggle("toggle-on", camState.warm); applyCamStyle(); saveCam(); });
+    $("camBright").addEventListener("input", function () { camState.bright = parseFloat(this.value); applyCamStyle(); saveCam(); });
+    $("camContrast").addEventListener("input", function () { camState.contrast = parseFloat(this.value); applyCamStyle(); saveCam(); });
+    $("camSat").addEventListener("input", function () { camState.sat = parseFloat(this.value); applyCamStyle(); saveCam(); });
+    $("camBlur").addEventListener("input", function () { camState.blur = parseFloat(this.value); applyCamStyle(); saveCam(); });
+    $("camResetBtn").addEventListener("click", function () {
+      camState.bright = 1; camState.contrast = 1; camState.sat = 1; camState.blur = 0; camState.warm = false; camState.mirror = false;
+      $("camBright").value = 1; $("camContrast").value = 1; $("camSat").value = 1; $("camBlur").value = 0;
+      $("camWarmBtn").classList.remove("toggle-on"); $("camMirrorBtn").classList.remove("toggle-on");
+      applyCamStyle(); saveCam(); $("camStatus").textContent = "Camera style reset.";
+    });
+    makeDraggable($("camHead"), $("cameraWin"), function (x, y) { camState.x = x; camState.y = y; saveCam(); });
+    makeResizable($("camResize"), $("cameraWin"), function (w) { camState.w = Math.round(w); saveCam(); });
+  }
+
+  // ---------- Advertisement layout ----------
+  var adState = load("bdf_adlayout", { aspect: "", size: 100, pos: "right", fx: null, fy: null });
+  function applyAdLayout() {
+    var hero = document.querySelector(".hero"), card = $("adCard"), stage = $("adStage");
+    stage.style.aspectRatio = (adState.aspect && adState.aspect !== "custom") ? adState.aspect : "";
+    stage.style.maxWidth = adState.size + "%"; stage.style.marginLeft = "auto"; stage.style.marginRight = "auto";
+    hero.classList.remove("ad-left", "ad-below"); card.classList.remove("floating");
+    card.style.left = card.style.top = card.style.width = card.style.right = "";
+    if (adState.pos === "left") hero.classList.add("ad-left");
+    else if (adState.pos === "below") hero.classList.add("ad-below");
+    else if (adState.pos === "float") { card.classList.add("floating"); if (adState.fx != null) { card.style.left = adState.fx + "px"; card.style.top = adState.fy + "px"; } else { card.style.right = "16px"; card.style.top = "84px"; } }
+    Array.prototype.forEach.call($("adAspectRow").children, function (b) { b.classList.toggle("active", b.getAttribute("data-aspect") === adState.aspect); });
+    Array.prototype.forEach.call($("adPosRow").children, function (b) { b.classList.toggle("active", b.getAttribute("data-pos") === adState.pos); });
+    $("adSize").value = adState.size;
+  }
+  function initAdLayout() {
+    Array.prototype.forEach.call($("adAspectRow").children, function (b) { b.addEventListener("click", function () { adState.aspect = b.getAttribute("data-aspect"); save("bdf_adlayout", adState); applyAdLayout(); }); });
+    Array.prototype.forEach.call($("adPosRow").children, function (b) { b.addEventListener("click", function () { adState.pos = b.getAttribute("data-pos"); save("bdf_adlayout", adState); applyAdLayout(); }); });
+    $("adSize").addEventListener("input", function () { adState.size = parseInt($("adSize").value, 10); save("bdf_adlayout", adState); applyAdLayout(); });
+    makeDraggable($("adDragHandle"), $("adCard"), function (x, y) { adState.fx = x; adState.fy = y; save("bdf_adlayout", adState); });
+    applyAdLayout();
+  }
+
+  // ---------- Colour palettes + font styles + undo/redo ----------
+  var PALETTES = [
+    { name: "Warm", theme: "#efe2d2", accent: "#b08573" }, { name: "Ocean", theme: "#d8e6ef", accent: "#3d7ea6" },
+    { name: "Rose", theme: "#f3dde2", accent: "#b5838d" }, { name: "Forest", theme: "#dde9d6", accent: "#5b8a52" },
+    { name: "Mono", theme: "#e9e9e9", accent: "#6b6b6b" }, { name: "Sunset", theme: "#f6e0cf", accent: "#d0855e" }
+  ];
+  function initPalettes() {
+    var row = $("paletteRow"); row.innerHTML = "";
+    PALETTES.forEach(function (p) {
+      var b = document.createElement("button"); b.className = "palette";
+      b.innerHTML = '<i style="background:' + p.accent + '"></i><i style="background:' + p.theme + '"></i> ' + p.name;
+      b.addEventListener("click", function () { save(STORE.bgTheme, p.theme); save(STORE.bgAccent, p.accent); if ($("themeColor")) $("themeColor").value = p.theme; if ($("accentColor")) $("accentColor").value = p.accent; applyBgStyle(); });
+      row.appendChild(b);
+    });
+  }
+  function applyFontStyle(kind) {
+    if (!lastEditable) lastEditable = $("lbFocus");
+    restoreSelection();
+    try { document.execCommand("styleWithCSS", false, true); } catch (e) {}
+    var size = kind === "title" ? "6" : (kind === "subtitle" ? "4" : "3");
+    try { document.execCommand("fontSize", false, size); } catch (e) {}
+    saveEditable(lastEditable); rememberSelection();
+  }
+  function initTextExtras() {
+    Array.prototype.forEach.call(document.querySelectorAll("#pnl-textstyle [data-font]"), function (b) {
+      b.addEventListener("mousedown", function (e) { e.preventDefault(); });
+      b.addEventListener("click", function () { applyFontStyle(b.getAttribute("data-font")); });
+    });
+    function ur(cmd) { if (lastEditable) { lastEditable.focus(); try { document.execCommand(cmd); } catch (e) {} saveEditable(lastEditable); } }
+    $("rtUndo").addEventListener("mousedown", function (e) { e.preventDefault(); });
+    $("rtRedo").addEventListener("mousedown", function (e) { e.preventDefault(); });
+    $("rtUndo").addEventListener("click", function () { ur("undo"); });
+    $("rtRedo").addEventListener("click", function () { ur("redo"); });
   }
   function advanceTaskForward() { if (state.tasks.length > 0) { state.activeTask = (state.activeTask + 1) % state.tasks.length; save(STORE.activeTask, state.activeTask); renderTasks(); } }
 
@@ -1088,6 +1422,7 @@
       { id: "lbLink", store: STORE.lbLink, def: LB_DEFAULTS.link },
       { id: "lbBreak", store: STORE.lbBreak, def: LB_DEFAULTS.brk },
       { id: "lbNote", store: STORE.lbNote, def: "" },
+      { id: "adTitle", store: STORE.adTitle, def: "Advertisement" },
       { id: "adCaption", store: STORE.adCaption, def: AD_CAPTION_DEFAULT }
     ];
     fields.forEach(function (f) {
@@ -1420,13 +1755,17 @@
     initLiveBoard();
     initRichToolbar();
     initVoiceButton("lbVoiceBtn", "lbVoiceHint");
-    initDrawer();
-    initLayout();
-    initPresenter();
     initSound();
     initLiveRoomTimer();
     initEmoji();
     initCountdownSettings();
+    buildStudioBar();          // relocate controls into the bottom bar (keeps wiring)
+    initLayout();
+    initPresenter();
+    initCamera();
+    initAdLayout();
+    initPalettes();
+    initTextExtras();
     setMode(state.modeKey);
     state.remaining = periodTotal();
     renderTasks(); updateMuteBtn(); updateStartBtn(); renderTimer(); startTicker();
