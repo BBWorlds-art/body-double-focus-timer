@@ -286,7 +286,7 @@
 
   /* ---------- Bottom Studio Controls bar (accordion) ---------- */
   .studio-bar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 50; background: rgba(255, 251, 245, 0.97); border-top: 1px solid var(--card-border); box-shadow: 0 -8px 30px rgba(120, 90, 65, 0.16); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
-  .studio-panels { max-height: min(34vh, 280px); overflow-y: auto; padding: 0 14px; -webkit-overflow-scrolling: touch; }
+  .studio-panels { max-height: min(30vh, 240px); overflow-y: auto; padding: 0 14px; -webkit-overflow-scrolling: touch; }
   .studio-panel { display: none; padding: 14px 2px 6px; }
   .studio-panel.active { display: block; }
   .studio-panel > .card, .studio-panel #emojiBar { box-shadow: none !important; border: none !important; background: transparent !important; padding: 4px 0 !important; backdrop-filter: none !important; }
@@ -336,6 +336,19 @@
   .presenter-controls-btn { position: fixed; bottom: 72px; right: 128px; z-index: 81; display: none; min-height: 40px; padding: 8px 13px; font-size: 0.82rem; }
   body.presenter .presenter-controls-btn { display: inline-flex; }
 
+  /* Session Messages — bigger, clearly tappable */
+  .msg-hint { font-size: 0.72rem; font-weight: 700; color: var(--accent-deep); background: rgba(176,133,115,0.14); padding: 4px 12px; border-radius: 999px; letter-spacing: 0; text-transform: none; }
+  #lbCard .lb-input { min-height: 66px; font-size: clamp(1.15rem, 2.5vw, 1.5rem); cursor: text; }
+  #lbCard .lb-input:hover { border-color: var(--accent-soft); }
+  #lbCard .lb-input:focus { box-shadow: 0 0 0 3px var(--accent-soft); border-color: var(--accent); }
+
+  /* Floating inline edit toolbar (appears above the box you tap) */
+  .inline-tools { position: fixed; z-index: 64; display: none; gap: 4px; align-items: center; background: var(--text); color: #fff8f2; border-radius: 12px; padding: 5px 6px; box-shadow: 0 12px 28px rgba(0,0,0,0.3); flex-wrap: wrap; max-width: 94vw; }
+  .inline-tools.show { display: flex; }
+  .inline-tools button { min-height: 34px; min-width: 0; padding: 4px 9px; font-size: 0.92rem; font-weight: 700; background: rgba(255,255,255,0.14); color: #fff8f2; border: none; border-radius: 8px; flex: 0 0 auto; }
+  .inline-tools button:hover { background: rgba(255,255,255,0.28); }
+  .inline-tools input[type="color"] { width: 30px; height: 30px; border: none; border-radius: 7px; padding: 0; background: none; cursor: pointer; }
+
   .footer-note { text-align: center; color: var(--text-soft); font-size: 0.82rem; opacity: 0.75; }
 
   @media (max-width: 480px) {
@@ -349,6 +362,20 @@
 <div id="bgLayer"></div>
 <canvas id="confetti" aria-hidden="true"></canvas>
 <div class="well-done" id="wellDone" aria-hidden="true">🎉 Well done!</div>
+
+<!-- Floating inline edit toolbar for on-screen message boxes -->
+<div class="inline-tools" id="inlineTools" role="toolbar" aria-label="Edit this box">
+  <button data-icmd="bold" title="Bold"><b>B</b></button>
+  <button data-icmd="italic" title="Italic"><i>I</i></button>
+  <button data-icmd="underline" title="Underline"><u>U</u></button>
+  <button data-icmd="insertUnorderedList" title="Bullets">•</button>
+  <input type="color" id="iFore" title="Text colour" value="#9a6d5b" />
+  <input type="color" id="iBack" title="Highlight colour" value="#ffe9a8" />
+  <button id="iBigger" title="Bigger text">A+</button>
+  <button id="iSmaller" title="Smaller text">A−</button>
+  <button id="iVoice" title="Voice typing">🎤</button>
+  <button id="iClear" title="Clear this box">✕</button>
+</div>
 <button class="btn-primary presenter-exit" id="presenterExit">✕ Exit presenter</button>
 
 <div class="app">
@@ -459,9 +486,9 @@
   </section>
   </div><!-- /hero -->
 
-  <!-- ============ LIVE BOARD (wide, under timer) ============ -->
+  <!-- ============ SESSION MESSAGES (wide, under timer) ============ -->
   <section class="card" id="lbCard">
-    <p class="section-label"><span>📋 Live Board</span></p>
+    <p class="section-label"><span>💬 Session Messages</span><span class="msg-hint">✏️ Tap any box to edit — saves automatically</span></p>
     <div class="rt-toolbar" id="rtToolbar" role="toolbar" aria-label="Text styling">
       <button class="rt-btn" data-cmd="bold" title="Bold"><b>B</b></button>
       <button class="rt-btn" data-cmd="italic" title="Italic"><i>I</i></button>
@@ -695,9 +722,9 @@
     </div>
     <div class="studio-panel" id="pnl-timer"></div>
     <div class="studio-panel" id="pnl-liveboard">
-      <p class="section-label"><span>📋 Live Board</span></p>
+      <p class="section-label"><span>💬 Session Messages</span></p>
       <div class="music-row"><button class="toggle" id="lbShowToggle">Show on screen</button></div>
-      <p class="studio-hint">Edit the Live Board text right on the screen. Use Text Style for formatting and voice typing.</p>
+      <p class="studio-hint">Your on-screen messages sit under the timer. <strong>Tap any box to edit it directly</strong> — a small toolbar appears above it for bold, colour, size and voice. Type before or during your live; it all saves automatically.</p>
     </div>
     <div class="studio-panel" id="pnl-ad">
       <p class="section-label"><span>📣 Advertisement</span></p>
@@ -785,7 +812,7 @@
   <div class="studio-tabs" id="studioTabs">
     <button data-tab="layout">🧩 Layout</button>
     <button data-tab="timer">⏱️ Timer</button>
-    <button data-tab="liveboard">📋 Live Board</button>
+    <button data-tab="liveboard">💬 Messages</button>
     <button data-tab="ad">📣 Advertisement</button>
     <button data-tab="camera">📷 Camera</button>
     <button data-tab="background">🎨 Background</button>
@@ -1466,7 +1493,13 @@
   function cdEnabled() { return load(STORE.cdOn, true) === true; }
   function cdLength() { var n = load(STORE.cdLen, 5); return (n === 3 || n === 5 || n === 10) ? n : 5; }
   function beginRun(kind, after) { if (!cdEnabled()) { after(); return; } runStartCountdown(kind, cdLength(), after); }
+  function closeStudioPanels() {
+    var ps = $("studioPanels"), ts = $("studioTabs");
+    if (ps) Array.prototype.forEach.call(ps.children, function (p) { p.classList.remove("active"); });
+    if (ts) Array.prototype.forEach.call(ts.children, function (t) { t.classList.remove("active"); });
+  }
   function runStartCountdown(kind, len, after) {
+    closeStudioPanels();               // never let the controls hide the countdown
     if (cdInterval) { clearInterval(cdInterval); cdInterval = null; }
     countdownActive = true;
     var overlay = $("cdOverlay");
@@ -1492,7 +1525,7 @@
   }
 
   // ---------- 2-Hour Live Session ----------
-  function startLiveSession() { ensureAudio(); state.live = { index: 0 }; startTicker(); applyLiveBlock(true); }
+  function startLiveSession() { ensureAudio(); closeStudioPanels(); state.live = { index: 0 }; startTicker(); applyLiveBlock(true); }
   function applyLiveBlock(autostart) {
     var b = LIVE_SESSION[state.live.index];
     state.isBreak = (b.type !== "focus"); state.remaining = b.min * 60;
@@ -1521,6 +1554,7 @@
   function startTimer() {
     ensureAudio();
     if (state.running) return;
+    closeStudioPanels();
     if (state.remaining <= 0) state.remaining = periodTotal();
     startTicker();
     var fresh = state.remaining >= periodTotal() - 0.5;
@@ -1628,6 +1662,60 @@
     if (cmd === "hiliteColor") { try { document.execCommand("backColor", false, val); } catch (e) {} }
     saveEditable(lastEditable);
     rememberSelection();
+  }
+
+  // ---------- Floating inline edit toolbar (tap a message box to edit it) ----------
+  var MSG_BOXES = ["lbFocus", "lbCommunity", "lbLink", "lbBreak", "lbNote", "adTitle", "adCaption"];
+  function msgSizeKey(id) { return "bdf_msgsize_" + id; }
+  function applyMsgSizes() { MSG_BOXES.forEach(function (id) { var el = $(id); if (!el) return; var v = load(msgSizeKey(id), null); if (v) el.style.fontSize = v + "rem"; }); }
+  function adjustMsgSize(delta) {
+    if (!lastEditable || !lastEditable.id) return;
+    var k = msgSizeKey(lastEditable.id), v = load(k, 1.3);
+    v = Math.max(0.8, Math.min(3.2, v + delta)); save(k, v); lastEditable.style.fontSize = v + "rem";
+  }
+  function positionInlineTools(el) {
+    var it = $("inlineTools"); var r = el.getBoundingClientRect(), itr = it.getBoundingClientRect();
+    var top = r.top - itr.height - 8; if (top < 8) top = r.bottom + 8;
+    var left = Math.min(Math.max(8, r.left), window.innerWidth - itr.width - 8);
+    it.style.left = left + "px"; it.style.top = top + "px";
+  }
+  function showInlineTools(el) { lastEditable = el; var it = $("inlineTools"); it.classList.add("show"); positionInlineTools(el); }
+  function hideInlineTools() { $("inlineTools").classList.remove("show"); }
+  function initInlineTools() {
+    var it = $("inlineTools");
+    Array.prototype.forEach.call(it.querySelectorAll("button, input"), function (b) { b.addEventListener("mousedown", function (e) { e.preventDefault(); }); });
+    Array.prototype.forEach.call(it.querySelectorAll("[data-icmd]"), function (b) { b.addEventListener("click", function () { applyCmd(b.getAttribute("data-icmd")); }); });
+    $("iFore").addEventListener("mousedown", rememberSelection);
+    $("iBack").addEventListener("mousedown", rememberSelection);
+    $("iFore").addEventListener("input", function () { applyCmd("foreColor", $("iFore").value); });
+    $("iBack").addEventListener("input", function () { applyCmd("hiliteColor", $("iBack").value); });
+    $("iBigger").addEventListener("click", function () { adjustMsgSize(0.15); });
+    $("iSmaller").addEventListener("click", function () { adjustMsgSize(-0.15); });
+    $("iClear").addEventListener("click", function () { if (lastEditable) { lastEditable.innerHTML = ""; saveEditable(lastEditable); } });
+    $("iVoice").addEventListener("click", function () { dictateInto(lastEditable); });
+    document.addEventListener("focusin", function (e) { if (e.target && e.target.getAttribute && e.target.getAttribute("data-rich") !== null) showInlineTools(e.target); });
+    document.addEventListener("mousedown", function (e) {
+      if (it.contains(e.target)) return;
+      if (e.target && e.target.getAttribute && e.target.getAttribute("data-rich") !== null) return;
+      hideInlineTools();
+    });
+    window.addEventListener("scroll", function () { if (it.classList.contains("show") && lastEditable) positionInlineTools(lastEditable); }, true);
+    window.addEventListener("resize", function () { if (it.classList.contains("show") && lastEditable) positionInlineTools(lastEditable); });
+  }
+  // Voice dictation into a specific box (Chrome/Edge; secure origin)
+  var msgRecog = null;
+  function dictateInto(el) {
+    if (!el) return;
+    if (!("webkitSpeechRecognition" in window) && !("SpeechRecognition" in window)) { flash("Voice typing needs Chrome or Edge on the https site."); return; }
+    if (msgRecog) { try { msgRecog.stop(); } catch (e) {} return; }
+    el.focus();
+    var SR = window.SpeechRecognition || window.webkitSpeechRecognition; msgRecog = new SR();
+    msgRecog.interimResults = false; msgRecog.lang = navigator.language || "en-US";
+    $("iVoice").textContent = "●";
+    msgRecog.onresult = function (ev) { var t = ""; for (var i = ev.resultIndex; i < ev.results.length; i++) t += ev.results[i][0].transcript; el.focus(); try { document.execCommand("insertText", false, t + " "); } catch (e2) { el.innerHTML += " " + esc(t); } saveEditable(el); };
+    msgRecog.onend = function () { $("iVoice").textContent = "🎤"; msgRecog = null; };
+    msgRecog.onerror = function () { $("iVoice").textContent = "🎤"; msgRecog = null; flash("Couldn't hear — check mic permission."); };
+    try { msgRecog.start(); } catch (e) { msgRecog = null; }
   }
 
   // ---------- Voice typing (Web Speech API; Chrome/Edge on https) ----------
@@ -1918,6 +2006,8 @@
     initLiveBoard();
     initRichToolbar();
     initVoiceButton("lbVoiceBtn", "lbVoiceHint");
+    initInlineTools();
+    applyMsgSizes();
     initSound();
     initLiveRoomTimer();
     initEmoji();
