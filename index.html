@@ -26,6 +26,7 @@
 
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
   html, body { height: 100%; margin: 0; }
+  html, body { overflow-x: hidden; max-width: 100%; }
 
   body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -47,7 +48,9 @@
     opacity: 0.5; pointer-events: none;
   }
 
-  .app { width: 100%; max-width: 1180px; display: flex; flex-direction: column; gap: clamp(14px, 2.5vw, 22px); }
+  .app { width: 100%; max-width: 1180px; min-width: 0; display: flex; flex-direction: column; gap: clamp(14px, 2.5vw, 22px); }
+  img, video { max-width: 100%; }
+  .lb-input, .ad-caption, .ad-title, .message-field, .title-field { overflow-wrap: anywhere; word-break: break-word; }
 
   /* ---------- Navigation ---------- */
   .nav-placeholder { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
@@ -113,8 +116,8 @@
   .session-label { font-size: clamp(1.05rem, 3.4vw, 1.5rem); font-weight: 700; color: var(--accent-deep); margin-top: 12px; display: none; }
   .timer-card.is-break .session-label { color: var(--break-deep); }
   .time {
-    font-size: clamp(4.6rem, 21vw, 9.5rem); font-weight: 700; line-height: 1; margin: clamp(12px, 3vw, 22px) 0;
-    font-variant-numeric: tabular-nums; letter-spacing: 1px; color: var(--text);
+    font-size: clamp(3.4rem, 16.5vw, 9.5rem); font-weight: 700; line-height: 1; margin: clamp(12px, 3vw, 22px) 0;
+    font-variant-numeric: tabular-nums; letter-spacing: 0; color: var(--text); white-space: nowrap; max-width: 100%;
   }
   .next-block { color: var(--text-soft); font-weight: 600; font-size: clamp(0.95rem, 2.6vw, 1.15rem); margin: -6px 0 4px; display: none; }
   .task-row { display: flex; justify-content: center; gap: clamp(18px, 6vw, 60px); flex-wrap: wrap; color: var(--text-soft); }
@@ -168,7 +171,7 @@
   .btn-small { min-height: 44px; padding: 9px 14px; font-size: 0.92rem; flex: 0 1 auto; }
   .btn-danger { color: #a23b2c; }
 
-  .section-label { font-size: 0.78rem; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-soft); margin: 0 0 14px; font-weight: 700; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .section-label { font-size: 0.78rem; letter-spacing: 1.5px; text-transform: uppercase; color: var(--text-soft); margin: 0 0 14px; font-weight: 700; display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
   .section-hint { font-size: 0.82rem; color: var(--text-soft); margin: 10px 0 0; line-height: 1.5; }
 
   /* ---------- Tasks ---------- */
@@ -337,7 +340,7 @@
   body.presenter .presenter-controls-btn { display: inline-flex; }
 
   /* Session Messages — bigger, clearly tappable */
-  .msg-hint { font-size: 0.72rem; font-weight: 700; color: var(--accent-deep); background: rgba(176,133,115,0.14); padding: 4px 12px; border-radius: 999px; letter-spacing: 0; text-transform: none; }
+  .msg-hint { font-size: 0.7rem; font-weight: 700; color: var(--accent-deep); background: rgba(176,133,115,0.14); padding: 4px 11px; border-radius: 999px; letter-spacing: 0; text-transform: none; white-space: nowrap; }
   #lbCard .lb-input { min-height: 66px; font-size: clamp(1.15rem, 2.5vw, 1.5rem); cursor: text; }
   #lbCard .lb-input:hover { border-color: var(--accent-soft); }
   #lbCard .lb-input:focus { box-shadow: 0 0 0 3px var(--accent-soft); border-color: var(--accent); }
@@ -488,7 +491,7 @@
 
   <!-- ============ SESSION MESSAGES (wide, under timer) ============ -->
   <section class="card" id="lbCard">
-    <p class="section-label"><span>💬 Session Messages</span><span class="msg-hint">✏️ Tap any box to edit — saves automatically</span></p>
+    <p class="section-label"><span>💬 Session Messages</span><span class="msg-hint">✏️ Tap a box to edit</span></p>
     <div class="rt-toolbar" id="rtToolbar" role="toolbar" aria-label="Text styling">
       <button class="rt-btn" data-cmd="bold" title="Bold"><b>B</b></button>
       <button class="rt-btn" data-cmd="italic" title="Italic"><i>I</i></button>
