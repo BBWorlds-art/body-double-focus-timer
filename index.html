@@ -80,7 +80,7 @@
   .card {
     background: var(--card); border: 1px solid var(--card-border); border-radius: var(--radius);
     box-shadow: var(--shadow); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-    padding: clamp(20px, 4vw, 36px);
+    padding: clamp(20px, 4vw, 36px); position: relative;
   }
   .studio-grid { display: grid; grid-template-columns: 1fr; gap: clamp(14px, 2.5vw, 22px); }
   @media (min-width: 900px) { .studio-grid { grid-template-columns: 1fr 1fr; align-items: start; } }
@@ -372,6 +372,11 @@
   .inline-tools button:hover { background: rgba(255,255,255,0.28); }
   .inline-tools input[type="color"] { width: 30px; height: 30px; border: none; border-radius: 7px; padding: 0; background: none; cursor: pointer; }
 
+  /* Always-available escape hatch: appears whenever anything is moved/hidden/fullscreen/presenter */
+  .reset-fab { position: fixed; top: 12px; left: 50%; transform: translateX(-50%); z-index: 200; display: none; align-items: center; gap: 7px; background: linear-gradient(135deg, var(--accent), var(--accent-deep)); color: #fff8f2; border: none; border-radius: 999px; padding: 10px 20px; font-weight: 800; font-size: 0.9rem; box-shadow: 0 10px 30px rgba(120,90,65,0.35); cursor: pointer; min-height: 44px; }
+  .reset-fab.show { display: inline-flex; }
+  .reset-fab:hover { filter: brightness(1.05); }
+
   .footer-note { text-align: center; color: var(--text-soft); font-size: 0.82rem; opacity: 0.75; }
 
   @media (max-width: 480px) {
@@ -385,6 +390,7 @@
 <div id="bgLayer"></div>
 <canvas id="confetti" aria-hidden="true"></canvas>
 <div class="well-done" id="wellDone" aria-hidden="true">🎉 Well done!</div>
+<button class="reset-fab" id="resetFab" title="Bring every card back to normal (Esc)">⟲ Reset view</button>
 
 <!-- Floating inline edit toolbar for on-screen message boxes -->
 <div class="inline-tools" id="inlineTools" role="toolbar" aria-label="Edit this box">
@@ -1220,7 +1226,7 @@
   }
 
   // ---------- Presenter (clean stage) mode ----------
-  function setPresenter(on) { document.body.classList.toggle("presenter", on); if (!on) document.body.classList.remove("show-controls"); save("bdf_presenter", on); }
+  function setPresenter(on) { document.body.classList.toggle("presenter", on); if (!on) document.body.classList.remove("show-controls"); save("bdf_presenter", on); if (typeof updateResetFab === "function") updateResetFab(); }
   function initPresenter() {
     if (load("bdf_presenter", false) === true) document.body.classList.add("presenter");
     $("presenterBtn").addEventListener("click", function () { setPresenter(true); });
@@ -1246,7 +1252,7 @@
       var visible = saved[s.id] !== false; el.style.display = visible ? "" : "none";
       var wrap = document.createElement("label");
       var cb = document.createElement("input"); cb.type = "checkbox"; cb.checked = visible;
-      cb.addEventListener("change", function () { el.style.display = cb.checked ? "" : "none"; saved[s.id] = cb.checked; save("bdf_layout", saved); });
+      cb.addEventListener("change", function () { el.style.display = cb.checked ? "" : "none"; saved[s.id] = cb.checked; save("bdf_layout", saved); updateResetFab(); });
       wrap.appendChild(cb); wrap.appendChild(document.createTextNode(" " + s.label)); panel.appendChild(wrap);
     });
     $("saveLayoutBtn").addEventListener("click", function () { save("bdf_layout", saved); flash("Layout saved."); });
@@ -1286,7 +1292,7 @@
     var lbShown = load("bdf_lb_show", true) !== false;
     function applyLbShow() { $("lbCard").style.display = lbShown ? "" : "none"; $("lbShowToggle").classList.toggle("toggle-on", lbShown); $("lbShowToggle").textContent = lbShown ? "Showing on screen" : "Hidden from screen"; }
     applyLbShow();
-    $("lbShowToggle").addEventListener("click", function () { lbShown = !lbShown; save("bdf_lb_show", lbShown); applyLbShow(); });
+    $("lbShowToggle").addEventListener("click", function () { lbShown = !lbShown; save("bdf_lb_show", lbShown); applyLbShow(); updateResetFab(); });
   }
 
   // ---------- Drag / resize helpers (camera + floating ad) ----------
@@ -1325,7 +1331,7 @@
     }
     Array.prototype.forEach.call(card.querySelectorAll(".card-dock [data-cpos]"), function (b) { b.classList.toggle("active", b.getAttribute("data-cpos") === (pos || "dock")); });
   }
-  function setCardPos(id, pos) { var st = load(cardPosKey(id), {}); st.pos = pos; save(cardPosKey(id), st); applyCardPos(id, pos, st); }
+  function setCardPos(id, pos) { var st = load(cardPosKey(id), {}); st.pos = pos; save(cardPosKey(id), st); applyCardPos(id, pos, st); updateResetFab(); }
   function makeCardDraggable(handle, card, id) {
     var sx, sy, ox, oy, drag = false;
     function down(e) { if (!card.classList.contains("cpos-float")) return; drag = true; var p = pointOf(e); sx = p.x; sy = p.y; var r = card.getBoundingClientRect(); ox = r.left; oy = r.top; if (e.cancelable) e.preventDefault(); }
@@ -1336,7 +1342,6 @@
   }
   function addCardDock(id, actions) {
     var card = $(id); if (!card) return;
-    card.style.position = "relative";
     var drag = document.createElement("div"); drag.className = "card-drag"; drag.textContent = "⠿ drag to move"; card.appendChild(drag);
     var dock = document.createElement("div"); dock.className = "card-dock";
     if (actions && actions.length) {
@@ -1363,6 +1368,35 @@
       { t: "🗑️ Remove", title: "Remove media", fn: function () { $("adRemoveBtn").click(); } }
     ]);
     addCardDock("lbCard", []);
+  }
+
+  // ---------- Safety net: "Reset view" escape hatch (never get stuck) ----------
+  function isDefaultView() {
+    var cardsOk = ["timerCard", "adCard", "lbCard"].every(function (id) { var st = load(cardPosKey(id), { pos: "dock" }); return (st.pos || "dock") === "dock"; });
+    var lbShown = load("bdf_lb_show", true) !== false;
+    var adp = (load("bdf_adlayout", { pos: "right" }).pos) || "right";
+    var adOk = adp === "right" || adp === "left" || adp === "below";
+    var layout = load("bdf_layout", {}); var sectionsOk = LAYOUT_SECTIONS.every(function (s) { return layout[s.id] !== false; });
+    var presenter = document.body.classList.contains("presenter");
+    return cardsOk && lbShown && adOk && sectionsOk && !presenter;
+  }
+  function updateResetFab() { var f = $("resetFab"); if (f) f.classList.toggle("show", !isDefaultView()); }
+  function resetView() {
+    ["timerCard", "adCard", "lbCard"].forEach(function (id) { var st = load(cardPosKey(id), {}); st.pos = "dock"; save(cardPosKey(id), st); applyCardPos(id, "dock", st); });
+    save("bdf_lb_show", true); if ($("lbCard")) $("lbCard").style.display = "";
+    if ($("lbShowToggle")) { $("lbShowToggle").classList.add("toggle-on"); $("lbShowToggle").textContent = "Showing on screen"; }
+    adState.pos = "right"; adState.min = false; adState.aspect = adState.aspect || ""; save("bdf_adlayout", adState); applyAdLayout();
+    save("bdf_layout", {}); LAYOUT_SECTIONS.forEach(function (s) { var el = $(s.id); if (el) el.style.display = ""; });
+    document.body.classList.remove("presenter", "show-controls"); save("bdf_presenter", false);
+    closeStudioPanels();
+    ["emojiStage", "speakerStage"].forEach(function (id) { var e = $(id); if (e) { e.classList.remove("show"); e.setAttribute("aria-hidden", "true"); } });
+    if (typeof initLayout === "function") initLayout();
+    updateResetFab(); flash("View reset — everything is back to normal.");
+  }
+  function initResetFab() {
+    $("resetFab").addEventListener("click", resetView);
+    document.addEventListener("keydown", function (e) { if (e.key === "Escape") { if (!isDefaultView()) { e.preventDefault(); resetView(); } } });
+    updateResetFab();
   }
 
   // ---------- Camera preview ----------
@@ -1447,6 +1481,7 @@
     Array.prototype.forEach.call($("adAspectRow").children, function (b) { b.classList.toggle("active", b.getAttribute("data-aspect") === adState.aspect); });
     Array.prototype.forEach.call($("adPosRow").children, function (b) { b.classList.toggle("active", b.getAttribute("data-pos") === adState.pos); });
     $("adSize").value = adState.size; $("adMinBtn").classList.toggle("toggle-on", adState.min);
+    if (typeof updateResetFab === "function") updateResetFab();
   }
   function adFullscreen() {
     var el = $("adStage");
@@ -1469,7 +1504,6 @@
   function cardBgKey(t) { return "bdf_cardbg_" + t; }
   function ensureCardBgLayer(t) {
     var card = $(t); if (!card) return null;
-    card.style.position = "relative";
     var layer = null, kids = card.children, i;
     for (i = 0; i < kids.length; i++) if (kids[i].className === "card-bg") layer = kids[i];
     if (!layer) {
@@ -2104,6 +2138,7 @@
     initTextExtras();
     initCelebrate();
     initCardDocks();
+    initResetFab();
     setMode(state.modeKey);
     state.remaining = periodTotal();
     renderTasks(); updateMuteBtn(); updateStartBtn(); renderTimer(); startTicker();
