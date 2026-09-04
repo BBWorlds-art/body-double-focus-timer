@@ -314,6 +314,24 @@
   .ad-card.floating .ad-drag-handle { display: block; }
   .ad-card.ad-minimized .ad-stage, .ad-card.ad-minimized #adCaption, .ad-card.ad-minimized .ad-cap-label, .ad-card.ad-minimized .ad-status { display: none; }
   .card-bg { position: absolute; inset: 0; border-radius: inherit; z-index: 0; pointer-events: none; background-size: cover; background-position: center; }
+
+  /* Per-card quick dock + free positioning (move without opening the big bar) */
+  .card-dock, .card-drag { position: relative; z-index: 2; }
+  .card-drag { display: none; text-align: center; cursor: move; color: var(--text-soft); font-size: 0.78rem; letter-spacing: 1px; padding: 4px; touch-action: none; }
+  .card.cpos-float > .card-drag { display: block; }
+  .card-dock { display: flex; flex-wrap: wrap; gap: 6px 12px; justify-content: center; align-items: center; margin-top: 14px; padding-top: 10px; border-top: 1px dashed var(--card-border); }
+  .card-dock .dock-grp { display: flex; gap: 5px; flex-wrap: wrap; justify-content: center; }
+  .card-dock button { min-height: 34px; padding: 4px 9px; font-size: 0.8rem; border-radius: 9px; min-width: 0; }
+  .card-dock [data-cpos].active { background: linear-gradient(135deg, var(--accent), var(--accent-deep)); color: #fff8f2; border-color: transparent; }
+
+  .card.cpos-on { position: fixed; z-index: 46; margin: 0; max-width: none; overflow: auto; -webkit-overflow-scrolling: touch; }
+  .card.cpos-on .card-dock { position: sticky; bottom: 0; background: var(--card); margin-top: 10px; }
+  .card.cpos-left   { left: 8px; top: 8px; width: 47vw; height: calc(100vh - 96px); }
+  .card.cpos-right  { right: 8px; top: 8px; width: 47vw; height: calc(100vh - 96px); }
+  .card.cpos-top    { left: 3vw; top: 8px; width: 94vw; height: 42vh; }
+  .card.cpos-bottom { left: 3vw; bottom: 92px; width: 94vw; height: 42vh; }
+  .card.cpos-center { left: 50%; top: 46%; transform: translate(-50%, -50%); width: 80vw; height: 74vh; }
+  .card.cpos-full   { left: 0; top: 0; right: 0; bottom: 0; width: 100vw; height: 100vh; border-radius: 0; z-index: 90; }
   .hero.ad-left .timer-card { order: 2; } .hero.ad-left .ad-card { order: 1; }
   @media (min-width: 880px) { .hero.ad-below { grid-template-columns: 1fr; } }
 
@@ -1290,6 +1308,63 @@
     handle.addEventListener("touchstart", down, { passive: false }); document.addEventListener("touchmove", move, { passive: false }); document.addEventListener("touchend", up);
   }
 
+  // ---------- Per-card docks: quick actions + free positioning ----------
+  var CPOS_LIST = [["left", "◧ Left"], ["right", "Right ◨"], ["top", "⬒ Top"], ["bottom", "⬓ Bottom"], ["center", "▣ Centre"], ["full", "⛶ Full"], ["float", "✥ Float"], ["dock", "⤓ Dock"]];
+  function cardPosKey(id) { return "bdf_cardpos_" + id; }
+  function applyCardPos(id, pos, st) {
+    var card = $(id); if (!card) return;
+    card.classList.remove("cpos-on", "cpos-left", "cpos-right", "cpos-top", "cpos-bottom", "cpos-center", "cpos-full", "cpos-float");
+    card.style.left = card.style.top = card.style.right = card.style.bottom = card.style.width = card.style.height = "";
+    if (pos && pos !== "dock") {
+      card.classList.add("cpos-on", "cpos-" + pos);
+      if (pos === "float") {
+        card.style.left = (st && st.fx != null ? st.fx : 40) + "px";
+        card.style.top = (st && st.fy != null ? st.fy : 60) + "px";
+        card.style.width = (st && st.fw ? st.fw : Math.round(window.innerWidth * 0.6)) + "px";
+      }
+    }
+    Array.prototype.forEach.call(card.querySelectorAll(".card-dock [data-cpos]"), function (b) { b.classList.toggle("active", b.getAttribute("data-cpos") === (pos || "dock")); });
+  }
+  function setCardPos(id, pos) { var st = load(cardPosKey(id), {}); st.pos = pos; save(cardPosKey(id), st); applyCardPos(id, pos, st); }
+  function makeCardDraggable(handle, card, id) {
+    var sx, sy, ox, oy, drag = false;
+    function down(e) { if (!card.classList.contains("cpos-float")) return; drag = true; var p = pointOf(e); sx = p.x; sy = p.y; var r = card.getBoundingClientRect(); ox = r.left; oy = r.top; if (e.cancelable) e.preventDefault(); }
+    function move(e) { if (!drag) return; var p = pointOf(e); card.style.left = Math.max(0, ox + (p.x - sx)) + "px"; card.style.top = Math.max(0, oy + (p.y - sy)) + "px"; if (e.cancelable) e.preventDefault(); }
+    function up() { if (!drag) return; drag = false; var r = card.getBoundingClientRect(); var st = load(cardPosKey(id), {}); st.fx = Math.round(r.left); st.fy = Math.round(r.top); save(cardPosKey(id), st); }
+    handle.addEventListener("mousedown", down); document.addEventListener("mousemove", move); document.addEventListener("mouseup", up);
+    handle.addEventListener("touchstart", down, { passive: false }); document.addEventListener("touchmove", move, { passive: false }); document.addEventListener("touchend", up);
+  }
+  function addCardDock(id, actions) {
+    var card = $(id); if (!card) return;
+    card.style.position = "relative";
+    var drag = document.createElement("div"); drag.className = "card-drag"; drag.textContent = "⠿ drag to move"; card.appendChild(drag);
+    var dock = document.createElement("div"); dock.className = "card-dock";
+    if (actions && actions.length) {
+      var ag = document.createElement("div"); ag.className = "dock-grp";
+      actions.forEach(function (a) { var b = document.createElement("button"); b.innerHTML = a.t; b.title = a.title || ""; b.addEventListener("click", a.fn); ag.appendChild(b); });
+      dock.appendChild(ag);
+    }
+    var pg = document.createElement("div"); pg.className = "dock-grp";
+    CPOS_LIST.forEach(function (p) { var b = document.createElement("button"); b.textContent = p[1]; b.setAttribute("data-cpos", p[0]); b.title = "Move: " + p[1]; b.addEventListener("click", function () { setCardPos(id, p[0]); }); pg.appendChild(b); });
+    dock.appendChild(pg);
+    card.appendChild(dock);
+    makeCardDraggable(drag, card, id);
+    var st = load(cardPosKey(id), { pos: "dock" });
+    applyCardPos(id, st.pos || "dock", st);
+  }
+  function initCardDocks() {
+    addCardDock("timerCard", [
+      { t: "▶ Start", title: "Start", fn: startTimer }, { t: "❚❚ Pause", title: "Pause", fn: pauseTimer },
+      { t: "↺ Reset", title: "Reset", fn: resetTimer }, { t: "■ Stop", title: "Stop", fn: stopTimer }
+    ]);
+    addCardDock("adCard", [
+      { t: "🖼️ Image", title: "Insert image", fn: function () { $("adImageInput").click(); } },
+      { t: "🎬 Video", title: "Insert video", fn: function () { $("adVideoInput").click(); } },
+      { t: "🗑️ Remove", title: "Remove media", fn: function () { $("adRemoveBtn").click(); } }
+    ]);
+    addCardDock("lbCard", []);
+  }
+
   // ---------- Camera preview ----------
   var camStream = null;
   var camState = load("bdf_cam", { x: null, y: null, w: 240, facing: "user", mirror: false, bright: 1, contrast: 1, warm: 0, smooth: 0 });
@@ -2028,6 +2103,7 @@
     initPalettes();
     initTextExtras();
     initCelebrate();
+    initCardDocks();
     setMode(state.modeKey);
     state.remaining = periodTotal();
     renderTasks(); updateMuteBtn(); updateStartBtn(); renderTimer(); startTicker();
