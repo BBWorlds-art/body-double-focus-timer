@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#C2A05A" />
+<title>Life CEO Hub · Wheel of Life</title>
+<style>
+  :root {
+    --paper: #FCF8F5; --cream: #F7F1E8; --greige: #EFE6DD; --ink: #2E2620;
+    --muted: #9A8B7B; --line: #D6C6B6; --gold: #C2A05A;
+    --shadow: 0 14px 40px rgba(90, 75, 55, 0.14); --radius: 20px; --radius-sm: 13px;
+    --serif: Georgia, "Times New Roman", serif;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, Helvetica, sans-serif;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; overflow-x: hidden; max-width: 100%; }
+  body {
+    font-family: var(--sans); color: var(--ink); line-height: 1.5;
+    background: linear-gradient(160deg, var(--paper) 0%, var(--cream) 70%, var(--greige) 100%);
+    background-attachment: fixed; min-height: 100vh; padding: clamp(14px, 3vw, 30px); -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1120px; margin: 0 auto; }
+
+  .nav { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-bottom: 22px; }
+  .nav a, .nav span { font-size: 0.8rem; font-weight: 700; letter-spacing: 0.4px; padding: 8px 16px; border-radius: 999px; color: var(--muted); background: rgba(255,255,255,0.6); border: 1px solid var(--line); text-decoration: none; display: inline-flex; align-items: center; gap: 6px; }
+  .nav a:hover { transform: translateY(-1px); }
+  .nav a.active { color: #fff; background: linear-gradient(135deg, var(--gold), #9c7f3f); border-color: transparent; }
+
+  .eyebrow { text-align: center; font-size: 0.72rem; letter-spacing: 3px; text-transform: uppercase; color: var(--gold); font-weight: 800; }
+  h1 { font-family: var(--serif); text-align: center; font-size: clamp(2rem, 6.5vw, 3.2rem); margin: 6px 0 4px; font-weight: 700; }
+  .focus-line { text-align: center; color: var(--muted); font-size: clamp(0.95rem, 2.5vw, 1.1rem); margin: 0 auto 8px; max-width: 640px; }
+  .quarter { text-align: center; font-size: 0.75rem; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); font-weight: 700; margin-bottom: 22px; }
+  .quarter b { color: var(--ink); }
+
+  .panel { background: rgba(255,255,255,0.55); border: 1px solid var(--line); border-radius: var(--radius); padding: clamp(16px, 3vw, 28px); margin-bottom: 22px; box-shadow: var(--shadow); }
+  .panel-title { font-family: var(--serif); font-size: clamp(1.3rem, 4vw, 1.7rem); margin: 0 0 4px; }
+  .panel-sub { color: var(--muted); font-size: 0.9rem; margin: 0 0 18px; }
+
+  .wheel-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: clamp(16px, 3vw, 30px); align-items: center; }
+  @media (max-width: 780px) { .wheel-layout { grid-template-columns: 1fr; } }
+  .wheel-box { display: flex; justify-content: center; }
+  svg.wheel { width: 100%; max-width: 420px; height: auto; touch-action: manipulation; cursor: pointer; }
+
+  .moves { display: flex; flex-direction: column; gap: 10px; }
+  .move-row { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; background: var(--greige); border-radius: var(--radius-sm); padding: 9px 12px; }
+  .dot { width: 16px; height: 16px; border-radius: 50%; flex: 0 0 auto; }
+  .move-name { min-width: 0; }
+  .move-name .mn { font-weight: 700; font-size: 0.92rem; display: block; }
+  .move-name .ms { font-size: 0.72rem; color: var(--muted); }
+  .move-ctrl { display: flex; align-items: center; gap: 8px; }
+  .move-ctrl input[type=range] { width: 108px; accent-color: var(--gold); }
+  @media (max-width: 480px) { .move-ctrl input[type=range] { width: 84px; } }
+  .score { font-family: var(--serif); font-weight: 700; font-size: 1.1rem; min-width: 26px; text-align: right; }
+  .move-row.linked { cursor: pointer; }
+  .move-row.linked:hover { outline: 2px solid var(--line); }
+
+  .insight { margin-top: 16px; display: flex; gap: 12px; flex-wrap: wrap; }
+  .insight .card { flex: 1 1 150px; background: rgba(255,255,255,0.6); border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 12px 14px; }
+  .insight .card span { font-size: 0.68rem; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); font-weight: 700; display: block; margin-bottom: 3px; }
+  .insight .card b { font-size: 0.98rem; }
+
+  .review-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-top: 16px; }
+  .btn { font-family: var(--sans); font-size: 0.9rem; font-weight: 700; border: 1px solid var(--line); background: rgba(255,255,255,0.7); color: var(--ink); border-radius: 12px; padding: 10px 16px; cursor: pointer; min-height: 44px; display: inline-flex; align-items: center; gap: 7px; }
+  .btn-primary { background: linear-gradient(135deg, var(--gold), #9c7f3f); color: #fff; border-color: transparent; }
+  .review-note { font-size: 0.82rem; color: var(--muted); }
+  .history { margin-top: 12px; font-size: 0.82rem; color: var(--muted); }
+  .history ul { margin: 6px 0 0; padding-left: 18px; }
+
+  /* Hub navigation grid */
+  .hub-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+  .move-btn { display: flex; flex-direction: column; gap: 4px; text-decoration: none; color: #fff; border-radius: var(--radius-sm); padding: 16px; min-height: 96px; position: relative; box-shadow: var(--shadow); border: none; text-align: left; cursor: pointer; }
+  .move-btn .num { font-family: var(--serif); font-size: 1.6rem; font-weight: 700; opacity: 0.9; line-height: 1; }
+  .move-btn .nm { font-weight: 700; font-size: 0.95rem; }
+  .move-btn .sub { font-size: 0.72rem; opacity: 0.85; }
+  .move-btn .badge { position: absolute; top: 10px; right: 10px; font-size: 0.6rem; letter-spacing: 0.6px; text-transform: uppercase; background: rgba(255,255,255,0.28); padding: 3px 7px; border-radius: 999px; font-weight: 800; }
+  .move-btn.soon { opacity: 0.82; cursor: default; }
+
+  .quicklinks { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+  .quicklinks a { text-decoration: none; }
+
+  .foot-note { text-align: center; color: var(--muted); font-size: 0.8rem; opacity: 0.8; margin: 28px 0 10px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="nav" aria-label="Life CEO sections">
+    <a class="active" href="hub.html">🏠 Hub</a>
+    <a href="index.html">◑ Focus Room</a>
+    <a href="daily-visual-planner.html">📅 Daily Dashboard</a>
+    <a href="reading-tracker.html">📚 Reading</a>
+  </nav>
+
+  <p class="eyebrow">7 Moves Ahead · Life CEO</p>
+  <h1>Your Hub</h1>
+  <p class="focus-line">One calm home for your whole life. Rate each of the 7 Moves, see where you’re thriving and where you need care, then step into any sphere.</p>
+  <p class="quarter">This quarter: <b id="quarterLabel">—</b></p>
+
+  <div class="panel">
+    <h2 class="panel-title">Wheel of Life</h2>
+    <p class="panel-sub">Score each Move from 1–10 (how satisfied you feel right now). Drag a slider or tap inside a wedge. Re-check every quarter.</p>
+    <div class="wheel-layout">
+      <div class="wheel-box">
+        <svg class="wheel" id="wheel" viewBox="0 0 400 400" role="img" aria-label="Wheel of Life"></svg>
+      </div>
+      <div class="moves" id="moves"></div>
+    </div>
+
+    <div class="insight">
+      <div class="card"><span>Overall balance</span><b id="insAvg">—</b></div>
+      <div class="card"><span>Thriving</span><b id="insHigh">—</b></div>
+      <div class="card"><span>Needs care</span><b id="insLow">—</b></div>
+    </div>
+
+    <div class="review-row">
+      <button class="btn btn-primary" id="saveSnap">📌 Save this quarter’s snapshot</button>
+      <span class="review-note" id="lastReviewed">Not reviewed yet.</span>
+    </div>
+    <div class="history" id="history"></div>
+  </div>
+
+  <div class="panel">
+    <h2 class="panel-title">The 7 Moves</h2>
+    <p class="panel-sub">Step into any sphere. Each Move holds its own templates, journal and trackers.</p>
+    <div class="hub-grid" id="hubGrid"></div>
+    <div class="quicklinks">
+      <a class="btn" href="index.html">◑ Focus Room</a>
+      <a class="btn" href="daily-visual-planner.html">📅 Daily Dashboard</a>
+      <a class="btn" href="reading-tracker.html">📚 Reading Tracker</a>
+    </div>
+  </div>
+
+  <p class="foot-note">Everything saves on this device, in this browser. Nothing is uploaded. Re-check your wheel each quarter to see your balance shift.</p>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  function $(id) { return document.getElementById(id); }
+
+  var MOVES = [
+    { num: "01", key: "m1", name: "Health & Energy", short: "Body, rest, movement", accent: "#C17B5B", href: "" },
+    { num: "02", key: "m2", name: "Mind & Emotions", short: "Feelings, clarity, calm", accent: "#9E7B89", href: "" },
+    { num: "03", key: "m3", name: "Work & Learning", short: "Focus, skills, growth", accent: "#6F8095", href: "" },
+    { num: "04", key: "m4", name: "Money & Security", short: "Budget, saving, safety", accent: "#6B7A5C", href: "" },
+    { num: "05", key: "m5", name: "Relationships", short: "People & community", accent: "#C2807A", href: "" },
+    { num: "06", key: "m6", name: "Purpose & Values", short: "Meaning & direction", accent: "#7E5E70", href: "" },
+    { num: "07", key: "m7", name: "Creativity & Play", short: "Ideas, reading, fun", accent: "#4F9088", href: "reading-tracker.html" }
+  ];
+  var SCORES_KEY = "hub_wheel_v1", HIST_KEY = "hub_wheel_history_v1";
+
+  function loadScores() { try { var o = JSON.parse(localStorage.getItem(SCORES_KEY) || "{}"); return o && typeof o === "object" ? o : {}; } catch (e) { return {}; } }
+  function saveScores() { try { localStorage.setItem(SCORES_KEY, JSON.stringify(scores)); } catch (e) {} }
+  function loadHist() { try { var a = JSON.parse(localStorage.getItem(HIST_KEY) || "[]"); return Array.isArray(a) ? a : []; } catch (e) { return []; } }
+  function saveHist() { try { localStorage.setItem(HIST_KEY, JSON.stringify(history)); } catch (e) {} }
+
+  var scores = loadScores(), history = loadHist();
+
+  // ---------- Geometry ----------
+  var CX = 200, CY = 200, R = 150, STEP = 360 / 7;
+  function pol(r, deg) { var a = deg * Math.PI / 180; return [CX + r * Math.cos(a), CY + r * Math.sin(a)]; }
+  function wedge(r, a0, a1) {
+    var p0 = pol(r, a0), p1 = pol(r, a1), large = (a1 - a0) <= 180 ? 0 : 1;
+    return "M" + CX + " " + CY + " L" + p0[0].toFixed(1) + " " + p0[1].toFixed(1) + " A" + r + " " + r + " 0 " + large + " 1 " + p1[0].toFixed(1) + " " + p1[1].toFixed(1) + " Z";
+  }
+
+  function averageScore() { var s = 0, n = 0; MOVES.forEach(function (m) { var v = scores[m.key] || 0; if (v > 0) { s += v; n++; } }); return n ? Math.round((s / n) * 10) / 10 : 0; }
+
+  function renderWheel() {
+    var g = [];
+    MOVES.forEach(function (m, i) {
+      var a0 = -90 + i * STEP, a1 = a0 + STEP;
+      g.push('<path d="' + wedge(R, a0, a1) + '" fill="' + m.accent + '" fill-opacity="0.12"/>');
+      var sc = scores[m.key] || 0;
+      if (sc > 0) g.push('<path d="' + wedge(R * sc / 10, a0, a1) + '" fill="' + m.accent + '" fill-opacity="0.85"/>');
+    });
+    [2, 4, 6, 8, 10].forEach(function (l) { g.push('<circle cx="200" cy="200" r="' + (R * l / 10) + '" fill="none" stroke="#D6C6B6" stroke-opacity="0.55" stroke-width="1"/>'); });
+    MOVES.forEach(function (m, i) {
+      var a0 = -90 + i * STEP, mid = a0 + STEP / 2;
+      var p = pol(R, a0);
+      g.push('<line x1="200" y1="200" x2="' + p[0].toFixed(1) + '" y2="' + p[1].toFixed(1) + '" stroke="#FCF8F5" stroke-width="2"/>');
+      var lp = pol(R + 24, mid);
+      g.push('<circle cx="' + lp[0].toFixed(1) + '" cy="' + lp[1].toFixed(1) + '" r="14" fill="' + m.accent + '"/>');
+      g.push('<text x="' + lp[0].toFixed(1) + '" y="' + (lp[1] + 4).toFixed(1) + '" text-anchor="middle" font-size="13" font-weight="700" fill="#fff" font-family="Georgia,serif">' + m.num + '</text>');
+      var sc = scores[m.key] || 0;
+      if (sc > 0) { var sp = pol(Math.max(20, R * sc / 10 - 15), mid); g.push('<text x="' + sp[0].toFixed(1) + '" y="' + (sp[1] + 4).toFixed(1) + '" text-anchor="middle" font-size="13" font-weight="800" fill="#fff">' + sc + '</text>'); }
+    });
+    g.push('<circle cx="200" cy="200" r="' + R + '" fill="none" stroke="#D6C6B6" stroke-width="1.5"/>');
+    g.push('<circle cx="200" cy="200" r="30" fill="#FCF8F5" stroke="#D6C6B6"/>');
+    var avg = averageScore();
+    g.push('<text x="200" y="197" text-anchor="middle" font-size="20" font-weight="800" fill="#2E2620" font-family="Georgia,serif">' + (avg || "–") + '</text>');
+    g.push('<text x="200" y="212" text-anchor="middle" font-size="8" letter-spacing="1.5" fill="#9A8B7B">AVG</text>');
+    $("wheel").innerHTML = g.join("");
+  }
+
+  function renderMoves() {
+    var wrap = $("moves"); wrap.innerHTML = "";
+    MOVES.forEach(function (m) {
+      var row = document.createElement("div"); row.className = "move-row";
+      var dot = document.createElement("div"); dot.className = "dot"; dot.style.background = m.accent;
+      var name = document.createElement("div"); name.className = "move-name";
+      name.innerHTML = '<span class="mn">' + m.num + " · " + m.name + '</span><span class="ms">' + m.short + '</span>';
+      var ctrl = document.createElement("div"); ctrl.className = "move-ctrl";
+      var range = document.createElement("input"); range.type = "range"; range.min = "0"; range.max = "10"; range.step = "1"; range.value = scores[m.key] || 0;
+      range.setAttribute("aria-label", m.name + " score 0 to 10");
+      var num = document.createElement("span"); num.className = "score"; num.textContent = scores[m.key] || "–";
+      range.addEventListener("input", function () { var v = parseInt(range.value, 10); scores[m.key] = v; num.textContent = v || "–"; saveScores(); renderWheel(); renderInsight(); });
+      ctrl.appendChild(range); ctrl.appendChild(num);
+      row.appendChild(dot); row.appendChild(name); row.appendChild(ctrl);
+      if (m.href) { row.className += " linked"; row.title = "Open " + m.name; row.addEventListener("click", function (e) { if (e.target === range) return; window.location.href = m.href; }); }
+      wrap.appendChild(row);
+    });
+  }
+
+  function renderInsight() {
+    var avg = averageScore();
+    $("insAvg").textContent = avg ? (avg + " / 10") : "Rate your Moves";
+    var rated = MOVES.filter(function (m) { return (scores[m.key] || 0) > 0; });
+    if (!rated.length) { $("insHigh").textContent = "—"; $("insLow").textContent = "—"; return; }
+    var hi = rated.slice().sort(function (a, b) { return scores[b.key] - scores[a.key]; })[0];
+    var lo = rated.slice().sort(function (a, b) { return scores[a.key] - scores[b.key]; })[0];
+    $("insHigh").textContent = hi.name + " (" + scores[hi.key] + ")";
+    $("insLow").textContent = lo.name + " (" + scores[lo.key] + ")";
+  }
+
+  function currentQuarter() { var d = new Date(); return "Q" + (Math.floor(d.getMonth() / 3) + 1) + " " + d.getFullYear(); }
+
+  function renderHistory() {
+    var last = history[history.length - 1];
+    $("lastReviewed").textContent = last ? ("Last saved: " + last.q + " · " + last.date + " (avg " + last.avg + ")") : "Not reviewed yet.";
+    var h = $("history");
+    if (history.length < 1) { h.innerHTML = ""; return; }
+    var items = history.slice(-4).reverse().map(function (s) { return "<li>" + s.q + " — avg " + s.avg + " · " + s.date + "</li>"; }).join("");
+    h.innerHTML = "<strong>Recent snapshots</strong><ul>" + items + "</ul>";
+  }
+
+  function todayStr() { var d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
+
+  // ---------- Wheel click → set score by wedge + radius ----------
+  function wheelPointer(e) {
+    var svg = $("wheel"), pt = svg.createSVGPoint();
+    var src = (e.touches && e.touches[0]) ? e.touches[0] : e;
+    pt.x = src.clientX; pt.y = src.clientY;
+    var ctm = svg.getScreenCTM(); if (!ctm) return;
+    var loc = pt.matrixTransform(ctm.inverse());
+    var dx = loc.x - CX, dy = loc.y - CY;
+    var radius = Math.sqrt(dx * dx + dy * dy);
+    if (radius > R * 1.25) return;
+    var ang = Math.atan2(dy, dx) * 180 / Math.PI;      // 0 = right, -90 = top
+    var t = (ang + 90 + 360) % 360;                     // from top, clockwise
+    var idx = Math.floor(t / STEP); if (idx < 0) idx = 0; if (idx > 6) idx = 6;
+    var score = Math.max(1, Math.min(10, Math.round(radius / R * 10)));
+    var m = MOVES[idx]; scores[m.key] = score; saveScores();
+    renderWheel(); renderMoves(); renderInsight();
+    if (e.cancelable) e.preventDefault();
+  }
+
+  function renderHub() {
+    var grid = $("hubGrid"); grid.innerHTML = "";
+    MOVES.forEach(function (m) {
+      var el = document.createElement(m.href ? "a" : "button");
+      el.className = "move-btn" + (m.href ? "" : " soon");
+      el.style.background = "linear-gradient(150deg, " + m.accent + ", " + shade(m.accent, -18) + ")";
+      if (m.href) el.href = m.href;
+      el.innerHTML = '<span class="badge">' + (m.href ? "Open" : "Soon") + '</span>' +
+        '<span class="num">' + m.num + '</span><span class="nm">' + m.name + '</span><span class="sub">' + m.short + '</span>';
+      grid.appendChild(el);
+    });
+  }
+  function shade(hex, pct) {
+    var n = parseInt(hex.slice(1), 16), r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+    var f = (pct < 0) ? (100 + pct) / 100 : 1; r = Math.round(r * f); g = Math.round(g * f); b = Math.round(b * f);
+    return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+  }
+
+  function init() {
+    $("quarterLabel").textContent = currentQuarter();
+    renderWheel(); renderMoves(); renderInsight(); renderHub(); renderHistory();
+    var svg = $("wheel");
+    svg.addEventListener("click", wheelPointer);
+    svg.addEventListener("touchstart", wheelPointer, { passive: false });
+    $("saveSnap").addEventListener("click", function () {
+      var avg = averageScore();
+      if (!avg) { window.alert("Rate at least one Move first."); return; }
+      history.push({ q: currentQuarter(), date: todayStr(), avg: avg, scores: JSON.parse(JSON.stringify(scores)) });
+      if (history.length > 40) history = history.slice(-40);
+      saveHist(); renderHistory();
+    });
+  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init); else init();
+})();
+</script>
+</body>
+</html>
