@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#4F9088" />
+<title>Reading Tracker · Move 07</title>
+<style>
+  :root {
+    /* Base palette (constant across all Moves) */
+    --paper: #FCF8F5;
+    --cream: #F7F1E8;
+    --greige: #EFE6DD;
+    --ink: #2E2620;
+    --muted: #9A8B7B;
+    --line: #D6C6B6;
+    --gold: #C2A05A;
+    /* Move 07 — Creativity & Play — Teal */
+    --accent: #4F9088;
+    --accent-deep: #3C6F68;
+    --accent-soft: #8FB8B2;
+    --accent-tint: rgba(79, 144, 136, 0.12);
+    --shadow: 0 14px 40px rgba(60, 90, 85, 0.14);
+    --radius: 20px;
+    --radius-sm: 13px;
+    --serif: Georgia, "Times New Roman", serif;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, Helvetica, sans-serif;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; overflow-x: hidden; max-width: 100%; }
+  body {
+    font-family: var(--sans); color: var(--ink);
+    background: linear-gradient(160deg, var(--paper) 0%, var(--cream) 70%, var(--greige) 100%);
+    background-attachment: fixed; min-height: 100vh;
+    padding: clamp(14px, 3vw, 30px); -webkit-font-smoothing: antialiased; line-height: 1.5;
+  }
+  .wrap { max-width: 1120px; margin: 0 auto; }
+
+  /* Navigation */
+  .nav { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-bottom: 22px; }
+  .nav a, .nav span {
+    font-size: 0.8rem; font-weight: 700; letter-spacing: 0.4px; padding: 8px 16px; border-radius: 999px;
+    color: var(--muted); background: rgba(255,255,255,0.6); border: 1px solid var(--line); text-decoration: none;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .nav a:hover { transform: translateY(-1px); }
+  .nav a.active { color: #fff; background: linear-gradient(135deg, var(--accent), var(--accent-deep)); border-color: transparent; }
+  .nav span.soon { opacity: 0.6; }
+
+  /* Header */
+  .eyebrow { text-align: center; font-size: 0.72rem; letter-spacing: 3px; text-transform: uppercase; color: var(--accent-deep); font-weight: 800; }
+  h1 { font-family: var(--serif); text-align: center; font-size: clamp(1.9rem, 6vw, 3rem); margin: 6px 0 4px; color: var(--ink); font-weight: 700; }
+  .focus-line { text-align: center; color: var(--muted); font-size: clamp(0.95rem, 2.5vw, 1.1rem); margin: 0 auto 18px; max-width: 640px; }
+
+  /* Quote band */
+  .quote-band { display: flex; align-items: center; gap: 14px; background: rgba(255,255,255,0.55); border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 12px 18px; margin: 0 0 22px; }
+  .quote-rule { width: 4px; align-self: stretch; background: var(--gold); border-radius: 4px; flex: 0 0 auto; }
+  .quote-text { font-family: var(--serif); font-style: italic; font-size: clamp(1rem, 2.6vw, 1.2rem); color: var(--ink); outline: none; flex: 1 1 auto; }
+  .quote-text:empty:before { content: attr(data-placeholder); color: var(--muted); }
+  .quote-sign { font-size: 0.72rem; letter-spacing: 1.5px; text-transform: uppercase; color: var(--gold); font-weight: 800; flex: 0 0 auto; }
+
+  /* Stats */
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 22px; }
+  .stat { background: rgba(255,255,255,0.6); border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 14px 10px; text-align: center; }
+  .stat b { display: block; font-family: var(--serif); font-size: clamp(1.5rem, 5vw, 2rem); color: var(--accent-deep); line-height: 1; }
+  .stat span { font-size: 0.68rem; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); font-weight: 700; }
+  @media (max-width: 560px) { .stats { grid-template-columns: repeat(2, 1fr); } }
+
+  /* Bookshelf */
+  .panel { background: rgba(255,255,255,0.5); border: 1px solid var(--line); border-radius: var(--radius); padding: clamp(16px, 3vw, 26px); margin-bottom: 22px; }
+  .label { font-size: 0.72rem; letter-spacing: 1.6px; text-transform: uppercase; color: var(--muted); font-weight: 800; margin: 0 0 12px; }
+  .shelf { display: flex; align-items: flex-end; gap: 6px; flex-wrap: wrap; min-height: 96px; padding: 10px 10px 0; border-bottom: 8px solid var(--accent-deep); border-radius: 4px; background: linear-gradient(180deg, transparent, rgba(79,144,136,0.05)); }
+  .spine { width: 34px; height: clamp(80px, 16vw, 120px); border-radius: 4px 4px 2px 2px; cursor: pointer; position: relative; color: #fff; box-shadow: inset -3px 0 6px rgba(0,0,0,0.18), 0 3px 6px rgba(0,0,0,0.12); border: none; padding: 0; transition: transform 0.15s; }
+  .spine:hover { transform: translateY(-6px); }
+  .spine span { position: absolute; inset: 0; writing-mode: vertical-rl; transform: rotate(180deg); display: flex; align-items: center; justify-content: center; font-size: 0.62rem; font-weight: 700; padding: 6px 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; letter-spacing: 0.3px; text-shadow: 0 1px 2px rgba(0,0,0,0.3); }
+  .spine.done:after { content: "✓"; position: absolute; top: 3px; left: 50%; transform: translateX(-50%); font-size: 0.6rem; background: rgba(255,255,255,0.85); color: var(--accent-deep); border-radius: 50%; width: 13px; height: 13px; line-height: 13px; }
+  .shelf-empty { color: var(--muted); font-size: 0.9rem; padding: 30px 4px; }
+
+  /* Controls */
+  .controls { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 18px; }
+  .btn { font-family: var(--sans); font-size: 0.9rem; font-weight: 700; border: 1px solid var(--line); background: rgba(255,255,255,0.7); color: var(--ink); border-radius: 12px; padding: 10px 16px; cursor: pointer; min-height: 44px; display: inline-flex; align-items: center; gap: 7px; }
+  .btn:hover { border-color: var(--accent-soft); }
+  .btn-primary { background: linear-gradient(135deg, var(--accent), var(--accent-deep)); color: #fff; border-color: transparent; }
+  .btn-danger { color: #a23b2c; border-color: rgba(162,59,44,0.3); background: rgba(162,59,44,0.06); }
+  .btn-small { padding: 7px 12px; min-height: 38px; font-size: 0.82rem; }
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; }
+  .chip { font-size: 0.8rem; font-weight: 700; padding: 8px 14px; border-radius: 999px; border: 1px solid var(--line); background: rgba(255,255,255,0.6); color: var(--muted); cursor: pointer; min-height: 40px; }
+  .chip.active { background: var(--accent-tint); color: var(--accent-deep); border-color: var(--accent-soft); }
+  .search { flex: 1 1 180px; min-width: 140px; }
+  .search input { width: 100%; font-family: var(--sans); font-size: 0.95rem; padding: 10px 14px; border: 1px solid var(--line); border-radius: 12px; background: rgba(255,255,255,0.8); outline: none; min-height: 44px; }
+  .search input:focus { border-color: var(--accent); }
+
+  /* Book cards */
+  .books { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 18px; }
+  @media (max-width: 380px) { .books { grid-template-columns: 1fr; } }
+  .book { background: rgba(255,255,255,0.72); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+  .book-top { display: flex; gap: 14px; }
+  .cover { width: 92px; height: 132px; flex: 0 0 auto; border-radius: 8px; background: var(--greige) center/cover no-repeat; border: 1px solid var(--line); position: relative; overflow: hidden; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 0.65rem; text-align: center; }
+  .cover .cover-hint { padding: 6px; }
+  .cover img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .book-head { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+  .fld-title { font-family: var(--serif); font-size: 1.15rem; font-weight: 700; color: var(--ink); border: none; background: transparent; outline: none; width: 100%; padding: 2px 0; border-bottom: 1px dashed transparent; }
+  .fld-title:focus { border-bottom-color: var(--accent-soft); }
+  .fld-author { font-size: 0.9rem; color: var(--muted); border: none; background: transparent; outline: none; width: 100%; padding: 2px 0; border-bottom: 1px dashed transparent; }
+  .fld-author:focus { border-bottom-color: var(--accent-soft); }
+  .status-row { display: flex; gap: 4px; flex-wrap: wrap; }
+  .status-row button { font-size: 0.72rem; font-weight: 700; padding: 5px 9px; border-radius: 8px; border: 1px solid var(--line); background: rgba(255,255,255,0.6); color: var(--muted); cursor: pointer; min-height: 32px; }
+  .status-row button.active { background: var(--accent); color: #fff; border-color: transparent; }
+  .rings { display: flex; gap: 5px; align-items: center; }
+  .ring { width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--accent-soft); background: transparent; cursor: pointer; padding: 0; }
+  .ring.on { background: var(--accent); border-color: var(--accent); }
+  .rating-cap { font-size: 0.68rem; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; font-weight: 700; }
+  .dates { display: flex; gap: 10px; flex-wrap: wrap; }
+  .dates label { font-size: 0.68rem; color: var(--muted); font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; display: flex; flex-direction: column; gap: 3px; }
+  .dates input { font-family: var(--sans); font-size: 0.85rem; padding: 6px 8px; border: 1px solid var(--line); border-radius: 8px; background: rgba(255,255,255,0.8); color: var(--ink); }
+
+  .card-band { background: var(--greige); border-radius: var(--radius-sm); padding: 12px 14px; }
+  .card-band .band-label { font-size: 0.7rem; letter-spacing: 1.2px; text-transform: uppercase; color: var(--accent-deep); font-weight: 800; margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+  .card-band textarea { width: 100%; font-family: var(--sans); font-size: 0.92rem; line-height: 1.55; color: var(--ink); border: none; background: transparent; outline: none; resize: vertical; min-height: 62px; }
+  .card-band textarea::placeholder { color: var(--muted); }
+
+  .attach { display: flex; flex-direction: column; gap: 8px; background: rgba(79,144,136,0.06); border: 1px dashed var(--accent-soft); border-radius: var(--radius-sm); padding: 12px 14px; }
+  .attach .band-label { font-size: 0.7rem; letter-spacing: 1.2px; text-transform: uppercase; color: var(--accent-deep); font-weight: 800; display: flex; align-items: center; gap: 6px; }
+  .attach-file { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 0.85rem; color: var(--ink); }
+  .attach-file .fname { font-weight: 700; word-break: break-all; }
+  .attach-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .book-foot { display: flex; justify-content: flex-end; margin-top: 2px; }
+
+  .empty { text-align: center; color: var(--muted); padding: 50px 20px; }
+  .empty b { display: block; font-family: var(--serif); font-size: 1.3rem; color: var(--ink); margin-bottom: 6px; }
+  .foot-note { text-align: center; color: var(--muted); font-size: 0.8rem; opacity: 0.8; margin: 28px 0 10px; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="nav" aria-label="Life CEO sections">
+    <a href="index.html">◑ Focus Room</a>
+    <a href="daily-visual-planner.html">📅 Daily Dashboard</a>
+    <a class="active" href="reading-tracker.html">📚 Reading</a>
+    <span class="soon" title="Coming soon">🧭 Seven Moves</span>
+    <span class="soon" title="Coming soon">🏠 Hub</span>
+  </nav>
+
+  <p class="eyebrow">Move 07 · Creativity &amp; Play</p>
+  <h1>Reading Tracker</h1>
+  <p class="focus-line">Your bookshelf for a curious life — track what you read, capture the big idea, and keep your notes and the book itself in one place.</p>
+
+  <div class="quote-band">
+    <div class="quote-rule" aria-hidden="true"></div>
+    <div class="quote-text" id="quote" contenteditable="true" data-placeholder="A reader lives a thousand lives before he dies…" aria-label="Quote"></div>
+    <div class="quote-sign">7 Moves Ahead</div>
+  </div>
+
+  <div class="stats" id="stats">
+    <div class="stat"><b id="stFinished">0</b><span>Books read</span></div>
+    <div class="stat"><b id="stReading">0</b><span>Reading now</span></div>
+    <div class="stat"><b id="stWant">0</b><span>Want to read</span></div>
+    <div class="stat"><b id="stRating">–</b><span>Avg rating</span></div>
+  </div>
+
+  <div class="panel">
+    <p class="label">📚 My bookshelf</p>
+    <div class="shelf" id="shelf"></div>
+  </div>
+
+  <div class="controls">
+    <button class="btn btn-primary" id="addBtn">＋ Add a book</button>
+    <div class="chips" id="filters">
+      <button class="chip active" data-filter="all">All</button>
+      <button class="chip" data-filter="want">Want to read</button>
+      <button class="chip" data-filter="reading">Reading</button>
+      <button class="chip" data-filter="done">Finished</button>
+    </div>
+    <div class="search"><input type="search" id="search" placeholder="Search title, author, or notes…" aria-label="Search books" /></div>
+  </div>
+
+  <div class="books" id="books"></div>
+  <div class="empty" id="empty" hidden>
+    <b>Your shelf is empty</b>
+    Tap “＋ Add a book” to place your first book on the shelf.
+  </div>
+
+  <p class="foot-note">Everything saves on this device, in this browser — covers and attachments included. Nothing is uploaded.</p>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  function $(id) { return document.getElementById(id); }
+  function uid() { return "b" + Date.now().toString(36) + Math.floor(Math.random() * 1e4).toString(36); }
+  function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]; }); }
+
+  // ---------- Storage (meta in localStorage, files in IndexedDB) ----------
+  var STORE_KEY = "rt_books_v1", QUOTE_KEY = "rt_quote_v1";
+  function loadBooks() { try { var a = JSON.parse(localStorage.getItem(STORE_KEY) || "[]"); return Array.isArray(a) ? a : []; } catch (e) { return []; } }
+  function saveBooks() { try { localStorage.setItem(STORE_KEY, JSON.stringify(books)); } catch (e) {} }
+
+  var db = null;
+  function initDB(cb) {
+    try {
+      var r = indexedDB.open("ReadingTrackerAssets", 1);
+      r.onupgradeneeded = function (e) { var d = e.target.result; if (!d.objectStoreNames.contains("assets")) d.createObjectStore("assets", { keyPath: "id" }); };
+      r.onsuccess = function (e) { db = e.target.result; cb && cb(); };
+      r.onerror = function () { db = null; cb && cb(); };
+    } catch (e) { db = null; cb && cb(); }
+  }
+  function putAsset(id, blob, name, type, done) { if (!db) { done && done(false); return; } try { var tx = db.transaction(["assets"], "readwrite"); tx.objectStore("assets").put({ id: id, blob: blob, name: name, type: type }); tx.oncomplete = function () { done && done(true); }; tx.onerror = function () { done && done(false); }; } catch (e) { done && done(false); } }
+  function getAsset(id, done) { if (!db) { done(null); return; } try { var tx = db.transaction(["assets"], "readonly"); var rq = tx.objectStore("assets").get(id); rq.onsuccess = function () { done(rq.result || null); }; rq.onerror = function () { done(null); }; } catch (e) { done(null); } }
+  function delAsset(id, done) { if (!db) { done && done(); return; } try { var tx = db.transaction(["assets"], "readwrite"); tx.objectStore("assets").delete(id); tx.oncomplete = function () { done && done(); }; } catch (e) { done && done(); } }
+
+  // ---------- Data ----------
+  var books = loadBooks();
+  var filter = "all", query = "";
+  var SPINES = ["#4F9088", "#3C6F68", "#6F8095", "#C17B5B", "#9E7B89", "#6B7A5C", "#C2807A", "#7E5E70", "#C2A05A"];
+  var STATUSES = [["want", "Want"], ["reading", "Reading"], ["done", "Finished"]];
+
+  function newBook() {
+    return { id: uid(), title: "", author: "", status: "want", rating: 0, explanation: "", review: "", started: "", finished: "", spine: SPINES[books.length % SPINES.length], cover: false, file: null, created: Date.now() };
+  }
+  function findBook(id) { for (var i = 0; i < books.length; i++) if (books[i].id === id) return books[i]; return null; }
+
+  // ---------- Stats + shelf ----------
+  function renderStats() {
+    var fin = 0, rd = 0, want = 0, rsum = 0, rcount = 0;
+    books.forEach(function (b) {
+      if (b.status === "done") fin++; else if (b.status === "reading") rd++; else want++;
+      if (b.rating > 0) { rsum += b.rating; rcount++; }
+    });
+    $("stFinished").textContent = fin; $("stReading").textContent = rd; $("stWant").textContent = want;
+    $("stRating").textContent = rcount ? (Math.round((rsum / rcount) * 10) / 10).toFixed(1) : "–";
+  }
+  function renderShelf() {
+    var shelf = $("shelf"); shelf.innerHTML = "";
+    if (!books.length) { var e = document.createElement("div"); e.className = "shelf-empty"; e.textContent = "No books yet — the shelf fills up as you add them."; shelf.appendChild(e); return; }
+    books.forEach(function (b) {
+      var s = document.createElement("button"); s.className = "spine" + (b.status === "done" ? " done" : "");
+      s.style.background = b.spine || "#4F9088"; s.title = (b.title || "Untitled") + (b.author ? " — " + b.author : "");
+      var sp = document.createElement("span"); sp.textContent = b.title || "Untitled"; s.appendChild(sp);
+      s.addEventListener("click", function () { var card = document.querySelector('[data-card="' + b.id + '"]'); if (card) { card.scrollIntoView({ behavior: "smooth", block: "center" }); card.style.transition = "box-shadow .3s"; card.style.boxShadow = "0 0 0 3px var(--accent-soft)"; setTimeout(function () { card.style.boxShadow = ""; }, 1200); } });
+      shelf.appendChild(s);
+    });
+  }
+
+  // ---------- Book card ----------
+  function matches(b) {
+    if (filter !== "all" && b.status !== filter) return false;
+    if (query) { var hay = (b.title + " " + b.author + " " + b.explanation + " " + b.review).toLowerCase(); if (hay.indexOf(query) < 0) return false; }
+    return true;
+  }
+  function renderBooks() {
+    var wrap = $("books"); wrap.innerHTML = "";
+    var shown = books.filter(matches);
+    $("empty").hidden = books.length !== 0;
+    if (books.length && !shown.length) { var n = document.createElement("div"); n.className = "empty"; n.innerHTML = "<b>No matches</b>Try a different filter or search."; wrap.appendChild(n); }
+    shown.forEach(function (b) { wrap.appendChild(buildCard(b)); });
+  }
+
+  function buildCard(b) {
+    var card = document.createElement("div"); card.className = "book"; card.setAttribute("data-card", b.id);
+
+    // top: cover + head
+    var top = document.createElement("div"); top.className = "book-top";
+    var cover = document.createElement("div"); cover.className = "cover"; cover.title = "Add / change cover";
+    cover.innerHTML = '<span class="cover-hint">📖<br>Add cover</span>';
+    cover.addEventListener("click", function () { pickCover(b, cover); });
+    if (b.cover) loadCover(b, cover);
+    top.appendChild(cover);
+
+    var head = document.createElement("div"); head.className = "book-head";
+    var title = document.createElement("input"); title.className = "fld-title"; title.value = b.title; title.placeholder = "Book title"; title.setAttribute("aria-label", "Title");
+    title.addEventListener("input", function () { b.title = title.value; saveBooks(); renderShelf(); });
+    var author = document.createElement("input"); author.className = "fld-author"; author.value = b.author; author.placeholder = "Author"; author.setAttribute("aria-label", "Author");
+    author.addEventListener("input", function () { b.author = author.value; saveBooks(); });
+
+    var status = document.createElement("div"); status.className = "status-row";
+    STATUSES.forEach(function (s) {
+      var btn = document.createElement("button"); btn.textContent = s[1]; btn.className = (b.status === s[0] ? "active" : "");
+      btn.addEventListener("click", function () {
+        b.status = s[0];
+        if (s[0] === "done" && !b.finished) { b.finished = todayStr(); }
+        if (s[0] === "reading" && !b.started) { b.started = todayStr(); }
+        saveBooks(); renderStats(); renderShelf();
+        Array.prototype.forEach.call(status.children, function (c, i) { c.className = (STATUSES[i][0] === b.status ? "active" : ""); });
+        syncDates();
+      });
+      status.appendChild(btn);
+    });
+
+    var rateWrap = document.createElement("div"); rateWrap.className = "rings"; rateWrap.setAttribute("aria-label", "Rating");
+    var cap = document.createElement("span"); cap.className = "rating-cap"; cap.textContent = "Rating";
+    rateWrap.appendChild(cap);
+    for (var i = 1; i <= 5; i++) (function (n) {
+      var r = document.createElement("button"); r.className = "ring" + (b.rating >= n ? " on" : ""); r.title = n + " / 5";
+      r.addEventListener("click", function () {
+        b.rating = (b.rating === n) ? n - 1 : n; saveBooks(); renderStats();
+        Array.prototype.forEach.call(rateWrap.querySelectorAll(".ring"), function (rr, idx) { rr.className = "ring" + (b.rating >= idx + 1 ? " on" : ""); });
+      });
+      rateWrap.appendChild(r);
+    })(i);
+
+    head.appendChild(title); head.appendChild(author); head.appendChild(status); head.appendChild(rateWrap);
+    top.appendChild(head);
+    card.appendChild(top);
+
+    // dates
+    var dates = document.createElement("div"); dates.className = "dates";
+    var dStart = dateField("Started", b.started, function (v) { b.started = v; saveBooks(); });
+    var dFin = dateField("Finished", b.finished, function (v) { b.finished = v; saveBooks(); });
+    dates.appendChild(dStart.wrap); dates.appendChild(dFin.wrap);
+    card.appendChild(dates);
+    function syncDates() { dStart.input.value = b.started || ""; dFin.input.value = b.finished || ""; }
+
+    // explanation card
+    card.appendChild(bandField("📖 What it’s about — the big idea", b.explanation, "In a few lines: what is this book really about? The core idea you want to remember.", function (v) { b.explanation = v; saveBooks(); }));
+    // review card
+    card.appendChild(bandField("📝 My review &amp; notes", b.review, "Your take, favourite quotes, what you’ll use, who you’d recommend it to…", function (v) { b.review = v; saveBooks(); }));
+
+    // attachment / leaf space
+    var attach = document.createElement("div"); attach.className = "attach";
+    var al = document.createElement("div"); al.className = "band-label"; al.innerHTML = "📎 Attachment · the book or your notes"; attach.appendChild(al);
+    var fileRow = document.createElement("div"); fileRow.className = "attach-file";
+    attach.appendChild(fileRow);
+    renderAttach(b, fileRow);
+    card.appendChild(attach);
+
+    // footer: delete
+    var foot = document.createElement("div"); foot.className = "book-foot";
+    var del = document.createElement("button"); del.className = "btn btn-danger btn-small"; del.innerHTML = "🗑️ Remove book";
+    del.addEventListener("click", function () {
+      if (!window.confirm("Remove “" + (b.title || "this book") + "” and its notes/attachments?")) return;
+      delAsset("cover_" + b.id); delAsset("file_" + b.id);
+      books = books.filter(function (x) { return x.id !== b.id; });
+      saveBooks(); renderAll();
+    });
+    foot.appendChild(del); card.appendChild(foot);
+
+    return card;
+  }
+
+  function dateField(labelText, val, onChange) {
+    var wrap = document.createElement("label");
+    var span = document.createElement("span"); span.textContent = labelText;
+    var input = document.createElement("input"); input.type = "date"; input.value = val || "";
+    input.addEventListener("change", function () { onChange(input.value); });
+    wrap.appendChild(span); wrap.appendChild(input);
+    return { wrap: wrap, input: input };
+  }
+  function bandField(labelHTML, val, placeholder, onChange) {
+    var band = document.createElement("div"); band.className = "card-band";
+    var lab = document.createElement("div"); lab.className = "band-label"; lab.innerHTML = labelHTML;
+    var ta = document.createElement("textarea"); ta.value = val || ""; ta.placeholder = placeholder; ta.rows = 3;
+    ta.addEventListener("input", function () { autosize(ta); onChange(ta.value); });
+    band.appendChild(lab); band.appendChild(ta);
+    setTimeout(function () { autosize(ta); }, 0);
+    return band;
+  }
+  function autosize(ta) { ta.style.height = "auto"; ta.style.height = Math.max(62, ta.scrollHeight) + "px"; }
+
+  // ---------- Cover ----------
+  function pickCover(b, coverEl) {
+    var input = document.createElement("input"); input.type = "file"; input.accept = "image/*";
+    input.addEventListener("change", function () {
+      var f = input.files[0]; if (!f) return;
+      putAsset("cover_" + b.id, f, f.name, f.type, function (ok) { b.cover = true; saveBooks(); loadCover(b, coverEl); });
+    });
+    input.click();
+  }
+  function loadCover(b, coverEl) {
+    getAsset("cover_" + b.id, function (rec) {
+      if (rec && rec.blob) { if (coverEl._url) URL.revokeObjectURL(coverEl._url); coverEl._url = URL.createObjectURL(rec.blob); coverEl.innerHTML = '<img alt="Cover of ' + esc(b.title) + '" />'; coverEl.querySelector("img").src = coverEl._url; }
+      else { coverEl.innerHTML = '<span class="cover-hint">📖<br>Add cover</span>'; }
+    });
+  }
+
+  // ---------- Attachment ----------
+  function renderAttach(b, row) {
+    row.innerHTML = "";
+    if (b.file && b.file.name) {
+      var icon = document.createElement("span"); icon.textContent = fileIcon(b.file.type, b.file.name);
+      var name = document.createElement("span"); name.className = "fname"; name.textContent = b.file.name;
+      var actions = document.createElement("span"); actions.className = "attach-row";
+      var open = document.createElement("button"); open.className = "btn btn-small"; open.textContent = "Open";
+      open.addEventListener("click", function () { getAsset("file_" + b.id, function (rec) { if (rec && rec.blob) { var u = URL.createObjectURL(rec.blob); window.open(u, "_blank"); setTimeout(function () { URL.revokeObjectURL(u); }, 60000); } }); });
+      var rem = document.createElement("button"); rem.className = "btn btn-danger btn-small"; rem.textContent = "Remove";
+      rem.addEventListener("click", function () { delAsset("file_" + b.id, function () { b.file = null; saveBooks(); renderAttach(b, row); }); });
+      actions.appendChild(open); actions.appendChild(rem);
+      row.appendChild(icon); row.appendChild(name); row.appendChild(actions);
+    } else {
+      var add = document.createElement("button"); add.className = "btn btn-small"; add.innerHTML = "📎 Attach a file";
+      add.addEventListener("click", function () {
+        var input = document.createElement("input"); input.type = "file";
+        input.addEventListener("change", function () {
+          var f = input.files[0]; if (!f) return;
+          putAsset("file_" + b.id, f, f.name, f.type, function (ok) {
+            if (ok) { b.file = { name: f.name, type: f.type }; saveBooks(); renderAttach(b, row); }
+            else { window.alert("That file is too large to store on this device. Try a smaller file."); }
+          });
+        });
+        input.click();
+      });
+      var hint = document.createElement("span"); hint.style.color = "var(--muted)"; hint.style.fontSize = "0.8rem"; hint.textContent = "PDF, ebook, or a photo of your notes.";
+      row.appendChild(add); row.appendChild(hint);
+    }
+  }
+  function fileIcon(type, name) {
+    type = type || ""; name = (name || "").toLowerCase();
+    if (type.indexOf("image") === 0) return "🖼️";
+    if (type.indexOf("pdf") >= 0 || /\.pdf$/.test(name)) return "📕";
+    if (/\.epub$/.test(name) || /\.mobi$/.test(name)) return "📗";
+    if (type.indexOf("audio") === 0) return "🎧";
+    return "📄";
+  }
+
+  // ---------- Helpers ----------
+  function todayStr() { var d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
+
+  function renderAll() { renderStats(); renderShelf(); renderBooks(); }
+
+  // ---------- Wire ----------
+  function init() {
+    // quote
+    var q = $("quote"); try { var qv = localStorage.getItem(QUOTE_KEY); if (qv != null) q.textContent = qv; } catch (e) {}
+    q.addEventListener("input", function () { try { localStorage.setItem(QUOTE_KEY, q.textContent); } catch (e) {} });
+
+    $("addBtn").addEventListener("click", function () {
+      var b = newBook(); books.unshift(b); saveBooks(); filter = "all"; setActiveFilter(); query = ""; $("search").value = "";
+      renderAll();
+      setTimeout(function () { var card = document.querySelector('[data-card="' + b.id + '"]'); if (card) { card.scrollIntoView({ behavior: "smooth", block: "center" }); var t = card.querySelector(".fld-title"); if (t) t.focus(); } }, 30);
+    });
+
+    Array.prototype.forEach.call($("filters").children, function (c) {
+      c.addEventListener("click", function () { filter = c.getAttribute("data-filter"); setActiveFilter(); renderBooks(); });
+    });
+    function setActiveFilter() { Array.prototype.forEach.call($("filters").children, function (c) { c.className = "chip" + (c.getAttribute("data-filter") === filter ? " active" : ""); }); }
+
+    $("search").addEventListener("input", function () { query = $("search").value.trim().toLowerCase(); renderBooks(); });
+
+    initDB(function () { renderAll(); });
+  }
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init); else init();
+})();
+</script>
+</body>
+</html>
